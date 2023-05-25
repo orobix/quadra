@@ -32,7 +32,7 @@ theme:
   favicon: images/favicon.png
   name: "material"
   locale: en
-  custom_dir: overrides
+  custom_dir: docs_overrides
   logo: images/orobix_logo.svg
   font:
     text: Roboto
