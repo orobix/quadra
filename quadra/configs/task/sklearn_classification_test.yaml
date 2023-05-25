@@ -1,0 +1,7 @@
+_target_: quadra.tasks.classification.SklearnTestClassification
+device: cuda:0
+output:
+  folder: classification_experiment
+  report: true
+  example: true
+experiment_path:

@@ -1,0 +1,9 @@
+_target_: quadra.tasks.PatchSklearnClassification
+device: cuda:2
+export_type: [torchscript]
+output:
+  folder: classification_patch_experiment
+  save_backbone: false
+  report: true
+  example: true
+  reconstruction_method: major_voting

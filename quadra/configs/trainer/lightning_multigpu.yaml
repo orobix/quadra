@@ -1,0 +1,10 @@
+_target_: pytorch_lightning.Trainer
+devices: [0, 1]
+accelerator: gpu
+min_epochs: 1
+max_epochs: 10
+strategy:
+  _target_: pytorch_lightning.strategies.DDPStrategy
+  find_unused_parameters: false
+resume_from_checkpoint: null
+log_every_n_steps: 10

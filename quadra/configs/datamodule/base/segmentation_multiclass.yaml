@@ -1,0 +1,17 @@
+_target_: quadra.datamodules.SegmentationMulticlassDataModule
+data_path: ???
+idx_to_class:
+test_size: 0.3
+val_size: 0.3
+seed: 42
+batch_size: 32
+num_workers: 6
+train_transform: ${transforms.train_transform}
+test_transform: ${transforms.test_transform}
+val_transform: ${transforms.val_transform}
+train_split_file:
+test_split_file:
+val_split_file:
+exclude_good: false
+num_data_train:
+one_hot_encoding:

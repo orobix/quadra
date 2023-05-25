@@ -10,7 +10,6 @@ from .classification import (
     classification_patch_dataset,
     multilabel_classification_dataset,
 )
-from .instance_segmentation import CocoDatasetArguments, base_coco_dataset, coco_dataset
 from .segmentation import (
     SegmentationDatasetArguments,
     base_binary_segmentation_dataset,
@@ -27,8 +26,6 @@ __all__ = [
     "classification_patch_dataset",
     "segmentation_dataset",
     "SegmentationDatasetArguments",
-    "CocoDatasetArguments",
-    "coco_dataset",
     "multilabel_classification_dataset",
     "ClassificationMultilabelDatasetArguments",
     "base_anomaly_dataset",
@@ -36,6 +33,5 @@ __all__ = [
     "base_patch_classification_dataset",
     "base_binary_segmentation_dataset",
     "base_multiclass_segmentation_dataset",
-    "base_coco_dataset",
     "base_multilabel_classification_dataset",
 ]

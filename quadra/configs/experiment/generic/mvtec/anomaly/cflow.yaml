@@ -1,0 +1,33 @@
+# @package _global_
+defaults:
+  - base/anomaly/cflow
+  - override /datamodule: generic/mvtec/anomaly/base
+
+datamodule:
+  num_workers: 12
+  train_batch_size: 32
+  task: ${model.dataset.task}
+  category: bottle
+
+callbacks:
+  min_max_normalization:
+    threshold_type: "pixel"
+  early_stopping:
+    patience: 2
+    monitor: validation_pixel_AUROC
+
+print_config: false
+
+core:
+  tag: "run"
+  test_after_training: true
+  upload_artifacts: true
+  name: cflow_${datamodule.category}_${model.model.backbone}_${trainer.max_epochs}
+
+logger:
+  mlflow:
+    experiment_name: mvtec-anomaly
+    run_name: ${core.name}
+
+trainer:
+  devices: [2]

@@ -1,0 +1,12 @@
+model:
+  _target_: quadra.models.classification.TorchHubNetworkBuilder
+  repo_or_dir: facebookresearch/dino:main
+  model_name: dino_vitb8
+  pretrained: true
+  freeze: false
+  hyperspherical: false
+metadata:
+  input_size: 224
+  output_dim: 768
+  patch_size: 8
+  nb_heads: 12

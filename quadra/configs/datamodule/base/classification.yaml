@@ -1,0 +1,18 @@
+_target_: quadra.datamodules.classification.ClassificationDataModule
+data_path: ???
+exclude_filter: [".ipynb_checkpoints"]
+seed: ${core.seed}
+num_workers: 8
+batch_size: 16
+val_size: 0.2
+train_transform: ${transforms.train_transform}
+test_transform: ${transforms.test_transform}
+val_transform: ${transforms.val_transform}
+train_split_file:
+test_split_file:
+label_map:
+class_to_idx:
+name:
+dataset:
+  _target_: hydra.utils.get_method
+  path: quadra.datasets.classification.ClassificationDataset

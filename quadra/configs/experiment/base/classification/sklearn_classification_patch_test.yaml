@@ -1,0 +1,21 @@
+# @package _global_
+
+defaults:
+  - override /transforms: default_resize
+  - override /task: sklearn_classification_patch_test
+  - override /backbone: dino_vitb8
+  - override /datamodule: base/sklearn_classification_patch
+  - override /trainer: sklearn_classification
+
+backbone:
+  model:
+    pretrained: true
+    freeze: true
+
+core:
+  tag: "run"
+  name: "sklearn-classification-patch-test"
+
+datamodule:
+  num_workers: 8
+  batch_size: 32

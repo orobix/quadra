@@ -1,0 +1,33 @@
+# @package _global_
+defaults:
+  - base/anomaly/draem
+  - override /datamodule: generic/mvtec/anomaly/base
+
+datamodule:
+  num_workers: 12
+  train_batch_size: 16
+  task: ${model.dataset.task}
+  category: bottle
+
+callbacks:
+  min_max_normalization:
+    threshold_type: "pixel"
+  early_stopping:
+    patience: 20
+    monitor: validation_pixel_AUROC
+
+print_config: false
+
+core:
+  tag: "run"
+  test_after_training: true
+  upload_artifacts: true
+  name: draem_${datamodule.category}_${trainer.max_epochs}
+
+logger:
+  mlflow:
+    experiment_name: mvtec-anomaly
+    run_name: ${core.name}
+
+trainer:
+  devices: [2]

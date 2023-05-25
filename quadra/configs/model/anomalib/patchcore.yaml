@@ -1,0 +1,36 @@
+dataset:
+  task: segmentation
+  tiling:
+    apply: false
+    tile_size: null
+    stride: null
+    remove_border_count: 0
+    use_random_tiling: False
+    random_tile_count: 16
+
+model:
+  name: patchcore
+  backbone: wide_resnet50_2
+  layers:
+    - layer2
+    - layer3
+  input_size: [224, 224]
+  coreset_sampling_ratio: 0.1
+  num_neighbors: 9
+  pre_trained: true
+  pretrained_weights:
+  compress_memory_bank: false # Whether to apply dimensionality reduction to the memory bank
+  coreset_sampler: anomalib # Can be this or amazon
+  score_computation: anomalib # Can be this or amazon
+
+metrics:
+  image:
+    - F1Score
+    - AUROC
+  pixel:
+    - F1Score
+    - AUROC
+  threshold:
+    method: adaptive # options: [adaptive, manual]
+    manual_image: null
+    manual_pixel: null

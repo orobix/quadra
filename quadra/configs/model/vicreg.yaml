@@ -1,0 +1,16 @@
+model: ${backbone.model}
+projection_mlp_mult: 4
+projection_mlp:
+  _target_: quadra.modules.ssl.common.BarlowTwinsProjectionHead
+  input_dim: ${backbone.metadata.output_dim}
+  output_dim: ${backbone.metadata.output_dim}
+  hidden_dim: ${backbone.metadata.output_dim}
+module:
+  _target_: quadra.modules.ssl.BarlowTwins
+  classifier: ${model.classifier}
+  criterion: ${loss}
+  lr_scheduler_interval: step
+classifier:
+  _target_: sklearn.neighbors.KNeighborsClassifier
+  n_neighbors: 20
+  n_jobs: 5

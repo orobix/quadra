@@ -1,0 +1,37 @@
+# @package _global_
+defaults:
+  - base/anomaly/padim
+  - override /datamodule: generic/mnist/anomaly/base
+
+model:
+  model:
+    input_size: [224, 224]
+    backbone: resnet18
+
+datamodule:
+  num_workers: 12
+  train_batch_size: 32
+  task: ${model.dataset.task}
+  good_number: 9
+
+callbacks:
+  min_max_normalization:
+    threshold_type: "image"
+
+print_config: false
+
+core:
+  tag: "run"
+  test_after_training: true
+  upload_artifacts: true
+  name: padim_${datamodule.good_number}_${model.model.backbone}_${trainer.max_epochs}
+
+logger:
+  mlflow:
+    experiment_name: mnist-anomaly
+    run_name: ${core.name}
+
+trainer:
+  devices: [0]
+  max_epochs: 1
+  check_val_every_n_epoch: ${trainer.max_epochs}

@@ -1,0 +1,7 @@
+_target_: quadra.tasks.Classification
+export_type: [torchscript]
+lr_multiplier: null
+output:
+  example: false
+report: false
+run_test: true

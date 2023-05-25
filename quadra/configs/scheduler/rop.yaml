@@ -1,0 +1,5 @@
+_target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+patience: 20
+factor: 0.995
+verbose: False
+threshold: 0.01

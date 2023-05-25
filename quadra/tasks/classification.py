@@ -17,9 +17,9 @@ from sklearn.base import ClassifierMixin
 from sklearn.metrics import ConfusionMatrixDisplay
 from tqdm import tqdm
 
-from quadra.ks.mlflow import get_mlflow_logger
+from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.callbacks.scheduler import WarmupInit
-from quadra.ules import (
+from quadra.datamodules import (
     ClassificationDataModule,
     MultilabelClassificationDataModule,
     SklearnClassificationDataModule,

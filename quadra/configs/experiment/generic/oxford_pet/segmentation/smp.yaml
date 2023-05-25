@@ -1,0 +1,21 @@
+# @package _global_
+defaults:
+  - base/segmentation/smp # use smp file as default
+  - override /datamodule: generic/oxford_pet/segmentation/base # update datamodule
+  - _self_ # use this file as final config
+
+trainer:
+  devices: [0]
+  max_epochs: 10
+
+task:
+  report: true
+  evaluate:
+    analysis: true
+
+core:
+  save_for_runtime: False
+  name: "oxford_pet_segmentation" # change the name of experiment (also for Mlflow)
+
+datamodule:
+  batch_size: 64

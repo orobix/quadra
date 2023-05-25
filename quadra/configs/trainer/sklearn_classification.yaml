@@ -1,0 +1,7 @@
+_target_: quadra.trainers.classification.SklearnClassificationTrainer
+random_state: 42
+input_shape:
+  - ${transforms.input_height}
+  - ${transforms.input_width}
+  - 3
+iteration_over_training: 1

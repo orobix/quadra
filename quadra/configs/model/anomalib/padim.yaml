@@ -1,0 +1,31 @@
+dataset:
+  task: segmentation
+  tiling:
+    apply: false
+    tile_size: null
+    stride: null
+    remove_border_count: 0
+    use_random_tiling: False
+    random_tile_count: 16
+
+model:
+  input_size: [224, 224]
+  backbone: resnet18
+  layers:
+    - layer1
+    - layer2
+    - layer3
+  pre_trained: true
+  n_features: null
+
+metrics:
+  image:
+    - F1Score
+    - AUROC
+  pixel:
+    - F1Score
+    - AUROC
+  threshold:
+    method: adaptive # options: [adaptive, manual]
+    manual_image: null
+    manual_pixel: null

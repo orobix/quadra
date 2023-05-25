@@ -17,7 +17,7 @@ def _random_image(size: Tuple[int, int] = (10, 10)) -> np.ndarray:
 
 def execute_quadra_experiment(overrides: List[str], experiment_path: Path) -> None:
     """Execute quadra experiment."""
-    with initialize_config_module(config_module="quadras", version_base="1.3.0"):
+    with initialize_config_module(config_module="quadra.configs", version_base="1.3.0"):
         if not experiment_path.exists():
             experiment_path.mkdir(parents=True)
         os.chdir(experiment_path)

@@ -1,0 +1,9 @@
+model:
+  _target_: quadra.models.classification.TorchVisionNetworkBuilder
+  model_name: mnasnet0_5
+  pretrained: true
+  freeze: false
+  hyperspherical: false
+metadata:
+  input_size: 224
+  output_dim: 1280

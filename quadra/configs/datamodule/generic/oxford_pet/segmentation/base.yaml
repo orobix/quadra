@@ -1,0 +1,7 @@
+_target_: quadra.datamodules.generic.oxford_pet.OxfordPetSegmentationDataModule
+data_path: ${oc.env:HOME}/.quadra/datasets/oxford-pet
+test_size: 0.2
+val_size: 0.2
+train_transform: ${transforms.train_transform}
+test_transform: ${transforms.test_transform}
+val_transform: ${transforms.val_transform}

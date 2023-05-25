@@ -1,0 +1,15 @@
+model:
+  _target_: monai.networks.nets.unetr.UNETR
+  in_channels: 3
+  out_channels: 1
+  img_size: [448, 448]
+  feature_size: 16
+  hidden_size: 384 # 192
+  mlp_dim: 1536 # 768
+  num_heads: 8 # 3
+  pos_embed: conv
+  norm_name: instance
+  conv_block: true
+  res_block: true
+  dropout_rate: 0
+  spatial_dims: 2

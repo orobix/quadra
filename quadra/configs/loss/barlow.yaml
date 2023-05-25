@@ -1,0 +1,2 @@
+_target_: quadra.losses.ssl.BarlowTwinsLoss
+lambd: 5e-3

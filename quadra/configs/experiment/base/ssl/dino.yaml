@@ -1,0 +1,46 @@
+# @package _global_
+
+defaults:
+  - override /datamodule: base/ssl
+  - override /backbone: resnet18
+  - override /model: dino
+  - override /optimizer: adamw
+  - override /scheduler: warmup
+  - override /transforms: dino
+  - override /loss: dino
+  - override /task: ssl
+  - override /trainer: lightning_gpu_fp16
+
+core:
+  tag: "run"
+  name: "dino_ssl"
+task:
+  _target_: quadra.tasks.ssl.DINO
+
+callbacks:
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    monitor: "val_acc"
+    mode: "max"
+
+trainer:
+  devices: [0]
+  max_epochs: 500
+  num_sanity_val_steps: 0
+  gradient_clip_val: 3.0
+  check_val_every_n_epoch: 10
+  gradient_clip_algorithm: "value"
+
+datamodule:
+  num_workers: 6
+  batch_size: 128
+  augmentation_dataset:
+    _target_: quadra.datasets.TwoSetAugmentationDataset
+    global_transforms: ${transforms.global_transforms}
+    local_transform: ${transforms.local_transform}
+    num_local_transforms: 10
+    dataset: null
+
+scheduler:
+  init_lr:
+    - 0.0001

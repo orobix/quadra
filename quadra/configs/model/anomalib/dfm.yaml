@@ -1,0 +1,19 @@
+dataset:
+  task: classification
+
+model:
+  backbone: wide_resnet50_2
+  pca_level: 0.97
+  score_type: fre # nll: for Gaussian modeling, fre: pca feature reconstruction error
+  threshold:
+    image_default: 0
+    pixel_default: 0
+    adaptive: true
+
+metrics:
+  image:
+    - F1Score
+    - AUROC
+  pixel:
+    - F1Score
+    - AUROC

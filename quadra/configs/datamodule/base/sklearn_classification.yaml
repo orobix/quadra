@@ -1,0 +1,20 @@
+_target_: quadra.datamodules.SklearnClassificationDataModule
+data_path: ???
+exclude_filter:
+include_filter:
+val_size: 0.3
+class_to_idx:
+label_map:
+seed: ${core.seed}
+batch_size: 32
+num_workers: 8
+train_transform: ${transforms.train_transform}
+val_transform: ${transforms.val_transform}
+test_transform: ${transforms.test_transform}
+roi:
+n_splits: 1
+phase:
+cache: false
+limit_training_data:
+train_split_file:
+test_split_file:

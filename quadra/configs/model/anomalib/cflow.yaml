@@ -1,0 +1,30 @@
+dataset:
+  task: segmentation
+
+model:
+  name: cflow
+  backbone: resnet18
+  input_size: [256, 256]
+  layers:
+    - layer2
+    - layer3
+    - layer4
+  decoder: freia-cflow
+  condition_vector: 128
+  coupling_blocks: 8
+  permute_soft: false
+  clamp_alpha: 1.9
+  lr: 0.0001
+  fiber_batch_size: 64
+
+metrics:
+  image:
+    - F1Score
+    - AUROC
+  pixel:
+    - F1Score
+    - AUROC
+  threshold:
+    method: adaptive # options: [adaptive, manual]
+    manual_image: null
+    manual_pixel: null

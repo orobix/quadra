@@ -1,0 +1,20 @@
+# @package _global_
+
+defaults:
+  - override /datamodule: base/anomaly
+  - override /model: null
+  - override /optimizer: null
+  - override /scheduler: null
+  - override /transforms: default_resize
+  - override /loss: null
+  - override /task: anomalib/inference
+  - override /backbone: null
+  - override /trainer: null
+  - _self_
+
+datamodule:
+  phase: test
+
+task:
+  model_path: ???
+  use_training_threshold: false

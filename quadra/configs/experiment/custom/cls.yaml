@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - base/classification/classification # extends the default classification configuration
+
+datamodule:
+  data_path: ${oc.env:HOME}/.quadra/datasets/imagenette/imagenette2-320/train/
+
+core:
+  name: custom_custom
+
+model:
+  num_classes: 10

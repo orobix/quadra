@@ -1,0 +1,9 @@
+_target_: quadra.datamodules.generic.imagenette.ImagenetteClassificationDataModule
+data_path: ${oc.env:HOME}/.quadra/datasets/imagenette
+imagenette_version: "320"
+num_workers: 8
+batch_size: 32
+seed: ${core.seed}
+train_transform: ${transforms.train_transform}
+test_transform: ${transforms.test_transform}
+val_transform: ${transforms.val_transform}

@@ -1,0 +1,57 @@
+# Anomalib specific callbacks
+min_max_normalization:
+  _target_: anomalib.utils.callbacks.min_max_normalization.MinMaxNormalizationCallback
+  threshold_type: image
+post_processing_configuration:
+  _target_: anomalib.utils.callbacks.post_processing_configuration.PostProcessingConfigurationCallback
+  threshold_method: ${model.metrics.threshold.method}
+  manual_image_threshold: ${model.metrics.threshold.manual_image}
+  manual_pixel_threshold: ${model.metrics.threshold.manual_pixel}
+metrics:
+  _target_: anomalib.utils.callbacks.metrics_configuration.MetricsConfigurationCallback
+  task: ${model.dataset.task}
+  image_metrics: ${model.metrics.image}
+  pixel_metrics: ${model.metrics.pixel}
+visualizer:
+  _target_: quadra.callbacks.anomalib.VisualizerCallback
+  inputs_are_normalized: true
+  output_path: anomaly_output
+  threshold_type: ${callbacks.min_max_normalization.threshold_type}
+  disable: true
+# Standard callbacks
+early_stopping:
+  _target_: pytorch_lightning.callbacks.EarlyStopping
+  monitor: validation_image_F1
+  mode: max
+  patience: 5
+  verbose: false
+  stopping_threshold: 1
+model_checkpoint:
+  _target_: pytorch_lightning.callbacks.ModelCheckpoint
+  monitor: validation_image_F1 # name of the logged metric which determines when model is improving
+  mode: "max"
+  verbose: false
+  dirpath: "checkpoints/"
+  filename: "final_model"
+  auto_insert_metric_name: false
+  save_last: true
+  save_on_train_epoch_end: false
+upload_ckpts_as_artifact:
+  _target_: quadra.callbacks.mlflow.UploadCheckpointsAsArtifact
+  ckpt_dir: "checkpoints/"
+  upload_best_only: true
+  delete_after_upload: true
+  upload: false
+log_gradients:
+  _target_: quadra.callbacks.mlflow.LogGradients
+  norm: 2
+lr_monitor:
+  _target_: pytorch_lightning.callbacks.LearningRateMonitor
+  logging_interval: "epoch"
+progress_bar:
+  _target_: pytorch_lightning.callbacks.progress.TQDMProgressBar
+lightning_trainer_setup:
+  _target_: quadra.callbacks.lightning.LightningTrainerBaseSetup
+  log_every_n_steps: 1
+#gpu_stats: TODO: This is not working with the current PL version
+#  _target_: nvitop.callbacks.lightning.GpuStatsLogger

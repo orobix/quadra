@@ -1,0 +1,12 @@
+model: ${backbone.model}
+num_classes: ???
+pre_classifier: null
+classifier:
+  _target_: torch.nn.Linear
+  in_features: ${backbone.metadata.output_dim}
+  out_features: ${model.num_classes}
+module:
+  _target_: quadra.modules.classification.ClassificationModule
+  lr_scheduler_interval: "epoch"
+  criterion: ${loss}
+  gradcam: true

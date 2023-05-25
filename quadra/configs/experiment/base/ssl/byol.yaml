@@ -1,0 +1,43 @@
+# @package _global_
+
+defaults:
+  - override /datamodule: base/ssl
+  - override /backbone: resnet18
+  - override /model: byol
+  - override /optimizer: lars
+  - override /scheduler: warmup
+  - override /transforms: byol
+  - override /loss: byol
+  - override /task: ssl
+  - override /trainer: lightning_gpu_fp16
+core:
+  tag: "run"
+  name: "byol_ssl"
+task:
+  _target_: quadra.tasks.ssl.BYOL
+
+callbacks:
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    monitor: "val_acc"
+    mode: "max"
+
+trainer:
+  devices: [0]
+  max_epochs: 500
+  num_sanity_val_steps: 0
+  check_val_every_n_epoch: 10
+
+datamodule:
+  num_workers: 12
+  batch_size: 256
+  augmentation_dataset:
+    _target_: quadra.datasets.TwoAugmentationDataset
+    transform:
+      - ${transforms.augmentation1}
+      - ${transforms.augmentation2}
+    dataset: null
+
+scheduler:
+  init_lr:
+    - 0.4

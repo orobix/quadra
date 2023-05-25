@@ -1,0 +1,11 @@
+# https://mlflow.org
+
+mlflow:
+  _target_: pytorch_lightning.loggers.mlflow.MLFlowLogger
+  experiment_name: ${core.name}
+  tracking_uri: ${oc.env:MLFLOW_TRACKING_URI}
+  tags: null
+  save_dir: null
+  prefix: ""
+  artifact_location: null
+  run_id: null

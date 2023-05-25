@@ -1,0 +1,6 @@
+_target_: quadra.schedulers.CosineAnnealingWithLinearWarmUp
+total_epochs: ${trainer.max_epochs}
+linear_warmup_epochs: 10
+scheduler_interval: ${model.module.lr_scheduler_interval}
+init_lr:
+  - 0.001

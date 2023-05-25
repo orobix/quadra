@@ -1,0 +1,10 @@
+version:
+  _target_: quadra.get_version
+seed: 42
+tag: null
+name: null
+cv2_num_threads: 1
+command: "python "
+experiment_path: null
+upload_artifacts: False
+log_level: info

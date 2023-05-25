@@ -1,0 +1,13 @@
+_target_: quadra.datamodules.AnomalyDataModule
+data_path: ???
+category:
+num_workers: 8
+train_batch_size: 32
+test_batch_size: 32
+seed: ${core.seed}
+train_transform: ${transforms.train_transform}
+test_transform: ${transforms.test_transform}
+val_transform: ${transforms.val_transform}
+phase: train
+valid_area_mask:
+crop_area:

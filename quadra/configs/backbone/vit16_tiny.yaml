@@ -1,0 +1,9 @@
+model:
+  _target_: quadra.models.classification.TimmNetworkBuilder
+  model_name: vit_tiny_patch16_224
+  pretrained: true
+  freeze: false
+metadata:
+  input_size: 224
+  output_dim: 192
+  nb_heads: 3

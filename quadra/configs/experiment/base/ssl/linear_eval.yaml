@@ -1,0 +1,53 @@
+# @package _global_
+
+defaults:
+  - override /datamodule: base/ssl
+  - override /model: classification
+  - override /optimizer: sgd
+  - override /scheduler: warmup
+  - override /transforms: linear_eval
+  - override /task: classification
+  - override /backbone: resnet18
+  - override /trainer: lightning_multigpu
+ssl_task: ???
+
+core:
+  tag: "run"
+  name: linear-eval-${ssl_task}
+
+backbone:
+  model:
+    num_classes: 2
+    ckpt_path: ???
+
+trainer:
+  devices: [2, 3]
+  max_epochs: 90
+  num_sanity_val_steps: 0
+  precision: 16
+  check_val_every_n_epoch: 10
+  sync_batchnorm: true
+
+datamodule:
+  num_workers: 8
+  batch_size: 1024
+  use_concordant: false
+  use_discordant: false
+
+callbacks:
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    monitor: "val_acc"
+    mode: "max"
+
+optimizer:
+  lr: 0.0
+
+scheduler:
+  init_lr:
+    - 0.001
+  linear_warmup_epochs: 0
+
+logger:
+  mlflow:
+    experiment_name: ${core.name}

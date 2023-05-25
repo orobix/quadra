@@ -1,0 +1,30 @@
+# @package _global_
+
+# specify here default training configuration
+defaults:
+  - _self_
+  - core: default
+  - loss: null
+  - optimizer: null
+  - scheduler: null
+  - task: default
+  - transforms: default
+  - trainer: lightning_gpu
+  - backbone: null
+  - model: null
+  - datamodule: null
+  - callbacks: default
+  - logger: mlflow
+  - experiment: null
+  - hparams_search: null
+  - hydra: default
+
+  # enable color logging
+  - override hydra/hydra_logging: colorlog
+  - override hydra/job_logging: colorlog
+
+work_dir: ${hydra:runtime.cwd}
+debug: False
+print_config: true
+ignore_warnings: true
+validate: true

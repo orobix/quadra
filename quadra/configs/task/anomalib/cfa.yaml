@@ -1,0 +1,6 @@
+_target_: quadra.tasks.anomaly.AnomalibDetection
+report: true
+run_test: true
+export_type: [torchscript]
+module_function:
+  _target_: anomalib.models.cfa.lightning_model.CfaLightning

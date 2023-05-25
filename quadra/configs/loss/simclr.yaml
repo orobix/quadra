@@ -1,0 +1,2 @@
+_target_: quadra.losses.ssl.SimCLRLoss
+temperature: 0.1

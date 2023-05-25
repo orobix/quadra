@@ -1,0 +1,24 @@
+model_checkpoint:
+  _target_: pytorch_lightning.callbacks.ModelCheckpoint
+  monitor: "val_loss" # name of the logged metric which determines when model is improving
+  mode: "min" # can be "max" or "min"
+  save_top_k: 1 # save k best models (determined by above metric)
+  save_last: True # additionaly always save model from last epoch
+  verbose: False
+  dirpath: "checkpoints/"
+  filename: "epoch_{epoch:03d}"
+  auto_insert_metric_name: False
+
+log_gradients:
+  _target_: quadra.callbacks.mlflow.LogGradients
+  norm: 2
+lr_monitor:
+  _target_: pytorch_lightning.callbacks.LearningRateMonitor
+  logging_interval: "epoch"
+progress_bar:
+  _target_: pytorch_lightning.callbacks.progress.TQDMProgressBar
+lightning_trainer_setup:
+  _target_: quadra.callbacks.lightning.LightningTrainerBaseSetup
+  log_every_n_steps: 1
+#gpu_stats: TODO: This is not working with the current PL version
+#  _target_: nvitop.callbacks.lightning.GpuStatsLogger

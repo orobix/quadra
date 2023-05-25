@@ -1,0 +1,9 @@
+model: ${backbone.model}
+classifier:
+  _target_: torch.nn.Linear
+  in_features: ${backbone.metadata.output_dim}
+  out_features: ${datamodule.num_classes}
+module:
+  _target_: quadra.modules.classification.MultilabelClassificationModule
+  lr_scheduler_interval: "epoch"
+  criterion: ${loss}

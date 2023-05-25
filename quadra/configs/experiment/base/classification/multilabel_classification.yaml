@@ -1,0 +1,38 @@
+# @package _global_
+defaults:
+  - override /backbone: resnet18
+  - override /datamodule: base/multilabel_classification
+  - override /loss: asl
+  - override /model: multilabel_classification
+  - override /optimizer: adam
+  - override /task: classification
+  - override /scheduler: rop
+  - override /transforms: default_resize
+
+datamodule:
+  num_workers: 8
+  batch_size: 32
+  test_batch_size: 32
+
+print_config: true
+
+core:
+  tag: "run"
+  test_after_training: true
+  upload_artifacts: true
+  name: multilabel-classification
+
+logger:
+  mlflow:
+    experiment_name: ${core.name}
+    run_name: ${core.name}
+
+backbone:
+  model:
+    pretrained: True
+    freeze: False
+
+trainer:
+  devices: [0]
+  max_epochs: 300
+  check_val_every_n_epoch: 1

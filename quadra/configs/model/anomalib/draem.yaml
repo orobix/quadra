@@ -1,0 +1,29 @@
+dataset:
+  task: segmentation
+  tiling:
+    apply: false
+    tile_size: null
+    stride: null
+    remove_border_count: 0
+    use_random_tiling: False
+    random_tile_count: 16
+
+model:
+  name: draem
+  input_size: [256, 256]
+  anomaly_source_path: null # optional, e.g. ./datasets/dtd
+  lr: 0.0001
+  enable_sspcab: false
+  sspcab_lambda: 0.1
+
+metrics:
+  image:
+    - F1Score
+    - AUROC
+  pixel:
+    - F1Score
+    - AUROC
+  threshold:
+    method: adaptive # options: [adaptive, manual]
+    manual_image: null
+    manual_pixel: null

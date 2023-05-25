@@ -1,0 +1,14 @@
+_target_: quadra.datamodules.generic.mvtec.MVTecDataModule
+data_path: ${oc.env:HOME}/.quadra/datasets/mvtec-dataset
+category: bottle
+num_workers: 8
+train_batch_size: 32
+test_batch_size: 32
+seed: ${core.seed}
+train_transform: ${transforms.train_transform}
+test_transform: ${transforms.test_transform}
+val_transform: ${transforms.val_transform}
+phase: train
+mask_suffix: _mask
+valid_area_mask:
+crop_area:

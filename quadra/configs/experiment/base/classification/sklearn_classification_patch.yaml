@@ -1,0 +1,25 @@
+# @package _global_
+
+defaults:
+  - override /model: logistic_regression
+  - override /transforms: default_resize
+  - override /task: sklearn_classification_patch
+  - override /backbone: dino_vitb8
+  - override /trainer: sklearn_classification
+  - override /datamodule: base/sklearn_classification_patch
+
+backbone:
+  model:
+    pretrained: true
+    freeze: true
+
+core:
+  tag: "run"
+  name: "sklearn-classification-patch"
+
+trainer:
+  iteration_over_training: 20 # Regulate how many patches are extracted
+
+datamodule:
+  num_workers: 8
+  batch_size: 32

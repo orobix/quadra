@@ -1,0 +1,27 @@
+# @package _global_
+defaults:
+  - base/anomaly/inference
+  - override /datamodule: generic/mvtec/anomaly/base
+
+datamodule:
+  num_workers: 12
+  test_batch_size: 32
+  task: segmentation
+  category: bottle
+
+core:
+  tag: "run"
+  test_after_training: true
+  upload_artifacts: true
+  name: inference_${datamodule.category}
+
+logger:
+  mlflow:
+    experiment_name: mvtec-anomaly
+    run_name: ${core.name}
+
+trainer:
+  devices: [2]
+
+task:
+  model_path: ???

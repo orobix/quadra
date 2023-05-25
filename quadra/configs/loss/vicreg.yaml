@@ -1,0 +1,5 @@
+_target_: quadra.losses.ssl.VICRegLoss
+lambd: 25
+mu: 25
+nu: 1
+gamma: 1

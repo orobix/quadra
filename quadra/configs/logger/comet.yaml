@@ -1,0 +1,10 @@
+comet:
+  _target_: pytorch_lightning.loggers.CometLogger
+  api_key: ${oc.env:COMET_API_KEY}
+  save_dir: null
+  project_name: ${core.name}
+  rest_api_key: null
+  experiment_name: ${core.name}
+  experiment_key: null
+  offline: false
+  prefix: ""

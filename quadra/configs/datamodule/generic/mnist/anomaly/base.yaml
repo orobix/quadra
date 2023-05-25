@@ -1,0 +1,14 @@
+_target_: quadra.datamodules.generic.mnist.MNISTAnomalyDataModule
+data_path: ${oc.env:HOME}/.quadra/datasets/MNIST
+good_number: 9
+num_workers: 8
+limit_data: 100
+train_batch_size: 32
+test_batch_size: 32
+seed: ${core.seed}
+train_transform: ${transforms.train_transform}
+test_transform: ${transforms.test_transform}
+val_transform: ${transforms.val_transform}
+phase: train
+valid_area_mask:
+crop_area:

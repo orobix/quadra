@@ -1,0 +1,24 @@
+model: ${backbone.model}
+
+projection_mlp:
+  _target_: quadra.modules.ssl.common.SimSiamProjectionHead
+  input_dim: ${backbone.metadata.output_dim}
+  output_dim: ${backbone.metadata.output_dim}
+  hidden_dim: ${backbone.metadata.output_dim}
+
+prediction_mlp:
+  _target_: quadra.modules.ssl.common.SimSiamPredictionHead
+  input_dim: ${backbone.metadata.output_dim}
+  output_dim: ${backbone.metadata.output_dim}
+  hidden_dim: 128
+
+module:
+  _target_: quadra.modules.ssl.SimSIAM
+  classifier: ${model.classifier}
+  criterion: ${loss}
+  lr_scheduler_interval: step
+
+classifier:
+  _target_: sklearn.neighbors.KNeighborsClassifier
+  n_neighbors: 5
+  n_jobs: 5

@@ -1,0 +1,30 @@
+# @package _global_
+
+defaults:
+  - override /datamodule: base/segmentation
+  - override /model: smp
+  - override /optimizer: adam
+  - override /scheduler: rop
+  - override /transforms: default_resize
+  - override /loss: smp_dice
+  - override /task: segmentation
+  - override /backbone: smp
+  - override /trainer: lightning_gpu
+core:
+  tag: "run"
+  name: "quadra_default"
+  upload_artifacts: True
+
+trainer:
+  devices: [0]
+  max_epochs: 100
+  num_sanity_val_steps: 0
+
+datamodule:
+  num_workers: 5
+  batch_size: 32
+
+task:
+  report: true
+  evaluate:
+    analysis: true

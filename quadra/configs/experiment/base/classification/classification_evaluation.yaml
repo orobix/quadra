@@ -1,0 +1,24 @@
+# @package _global_
+defaults:
+  - override /datamodule: base/classification
+  - override /transforms: default_resize
+  - override /task: classification_evaluation
+
+datamodule:
+  num_workers: 6
+  batch_size: 32
+
+core:
+  tag: "run"
+  upload_artifacts: true
+  name: classification_evalutation_base
+
+logger:
+  mlflow:
+    experiment_name: classification_evalutation_base
+    run_name: ${core.name}
+
+task:
+  output:
+    example: true
+  model_path: ???

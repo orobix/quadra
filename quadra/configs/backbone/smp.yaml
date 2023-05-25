@@ -1,0 +1,9 @@
+model:
+  _target_: quadra.modules.backbone.create_smp_backbone
+  arch: unet
+  encoder_name: resnet18
+  encoder_weights: imagenet
+  freeze_encoder: True
+  in_channels: 3
+  num_classes: 1
+  activation: null

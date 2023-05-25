@@ -1,0 +1,15 @@
+# @package _global_
+
+hydra:
+  run:
+    dir: logs/runs/${core.name}/${now:%Y-%m-%d_%H-%M-%S}
+  sweep:
+    dir: logs/multiruns/${now:%Y-%m-%d_%H-%M-%S}/
+    subdir: ${multirun_subdir_beautify:${hydra.job.override_dirname}}
+  job:
+    config:
+      override_dirname:
+        exclude_keys:
+          - trainer.devices
+          - logger.mlflow.experiment_name
+    chdir: true

@@ -1,0 +1,4 @@
+_target_: sklearn.linear_model.LogisticRegression
+max_iter: 10000
+random_state: ${core.seed}
+n_jobs: 10

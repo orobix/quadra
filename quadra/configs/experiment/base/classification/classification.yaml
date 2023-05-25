@@ -1,0 +1,72 @@
+# @package _global_
+defaults:
+  - override /backbone: resnet18
+  - override /datamodule: base/classification
+  - override /loss: cross_entropy
+  - override /model: classification
+  - override /optimizer: adam
+  - override /task: classification
+  - override /scheduler: rop
+  - override /transforms: default_resize
+
+datamodule:
+  num_workers: 8
+  batch_size: 32
+  data_path: ???
+
+print_config: true
+
+model:
+  num_classes: ???
+  gradcam: true
+  module:
+    lr_scheduler_interval: "epoch"
+
+task:
+  lr_multiplier: 0.0
+  run_test: True
+  export_type: [torchscript]
+  report: True
+  output:
+    example: True
+
+core:
+  tag: "run"
+  upload_artifacts: true
+  name: classification_base_${trainer.max_epochs}
+
+logger:
+  mlflow:
+    experiment_name: classification_base
+    run_name: ${core.name}
+
+backbone:
+  model:
+    pretrained: True
+    freeze: False
+  freeze_parameters_name:
+
+trainer:
+  precision: 32
+  max_epochs: 200
+  check_val_every_n_epoch: 1
+  log_every_n_steps: 1
+  devices: [0]
+
+scheduler:
+  patience: 20
+  factor: 0.9
+  verbose: False
+  threshold: 0.01
+
+callbacks:
+  early_stopping:
+    _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: val_loss_epoch
+    min_delta: 0.01
+    mode: min
+    patience: 35
+    verbose: false
+    stopping_threshold: 0
+  model_checkpoint:
+    monitor: val_loss_epoch

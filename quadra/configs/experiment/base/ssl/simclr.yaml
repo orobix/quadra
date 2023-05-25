@@ -1,0 +1,48 @@
+# @package _global_
+
+defaults:
+  - override /datamodule: base/ssl
+  - override /backbone: resnet18
+  - override /model: simclr
+  - override /optimizer: lars
+  - override /scheduler: warmup
+  - override /transforms: byol
+  - override /loss: simclr
+  - override /task: ssl
+  - override /trainer: lightning_gpu_fp16
+core:
+  tag: "run"
+  name: "simclr_ssl"
+task:
+  _target_: quadra.tasks.ssl.SimCLR
+
+trainer:
+  devices: [0]
+  max_epochs: 300
+  num_sanity_val_steps: 0
+  check_val_every_n_epoch: 10
+  sync_batchnorm: true
+
+datamodule:
+  num_workers: 16
+  batch_size: 512
+  augmentation_dataset:
+    _target_: quadra.datasets.TwoAugmentationDataset
+    transform:
+      - ${transforms.augmentation1}
+      - ${transforms.augmentation2}
+    dataset: null
+callbacks:
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    monitor: "val_acc"
+    mode: "max"
+
+optimizer:
+  lr: 0.0
+  weight_decay: 1e-6
+
+scheduler:
+  init_lr:
+    - 0.3
+  linear_warmup_epochs: 10

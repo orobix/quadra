@@ -1,0 +1,14 @@
+_target_: quadra.datamodules.PatchSklearnClassificationDataModule
+data_path: ???
+train_filename: dataset.txt
+exclude_filter:
+include_filter:
+class_to_idx:
+seed: 42
+batch_size: 32
+num_workers: 8
+train_transform: ${transforms.train_transform}
+test_transform: ${transforms.test_transform}
+val_transform: ${transforms.val_transform}
+balance_classes: false
+class_to_skip_training:

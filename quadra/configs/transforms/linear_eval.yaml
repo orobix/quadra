@@ -1,0 +1,18 @@
+defaults:
+  - default
+  - _self_
+
+train_transform:
+  _target_: albumentations.Compose
+  transforms:
+    - _target_: albumentations.RandomResizedCrop
+      height: ${transforms.input_height}
+      width: ${transforms.input_width}
+      scale: [0.08, 1.0]
+      interpolation: 2
+      always_apply: True
+    - _target_: albumentations.HorizontalFlip
+      p: 0.5
+    - ${transforms.normalize}
+val_transform: ${transforms.standard_transform}
+test_transform: ${transforms.standard_transform}

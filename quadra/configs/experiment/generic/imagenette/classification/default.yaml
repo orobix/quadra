@@ -1,0 +1,20 @@
+# @package _global_
+
+defaults:
+  - base/classification/classification
+  - override /datamodule: generic/imagenette/classification/base
+
+core:
+  tag: "run"
+  name: classification_imagenette_${trainer.max_epochs}
+
+trainer:
+  max_epochs: 20
+
+model:
+  num_classes: 10
+
+logger:
+  mlflow:
+    experiment_name: imagenette_classification
+    run_name: ${core.name}

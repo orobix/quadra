@@ -1,0 +1,29 @@
+# @package _global_
+defaults:
+  - base/anomaly/fastflow
+  - override /datamodule: generic/mnist/anomaly/base
+
+datamodule:
+  num_workers: 12
+  train_batch_size: 32
+  task: ${model.dataset.task}
+  good_number: 9
+
+callbacks:
+  min_max_normalization:
+    threshold_type: "image"
+print_config: false
+
+core:
+  tag: "run"
+  test_after_training: true
+  upload_artifacts: true
+  name: fastflow_${datamodule.good_number}_${model.model.backbone}_${trainer.max_epochs}
+
+logger:
+  mlflow:
+    experiment_name: mnist-anomaly
+    run_name: ${core.name}
+
+trainer:
+  devices: [0]

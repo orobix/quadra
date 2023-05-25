@@ -1,0 +1,22 @@
+defaults:
+  - default
+  - _self_
+
+input_height: 224
+input_width: 224
+
+standard_transform:
+  _target_: albumentations.Compose
+  transforms:
+    - _target_: albumentations.Resize
+      height: ${transforms.input_height}
+      width: ${transforms.input_width}
+      interpolation: 2
+      always_apply: True
+    - ${transforms.normalize}
+
+train_transform: ${transforms.standard_transform}
+val_transform: ${transforms.standard_transform}
+test_transform: ${transforms.standard_transform}
+
+name: default_resize

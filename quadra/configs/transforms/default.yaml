@@ -1,0 +1,37 @@
+input_height: 224
+input_width: 224
+mean: [0.485, 0.456, 0.406]
+std: [0.229, 0.224, 0.225]
+
+normalize:
+  _target_: albumentations.Compose
+  transforms:
+    - _target_: albumentations.Normalize
+      mean: ${transforms.mean}
+      std: ${transforms.std}
+      always_apply: True
+    - _target_: albumentations.pytorch.ToTensorV2
+      always_apply: True
+
+resize_center_crop:
+  _target_: albumentations.Compose
+  transforms:
+    - _target_: albumentations.Resize
+      height: 256
+      width: 256
+      interpolation: 2
+      always_apply: True
+    - _target_: albumentations.CenterCrop
+      height: ${transforms.input_height}
+      width: ${transforms.input_width}
+      always_apply: true
+
+standard_transform:
+  _target_: albumentations.Compose
+  transforms:
+    - ${transforms.resize_center_crop}
+    - ${transforms.normalize}
+
+train_transform: ${transforms.standard_transform}
+val_transform: ${transforms.standard_transform}
+test_transform: ${transforms.standard_transform}

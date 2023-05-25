@@ -1,0 +1,4 @@
+model: ${backbone.model}
+module:
+  _target_: quadra.modules.base.SegmentationModelMulticlass
+  loss_fun: ${loss}

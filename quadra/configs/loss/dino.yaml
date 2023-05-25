@@ -1,0 +1,8 @@
+_target_: quadra.losses.ssl.DinoDistillationLoss
+output_dim: ${model.student_projection_mlp.output_dim}
+max_epochs: ${trainer.max_epochs}
+warmup_teacher_temp: 0.04
+teacher_temp: 0.07
+warmup_teacher_temp_epochs: 30
+student_temp: 0.1
+center_momentum: 0.9

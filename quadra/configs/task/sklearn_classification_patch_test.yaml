@@ -1,0 +1,8 @@
+_target_: quadra.tasks.PatchSklearnTestClassification
+device: cuda:0
+output:
+  folder: classification_patch_test
+  report: true
+  example: true
+  reconstruction_method: major_voting
+experiment_path:

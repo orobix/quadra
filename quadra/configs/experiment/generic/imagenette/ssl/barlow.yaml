@@ -1,0 +1,14 @@
+# @package _global_
+
+defaults:
+  - base/ssl/barlow
+  - override /datamodule: generic/imagenette/ssl/base
+
+core:
+  tag: "run"
+  name: "barlow"
+
+logger:
+  mlflow:
+    experiment_name: imagenette_ssl_new
+    run_name: ${core.name}

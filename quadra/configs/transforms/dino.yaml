@@ -1,0 +1,63 @@
+defaults:
+  - default
+  - _self_
+
+flip_and_jitter:
+  _target_: albumentations.Compose
+  transforms:
+    - _target_: albumentations.HorizontalFlip
+      p: 0.5
+    - _target_: albumentations.ColorJitter
+      brightness: 0.4
+      contrast: 0.4
+      saturation: 0.4
+      hue: 0.1
+    - _target_: albumentations.ToGray
+      p: 0.2
+
+global_transforms:
+  - _target_: albumentations.Compose
+    transforms:
+      - _target_: albumentations.RandomResizedCrop
+        height: ${transforms.input_height}
+        width: ${transforms.input_width}
+        scale: [0.4, 1.0]
+        interpolation: 2
+      - ${transforms.flip_and_jitter}
+      - _target_: albumentations.GaussianBlur
+        blur_limit: 5
+        sigma_limit: [0.1, 2]
+        p: 1.0
+      - ${transforms.normalize}
+
+  - _target_: albumentations.Compose
+    transforms:
+      - _target_: albumentations.RandomResizedCrop
+        height: ${transforms.input_height}
+        width: ${transforms.input_width}
+        scale: [0.4, 1.0]
+        interpolation: 2
+      - ${transforms.flip_and_jitter}
+      - _target_: albumentations.GaussianBlur
+        blur_limit: 5
+        sigma_limit: [0.1, 2]
+        p: 0.1
+      - _target_: albumentations.Solarize
+        threshold: 170
+        p: 0.2
+      - ${transforms.normalize}
+
+local_transform:
+  _target_: albumentations.Compose
+  transforms:
+    - _target_: albumentations.RandomResizedCrop
+      height: ${transforms.input_height}
+      width: ${transforms.input_width}
+      scale: [0.05, 0.4]
+      interpolation: 2
+    - ${transforms.flip_and_jitter}
+    - _target_: albumentations.GaussianBlur
+      blur_limit: 5
+      sigma_limit: [0.1, 2]
+      p: 0.5
+    - ${transforms.normalize}

@@ -1,0 +1,27 @@
+# @package _global_
+defaults:
+  - base/anomaly/inference
+  - override /datamodule: generic/mnist/anomaly/base
+
+datamodule:
+  num_workers: 12
+  test_batch_size: 32
+  task: segmentation
+  good_number: 9
+
+core:
+  tag: "run"
+  test_after_training: true
+  upload_artifacts: true
+  name: inference_${datamodule.good_number}
+
+logger:
+  mlflow:
+    experiment_name: mnist-anomaly
+    run_name: ${core.name}
+
+trainer:
+  devices: [0]
+
+task:
+  model_path: ???

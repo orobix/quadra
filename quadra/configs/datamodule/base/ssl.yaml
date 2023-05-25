@@ -1,0 +1,18 @@
+_target_: quadra.datamodules.SSLDataModule
+data_path: ???
+exclude_filter:
+include_filter:
+seed: ${core.seed}
+num_workers: 8
+batch_size: 16
+augmentation_dataset: null
+train_transform: null
+test_transform: ${transforms.test_transform}
+val_transform: ${transforms.val_transform}
+train_split_file:
+val_split_file:
+test_split_file:
+val_size: 0.3
+test_size: 0.1
+split_validation: true
+class_to_idx:
