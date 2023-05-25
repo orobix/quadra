@@ -1,0 +1,137 @@
+# Black formatting
+[tool.black]
+line_length = 120
+include = '\.pyi?$'
+exclude = '''
+/(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+'''
+
+# iSort
+[tool.isort]
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 120
+multi_line_output = 3
+include_trailing_comma = true
+skip_gitignore = true
+
+# Pytest
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "--strict-markers --disable-pytest-warnings"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+
+# Pytest coverage
+[tool.coverage.run]
+omit = []
+
+[tool.prettier]
+tab_width = 2
+
+[tool.interrogate]
+ignore_init_method = true
+ignore_init_module = false
+ignore_magic = true
+ignore_semiprivate = false
+ignore_private = false
+ignore_module = true
+ignore_property_decorators = true
+fail_under = 100
+verbose = 2
+omit_covered_files = false
+quiet = false
+whitelist_regex = []
+color = true
+ignore_regex = [
+  "^get$", 
+  "^mock_.*", 
+  ".*BaseClass.*",
+  ".*on_train.*",
+  ".*on_validation.*",
+  ".*on_test.*",
+  ".*forward.*",
+  ".*backward.*",
+  ".*training_step.*",
+  ".*validation_step.*",
+  ".*test_step.*",
+  ".*predict_step.*",
+  ".*train_epoch.*",
+  ".*validation_epoch.*",
+  ".*test_epoch.*",
+  ".*on_fit.*",
+]
+generate-badge = "docs/images"
+badge-format = "svg"
+exclude = ["docs", "tests", "build", "dist", "local", "scripts"]
+
+[tool.mypy]
+# -> Level 1
+# custom settings
+show_error_codes = true
+ignore_missing_imports = true
+plugins = "numpy.typing.mypy_plugin"
+allow_redefinition = true
+# suggested settings
+# # https://mypy.readthedocs.io/en/stable/existing_code.html?highlight=no_implicit_optional#introduce-stricter-options
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+
+# -> Level 2
+strict_equality = false
+strict_concatenate = false
+check_untyped_defs = false
+
+# -> Level 3
+disallow_subclassing_any = false
+disallow_untyped_decorators = false
+disallow_any_generics = false
+disallow_any_unimported = false
+disallow_untyped_calls = false
+disallow_incomplete_defs = false
+disallow_untyped_defs = false
+
+# -> Level 4
+no_implicit_reexport = false
+warn_return_any = false
+exclude = ["quadra/utils/tests", "tests"]
+
+[tool.ruff]
+select = [
+    "D",
+]
+ignore = [
+    "D100",
+    # this is controlled by interrogate with exlude_regex
+    # we can skip it here
+    "D102", 
+    "D104",
+    "D105",
+    "D107",
+    # no blank line after summary line. This might be not required.
+    # usually we violate this rule
+    "D205"
+]
+exclude = [
+    "Makefile",
+    ".gitignore",
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"

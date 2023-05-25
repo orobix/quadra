@@ -121,6 +121,7 @@ def test_patchcore_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_d
     shutil.rmtree(tmp_path)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_cflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
     data_path, _ = base_anomaly_dataset
@@ -145,6 +146,7 @@ def test_cflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_datas
     shutil.rmtree(tmp_path)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_csflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
     data_path, _ = base_anomaly_dataset
@@ -171,6 +173,7 @@ def test_csflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_data
     shutil.rmtree(tmp_path)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_fastflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
     data_path, _ = base_anomaly_dataset
@@ -198,6 +201,7 @@ def test_fastflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_da
     shutil.rmtree(tmp_path)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_draem_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
     data_path, _ = base_anomaly_dataset

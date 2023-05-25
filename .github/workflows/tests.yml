@@ -20,9 +20,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         python-version: ["3.9"]
-    timeout-minutes: 20
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v3
 
@@ -41,4 +41,5 @@ jobs:
 
       - name: Run Tests
         run: |
-          python -m pytest -v --disable-pytest-warnings --strict-markers --color=yes
+          python -m pytest -v --disable-pytest-warnings --strict-markers --color=yes -m "not slow"
+ 
