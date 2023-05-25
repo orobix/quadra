@@ -1,0 +1,41 @@
+name: CPU tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-20.04, ubuntu-latest, windows-latest]
+        python-version: ["3.8", "3.9", "3.10"]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            setup.py
+
+      - name: Run tests
+        run: |
+          python -m pip install -e ".[test]" --no-cache-dir
+          pytest -v --disable-pytest-warnings --strict-markers --color=yes
