@@ -1,0 +1,100 @@
+fail_fast: true
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        entry: ruff
+        language: system
+        exclude: ^(tests|scripts|notebooks|quadra/utils/tests)/
+  - repo: local
+    hooks:
+      - id: jupyter-nb-clear-output
+        name: (jupyter-nb-clear-output) Clear jupyter notebook outputs
+        files: \.ipynb$
+        stages: [commit]
+        language: system
+        entry: jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.7.1
+    hooks:
+      - id: prettier
+        name: (prettier) Reformat YAML files with prettier
+        types: [yaml]
+
+  - repo: https://github.com/myint/autoflake
+    rev: v1.4
+    hooks:
+      - id: autoflake
+        name: Remove unused variables and imports
+        language: python
+        entry: autoflake
+        types: [python]
+        args:
+          [
+            "--in-place",
+            "--remove-all-unused-imports",
+            "--remove-unused-variables",
+            "--expand-star-imports",
+            "--ignore-init-module-imports",
+          ]
+        files: \.py$
+  - repo: local
+    hooks:
+      - id: isort
+        name: (isort) Sorting import statements
+        args: [--settings-path=pyproject.toml]
+        language: python
+        types: [python]
+        files: \.py$
+        entry: isort
+  - repo: local
+    hooks:
+      - id: black
+        name: (black) Format Python code
+        args: [--config=pyproject.toml]
+        language: python
+        types: [python]
+        entry: black
+      - id: black-jupyter
+        name: (black-jupyter) Format jupyter notebooks
+        args: [--config=pyproject.toml]
+        language: python
+        types: [jupyter]
+        entry: black
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        args: [
+            "--rcfile=pylintrc", # Link to your config file
+          ]
+        exclude: ^(tests|scripts|notebooks)/
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        types: [python]
+        args:
+          [
+            "--non-interactive",
+            "--install-types",
+            "--follow-imports=silent",
+            "--ignore-missing-imports",
+            "--config-file=pyproject.toml",
+          ]
+        exclude: ^(tests|scripts|notebooks|quadra/utils/tests)/
+  - repo: local
+    hooks:
+      - id: interrogate
+        name: (interrogate) docstring coverage
+        language: python
+        types: [python]
+        pass_filenames: false
+        entry: interrogate
