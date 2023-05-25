@@ -1,0 +1,141 @@
+site_name: Quadra
+use_directory_urls: false
+nav:
+  - index.md
+  # defer to gen-files + literate-nav
+  - Code Reference: reference/
+  - Tutorials:
+      - Getting Started: tutorials/install.md
+      - Datamodules: tutorials/datamodules.md
+      - Tasks: tutorials/tasks.md
+      - Configurations: tutorials/configurations.md
+      - Setting up devices: tutorials/devices_setup.md
+      - Reproducibility: tutorials/reproducibility.md
+      - External projects integration: tutorials/integration.md
+      - Contributing: tutorials/contribution.md
+      - Building documentation: tutorials/documentation.md
+      - Examples:
+          - Segmentation: tutorials/examples/segmentation.md
+          - Self-Supervised Learning: tutorials/examples/ssl.md
+          - Pytorch classification: tutorials/examples/classification.md
+          - Pytorch multilabel classification: tutorials/examples/multilabel_classification.md
+          - Sklearn classification: tutorials/examples/sklearn_classification.md
+          - Sklearn patch classification: tutorials/examples/sklearn_patch_classification.md
+          - Anomaly Detection: tutorials/examples/anomaly_detection.md
+  - Package Summary: reference/SUMMARY.md
+  - Changelog: reference/CHANGELOG.md
+
+watch:
+  - quadra/
+
+theme:
+  favicon: images/favicon.png
+  name: "material"
+  locale: en
+  custom_dir: overrides
+  logo: images/orobix_logo.svg
+  font:
+    text: Roboto
+    code: Roboto Mono
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - content.code.annotate
+    - content.code.copy
+    - navigation.tabs
+    - navigation.top
+
+plugins:
+  - search
+  - section-index
+  - gen-files:
+      scripts:
+        - docs/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - mkdocstrings:
+      handlers:
+        python:
+          import:
+            - https://docs.python.org/3/objects.inv
+            - https://mkdocstrings.github.io/objects.inv
+            - https://mkdocstrings.github.io/griffe/objects.inv
+            - https://numpy.org/doc/stable/objects.inv
+            - https://pytorch.org/docs/master/objects.inv
+          options:
+            docstring_style: google
+            docstring_options:
+              ignore_init_summary: true
+            show_submodules: false
+            merge_init_into_class: true
+            docstring_section_style: list
+            show_if_no_docstring: false
+            heading_level: 3
+
+extra:
+  version:
+    provider: mike
+    default:
+      - stable
+  generator: false
+
+extra_css:
+  - css/mkdocstrings.css
+
+copyright: Copyright &copy; 2023 Orobix
+
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - meta
+  - md_in_html
+  - toc:
+      permalink: true
+
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
