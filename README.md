@@ -28,7 +28,7 @@ If you don't have virtual environment ready, Let's set up our environment for us
 Create and activate a new `Conda` environment. 
 
 ```shell
-conda create -n myenv python=3.8
+conda create -n myenv python=3.9
 conda activate myenv
 ```
 
