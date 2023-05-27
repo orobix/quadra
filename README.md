@@ -63,7 +63,7 @@ source myenv/bin/activate
 4. **Run from CLI**:
   Run the following command to check if the installation was successful:
   ```shell
-  quadra trainer=lightning_cpu logger=csv
+  quadra experiment=default
   ```
 
 ### Setup `Mlflow` (Optional)

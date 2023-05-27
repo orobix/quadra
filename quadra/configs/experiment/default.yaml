@@ -1,0 +1,15 @@
+# @package _global_
+
+defaults:
+  - override /datamodule: null
+  - override /model: null
+  - override /optimizer: null
+  - override /scheduler: null
+  - override /transforms: null
+  - override /loss: null
+  - override /task: default
+  - override /backbone: null
+  - override /trainer: null
+  - override /callbacks: null
+  - override /logger: null
+  - _self_
