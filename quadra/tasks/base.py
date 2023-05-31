@@ -18,7 +18,7 @@ from quadra.utils import utils
 from quadra.utils.export import import_deployment_model
 
 try:
-    import mlflow
+    import mlflow  # noqa
 
     MLFLOW_AVAILABLE = True
 except ImportError:

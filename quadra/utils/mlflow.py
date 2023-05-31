@@ -1,6 +1,6 @@
 try:
-    from mlflow.models import infer_signature
-    from mlflow.models.signature import ModelSignature
+    from mlflow.models import infer_signature  # noqa
+    from mlflow.models.signature import ModelSignature  # noqa
 
     MLFLOW_AVAILABLE = True
 except ImportError:
