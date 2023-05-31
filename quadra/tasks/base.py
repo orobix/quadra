@@ -6,15 +6,23 @@ import torch
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Callback, LightningModule, Trainer
-from pytorch_lightning.loggers import Logger
+from pytorch_lightning.loggers import Logger, MLFlowLogger
 from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from torch.jit._script import RecursiveScriptModule
 
 from quadra import get_version
+from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.datamodules.base import BaseDataModule
 from quadra.utils import utils
 from quadra.utils.export import import_deployment_model
+
+try:
+    import mlflow
+
+    MLFLOW_AVAILABLE = True
+except ImportError:
+    MLFLOW_AVAILABLE = False
 
 log = utils.get_logger(__name__)
 DataModuleT = TypeVar("DataModuleT", bound=BaseDataModule)
@@ -31,6 +39,7 @@ class Task(Generic[DataModuleT]):
     def __init__(self, config: DictConfig, export_type: Optional[List[str]] = None):
         self.config = config
         self.export_type = export_type
+        self.export_folder: str = "deployment_model"
         self._datamodule: DataModuleT
         self.metadata: Dict[str, Any]
         self.save_config()
@@ -127,6 +136,16 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
 
         if "logger" in self.config:
             self.logger = self.config.logger
+
+            for logger in self.logger:
+                if (
+                    isinstance(logger, MLFlowLogger)
+                    and MLFLOW_AVAILABLE
+                    and os.environ.get("MLFLOW_TRACKING_URI") is not None
+                ):
+                    mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
+                    mlflow.pytorch.autolog()
+
         self.devices = self.config.trainer.devices
         self.trainer = self.config.trainer
 
@@ -233,7 +252,14 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             model=self.module,
             trainer=self.trainer,
         )
-        self.trainer.fit(model=self.module, datamodule=self.datamodule)
+
+        mlflow_logger = get_mlflow_logger(self.trainer)
+
+        if mlflow_logger is not None:
+            with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
+                self.trainer.fit(model=self.module, datamodule=self.datamodule)
+        else:
+            self.trainer.fit(model=self.module, datamodule=self.datamodule)
 
     def test(self) -> Any:
         """Test the model."""
@@ -245,11 +271,12 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         super().finalize()
         utils.finish(
             config=self.config,
-            model=self.module,
+            module=self.module,
             datamodule=self.datamodule,
             trainer=self.trainer,
             callbacks=self.callbacks,
             logger=self.logger,
+            export_folder=self.export_folder,
         )
 
         if not self.config.trainer.get("fast_dev_run"):

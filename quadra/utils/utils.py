@@ -1,6 +1,7 @@
 """Common utility functions.
 Some of them are mostly based on https://github.com/ashleve/lightning-hydra-template.
 """
+import glob
 import json
 import logging
 import os
@@ -11,6 +12,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence
 
 import cv2
 import dotenv
+import mlflow
 import numpy as np
 import pytorch_lightning as pl
 import rich.syntax
@@ -23,7 +25,9 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities import rank_zero_only
 
 import quadra
+import quadra.utils.export as quadra_export
 from quadra.callbacks.mlflow import check_file_server_dependencies, check_minio_credentials, get_mlflow_logger
+from quadra.utils.mlflow import infer_signature_torch
 
 
 def get_logger(name=__name__) -> logging.Logger:
@@ -222,44 +226,70 @@ def upload_file_tensorboard(file_path: str, tensorboard_logger: TensorBoardLogge
 
 def finish(
     config: DictConfig,
-    model: pl.LightningModule,
+    module: pl.LightningModule,
     datamodule: pl.LightningDataModule,
     trainer: pl.Trainer,
     callbacks: List[pl.Callback],
     logger: List[pl.loggers.Logger],
+    export_folder: str,
 ) -> None:
     """Upload config files to MLFlow server.
 
     Args:
         config: Configuration composed by Hydra.
-        model: LightningModule.
+        module: LightningModule.
         datamodule: LightningDataModule.
         trainer: LightningTrainer.
         callbacks: List of LightningCallbacks.
         logger: List of LightningLoggers.
+        export_folder: Folder where the deployment models are exported.
     """
     # pylint: disable=unused-argument
-    if len(logger) > 0 and config.core.get("upload_artifacts"):
-        mflow_logger = get_mlflow_logger(trainer=trainer)
-        tensorboard_logger = get_tensorboard_logger(trainer=trainer)
 
-        if mflow_logger is not None:
+    if len(logger) > 0 and config.core.get("upload_artifacts"):
+        mlflow_logger = get_mlflow_logger(trainer=trainer)
+        tensorboard_logger = get_tensorboard_logger(trainer=trainer)
+        file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt", "data/dataset.csv"]
+
+        if mlflow_logger is not None:
             config_paths = []
-            file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt"]
+
             for f in file_names:
                 if os.path.isfile(os.path.join(os.getcwd(), f)):
                     config_paths.append(os.path.join(os.getcwd(), f))
+
             for path in config_paths:
-                mflow_logger.experiment.log_artifact(
-                    run_id=mflow_logger.run_id, local_path=path, artifact_path="metadata"
+                mlflow_logger.experiment.log_artifact(
+                    run_id=mlflow_logger.run_id, local_path=path, artifact_path="metadata"
                 )
+
+            deployed_models = glob.glob(os.path.join(export_folder, "*"))
+            model_json: Optional[Dict[str, Any]] = None
+
+            if os.path.exists(os.path.join(export_folder, "model.json")):
+                with open(os.path.join(export_folder, "model.json"), "r") as json_file:
+                    model_json = json.load(json_file)
+
+            if model_json is not None:
+                for model_path in deployed_models:
+                    if model_path.endswith(".pt"):
+                        model, _ = quadra_export.import_deployment_model(model_path, device="cpu")
+                        # WxHxC -> 1xCxHxW
+                        input_shape = (1, *np.array(model_json["input_size"])[[2, 1, 0]])
+                        signature = infer_signature_torch(model, torch.randn(input_shape))
+                        with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
+                            mlflow.pytorch.log_model(
+                                model,
+                                artifact_path=model_path,
+                                signature=signature,
+                            )
 
         if tensorboard_logger is not None:
             config_paths = []
-            file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt"]
             for f in file_names:
                 if os.path.isfile(os.path.join(os.getcwd(), f)):
                     config_paths.append(os.path.join(os.getcwd(), f))
+
             for path in config_paths:
                 upload_file_tensorboard(file_path=path, tensorboard_logger=tensorboard_logger)
 

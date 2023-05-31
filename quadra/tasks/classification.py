@@ -418,7 +418,6 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             "test_results": [],
             "test_labels": [],
         }
-        self.export_folder: str = "deployment_model"
         self.train_dataloader_list: List[torch.utils.data.DataLoader] = []
         self.test_dataloader_list: List[torch.utils.data.DataLoader] = []
 

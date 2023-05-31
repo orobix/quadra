@@ -6,10 +6,6 @@ from anomalib.models.cflow import CflowLightning
 from torch import nn
 from torch.jit._script import RecursiveScriptModule
 
-from quadra.utils.utils import get_logger
-
-log = get_logger(__name__)
-
 
 def export_torchscript_model(
     model: nn.Module,
@@ -31,6 +27,10 @@ def export_torchscript_model(
         If the model is exported successfully, the path to the model is returned.
 
     """
+    from quadra.utils.utils import get_logger  # pylint: disable=[import-outside-toplevel]
+
+    log = get_logger(__name__)
+
     model.eval()
     if isinstance(model, CflowLightning):
         log.warning("Exporting cflow model with torchscript is not supported yet.")
