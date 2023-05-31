@@ -1,13 +1,18 @@
+import multiprocessing as mp
+import multiprocessing.pool as mpp
 import os
 import pickle as pkl
+import typing
 from functools import wraps
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, cast
+from typing import Any, Callable, Dict, Iterable, List, Literal, Optional, Sequence, Tuple, Union, cast
 
 import albumentations
 import numpy as np
 import pandas as pd
 import torch
+import xxhash
 from pytorch_lightning import LightningDataModule
+from tqdm import tqdm
 
 from quadra.utils import utils
 
@@ -46,6 +51,49 @@ class DecorateParentMethod(type):
         return super().__new__(cls, name, bases, dct)
 
 
+def compute_file_hash(path: str, hash_size: int) -> str:
+    """Get hash of a file.
+
+    Args:
+        path: Path to the file.
+        hash_size: Size of the hash. Must be one of [32, 64, 128].
+
+    Returns:
+        The hash of the file.
+    """
+    with open(path, "rb") as f:
+        data = f.read()
+
+        if hash_size == 32:
+            file_hash = xxhash.xxh32(data, seed=42).hexdigest()
+        elif hash_size == 64:
+            file_hash = xxhash.xxh64(data, seed=42).hexdigest()
+        elif hash_size == 128:
+            file_hash = xxhash.xxh128(data, seed=42).hexdigest()
+        else:
+            raise ValueError(f"Invalid hash size {hash_size}. Must be one of [32, 64, 128].")
+
+    return file_hash
+
+
+@typing.no_type_check
+def istarmap(self, func: Callable, iterable: Iterable, chunksize: int = 1):
+    # pylint: disable=all
+    """Starmap-version of imap."""
+    self._check_running()
+    if chunksize < 1:
+        raise ValueError("Chunksize must be 1+, not {0:n}".format(chunksize))
+
+    task_batches = mpp.Pool._get_tasks(func, iterable, chunksize)
+    result = mpp.IMapIterator(self)
+    self._taskqueue.put((self._guarded_task_generation(result._job, mpp.starmapstar, task_batches), result._set_length))
+    return (item for chunk in result for item in chunk)
+
+
+# Patch Pool class to include istarmap
+mpp.Pool.istarmap = istarmap  # type: ignore[attr-defined]
+
+
 class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
     """Base class for all data modules.
 
@@ -78,6 +126,8 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
         train_transform: Optional[albumentations.Compose] = None,
         val_transform: Optional[albumentations.Compose] = None,
         test_transform: Optional[albumentations.Compose] = None,
+        enable_hashing: bool = True,
+        hash_size: Literal[32, 64, 128] = 64,
     ):
         super().__init__()
         self.num_workers = num_workers
@@ -88,6 +138,11 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
         self.train_transform = train_transform
         self.val_transform = val_transform
         self.test_transform = test_transform
+        self.enable_hashing = enable_hashing
+        self.hash_size = hash_size
+
+        if self.hash_size not in [32, 64, 128]:
+            raise ValueError(f"Invalid hash size {self.hash_size}. Must be one of [32, 64, 128].")
 
         self.load_aug_images = load_aug_images
         self.aug_name = aug_name
@@ -102,6 +157,7 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
         self.data_folder = "data"
         os.makedirs(self.data_folder, exist_ok=True)
         self.datamodule_checkpoint_file = os.path.join(self.data_folder, "datamodule.pkl")
+        self.dataset_file = os.path.join(self.data_folder, "dataset.csv")
 
     @property
     def train_data(self) -> pd.DataFrame:
@@ -166,12 +222,33 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
             "contained in the prepare_data method of a LightningModule."
         )
 
+    def hash_data(self) -> None:
+        """Computes the hash of the files inside the datasets."""
+        if not self.enable_hashing:
+            return
+
+        # TODO: We need to find a way to annotate the columns of data.
+        paths_and_hash_length = zip(self.data["samples"], [self.hash_size] * len(self.data))
+
+        with mp.Pool(min(8, mp.cpu_count() - 1)) as pool:
+            self.data["hash"] = list(
+                tqdm(
+                    pool.istarmap(  # type: ignore[attr-defined]
+                        compute_file_hash,
+                        paths_and_hash_length,
+                    ),
+                    total=len(self.data),
+                    desc="Computing hashes",
+                )
+            )
+
     def prepare_data(self) -> None:
         """Prepares the data, should be overridden by subclasses."""
         if hasattr(self, "data"):
             return
 
         self._prepare_data()
+        self.hash_data()
         self.save_checkpoint()
 
     def __getstate__(self) -> Dict[str, Any]:
@@ -190,13 +267,11 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
         datamodule to disk because we can't assign attributes to the datamodule in prepare_data when working with
         multiple gpus.
         """
-        saved_to_disk = False
-        if not os.path.exists(self.datamodule_checkpoint_file):
+        if not os.path.exists(self.datamodule_checkpoint_file) and not os.path.exists(self.dataset_file):
             with open(self.datamodule_checkpoint_file, "wb") as f:
                 pkl.dump(self, f)
-            saved_to_disk = True
 
-        if saved_to_disk:
+            self.data.to_csv(self.dataset_file, index=False)
             log.info("Datamodule checkpoint saved to disk.")
 
         if "targets" in self.data and not isinstance(self.data["targets"].iloc[0], np.ndarray):
