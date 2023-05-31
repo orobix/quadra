@@ -35,7 +35,8 @@ class GitVersionChecker(install):
 
 # We keep setup function for compatibility with older setuptools
 # mentioned here https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
-# Also, in the future we may move 'cmdclass' to pyproject.toml if supported.
+# Also, in the future we may move 'cmdclass' to pyproject.toml if supported and needed.
+# It is also nice example to show how both setup.py and pyproject.toml can be used together.
 setup(
     cmdclass={"install": GitVersionChecker},
 )
