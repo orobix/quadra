@@ -8,13 +8,30 @@
 
 <div align="center">
 
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![interrogate](docs/images/interrogate_badge.svg)](https://github.com/econchick/interrogate)
-[![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/PyCQA/pylint)
-[![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
-
+  <a href="https://github.com/pre-commit/pre-commit"><img
+    src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white"
+    alt="pre-commit"
+  /></a>
+  <a href="https://github.com/econchick/interrogate"><img
+    src="docs/images/interrogate_badge.svg"
+    alt="interrogate"
+  /></a>
+  <a href="https://github.com/PyCQA/pylint"><img
+    src="https://img.shields.io/badge/linting-pylint-yellowgreen"
+    alt="pylint"
+  /></a>
+  <a href="https://mypy-lang.org/"><img
+    src="https://www.mypy-lang.org/static/mypy_badge.svg"
+    alt="Checked with mypy"
+  /></a>
+  <a href="https://github.com/psf/black"><img
+    src="https://img.shields.io/badge/code%20style-black-000000.svg"
+    alt="black"
+  /></a>
+  <a href="https://pycqa.github.io/isort/"><img
+    src="https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336"
+    alt="isort"
+  /></a>
 
 </div>
 
