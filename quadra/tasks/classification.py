@@ -973,6 +973,9 @@ class ClassificationEvaluation(Task[ClassificationDataModuleT]):
             self._deployment_model = self.model.to(self.device).eval()
         elif model_name == "model":
             self._deployment_model, self.deployment_model_type = import_deployment_model(model_path, self.device)
+            if self.gradcam:
+                log.warning("To compute gradcams you need to provide the path to a pytorch_model.pt")
+                self.gradcam = False
 
     def prepare(self) -> None:
         """Prepare the evaluation."""
