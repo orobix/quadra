@@ -6,7 +6,7 @@
   <a href="https://orobix.github.io/quadra/latest/tutorials/configurations.html">Configurations</a>
 </p>
 
-<p align="center">
+<div align="center">
 
   <a href="https://github.com/pre-commit/pre-commit"><img
     src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white"
@@ -32,7 +32,9 @@
     src="https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336"
     alt="isort"
   /></a>
-</p>
+
+</div>
+
 ______________________________________________________________________
 
 
