@@ -73,7 +73,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#quadra" class="md-skip">
+        <a href="#quick-start-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -121,7 +121,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Quadra
+              Home
             
           </span>
         </div>
@@ -207,7 +207,7 @@
 
   <li class="md-tabs__item">
     <a href="index.html" class="md-tabs__link md-tabs__link--active">
-      Quadra
+      Home
     </a>
   </li>
 
@@ -313,16 +313,14 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
-        
-      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Quadra
+          Home
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="index.html" class="md-nav__link md-nav__link--active">
-        Quadra
+        Home
       </a>
       
         
@@ -330,8 +328,6 @@
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
-  
-    
   
   
     <label class="md-nav__title" for="__toc">
@@ -2817,8 +2813,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -2951,18 +2945,48 @@
                   
 
 
-<h1 id="quadra">Quadra<a class="headerlink" href="#quadra" title="Permanent link">&para;</a></h1>
-<p><a href="https://github.com/pre-commit/pre-commit"><img alt="pre-commit" src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&amp;logoColor=white" /></a>
-<a href="https://github.com/econchick/interrogate"><img alt="interrogate" src="images/interrogate_badge.svg" /></a>
-<a href="https://github.com/PyCQA/pylint"><img alt="linting: pylint" src="https://img.shields.io/badge/linting-pylint-yellowgreen" /></a>
-<a href="https://mypy-lang.org/"><img alt="Checked with mypy" src="https://www.mypy-lang.org/static/mypy_badge.svg" /></a>
-<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a>
-<a href="https://pycqa.github.io/isort/"><img alt="Imports: isort" src="https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&amp;labelColor=ef8336" /></a></p>
-<p><code>Quadra</code> aims to simplify deep learning experimenting process, allowing researchers or developers to compare, monitor, and share their experiments quickly. It provides a simple and flexible way to train and deploy deep learning models using YAML configuration files and open-source tools such as <a href="https://hydra.cc/intro/">Hydra</a>, <a href="https://www.pytorchlightning.ai/index.html">Lightning</a> framework, and <a href="https://pytorch.org/">Pytorch</a>. It lets you compose your experiment configurations from single command line interface, so you can conduct multiple experiments with different settings and hyperparameters. Every experiment can be logged using itegrations provided by  <a href="https://www.pytorchlightning.ai/index.html">Lightning</a> framework such <a href="https://mlflow.org/">Mlflow</a>.</p>
+<h1 align="center">Quadra</h1>
+
+<p align="center">
+  <a href="https://orobix.github.io/quadra/latest/index.html">Docs</a> •
+  <a href="https://orobix.github.io/quadra/latest/tutorials/install.html">Tutorials</a> •
+  <a href="https://orobix.github.io/quadra/latest/tutorials/configurations.html">Configurations</a>
+</p>
+
+<div align="center">
+
+  <a href="https://github.com/pre-commit/pre-commit"><img
+    src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white"
+    alt="pre-commit"
+  /></a>
+  <a href="https://github.com/econchick/interrogate"><img
+    src="images/interrogate_badge.svg"
+    alt="interrogate"
+  /></a>
+  <a href="https://github.com/PyCQA/pylint"><img
+    src="https://img.shields.io/badge/linting-pylint-yellowgreen"
+    alt="pylint"
+  /></a>
+  <a href="https://mypy-lang.org/"><img
+    src="https://www.mypy-lang.org/static/mypy_badge.svg"
+    alt="Checked with mypy"
+  /></a>
+  <a href="https://github.com/psf/black"><img
+    src="https://img.shields.io/badge/code%20style-black-000000.svg"
+    alt="black"
+  /></a>
+  <a href="https://pycqa.github.io/isort/"><img
+    src="https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336"
+    alt="isort"
+  /></a>
+
+</div>
+
 <hr />
+<p><code>Quadra</code> aims to simplify deep learning experimenting process, allowing researchers or developers to compare, monitor, and share their experiments quickly. It provides a simple and flexible way to train and deploy deep learning models using YAML configuration files and open-source tools such as <a href="https://hydra.cc/intro/">Hydra</a>, <a href="https://www.pytorchlightning.ai/index.html">Lightning</a> framework, and <a href="https://pytorch.org/">Pytorch</a>. It lets you compose your experiment configurations from single command line interface, so you can conduct multiple experiments with different settings and hyperparameters. Every experiment can be logged using integrations provided by  <a href="https://www.pytorchlightning.ai/index.html">Lightning</a> framework such <a href="https://mlflow.org/">Mlflow</a>.</p>
 <h2 id="quick-start-guide">Quick Start Guide<a class="headerlink" href="#quick-start-guide" title="Permanent link">&para;</a></h2>
-<p><code>Quadra</code> is easily installable from PyPI using <code>pip</code>:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>quadra
+<p>Currently we support installing from source since the library is not yet available on <code>PyPI</code>.</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/orobix/quadra.git@v1.0.0
 </code></pre></div>
 <p>If you don't have virtual environment ready, Let's set up our environment for using the <code>quadra</code> library. We have two parts in this guide: Common setup and Environment-specific setup.</p>
 <h3 id="using-conda">Using Conda<a class="headerlink" href="#using-conda" title="Permanent link">&para;</a></h3>
@@ -2991,7 +3015,7 @@ python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </
 </li>
 <li>
 <p><strong>Install the <code>quadra</code> package</strong>:
-  <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>quadra
+  <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/orobix/quadra.git@v1.0.0
 </code></pre></div></p>
 </li>
 <li>
@@ -3074,19 +3098,21 @@ Again, modify the address if your Mlflow server is running on a different host o
 <p>It will run the experiment using the configuration file you have just created and it will apply the default parameters from the classification configuration file. Furthermore, it will log the metrics to a csv file. You can add or customize the parameters in the configuration file to fit your needs.</p>
 <p>For more information about advanced usage, please check <a href="/tutorials/configurations.html">tutorials</a> and <a href="/tutorials/examples/classification.html">task specific examples</a>.</p>
 <h2 id="development">Development<a class="headerlink" href="#development" title="Permanent link">&para;</a></h2>
-<p>Follow the quick start steps, from that we need to install the package with <code>dev</code> version (generally in editable mode) and enable the pre-commit hooks.</p>
+<p>First clone the repository from Github</p>
+<p>First clone the repository from <code>Github</code>, then we need to install the package with optional dependencies (generally in editable mode) and enable the pre-commit hooks.</p>
 <ol>
-<li>Install <code>quadra</code> package with <code>dev</code> version in editable mode <code>pip install -e .[dev]</code></li>
+<li><code>git clone https://github.com/orobix/quadra.git &amp;&amp; cd quadra</code> </li>
+<li>Install <code>quadra</code> package in editable mode <code>pip install -e .[dev,test,docs]</code></li>
 <li>Install pre-commit hooks <code>pre-commit install</code></li>
-<li>Eventually build documentation.</li>
+<li>(Optional) Eventually build documentation by calling required commands (see below).</li>
 </ol>
 <p>Now you can start developing and the pre-commit hooks will run automatically to prevent you from committing code that does not pass the linting and formatting checks.</p>
 <p>We rely on a combination of <code>Black</code>, <code>Pylint</code>, <code>Mypy</code>, <code>Ruff</code> and <code>Isort</code> to enforce code quality.</p>
 <h2 id="building-documentations">Building Documentations<a class="headerlink" href="#building-documentations" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Activate your virtual environment.</li>
-<li>install the <code>quadra</code> package with at least <code>doc</code> version or <code>dev</code> version.</li>
-<li>To run the webserver for realtime rendering and editing run <code>mkdocs serve</code> and visit <code>http://localhost:8000/</code>.</li>
+<li>Install the <code>quadra</code> package with at least <code>doc</code> version.</li>
+<li>To run the webserver for real-time rendering and editing run <code>mkdocs serve</code> and visit <code>http://localhost:8000/</code>.</li>
 <li>If you want to export the static website to a specific folder  <code>mkdocs build -d &lt;Destination Folder&gt;</code></li>
 </ol>
 <h2 id="faq">FAQ<a class="headerlink" href="#faq" title="Permanent link">&para;</a></h2>
