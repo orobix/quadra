@@ -1,6 +1,6 @@
 _target_: quadra.tasks.SklearnClassification
 device: "cuda:0"
-export_type: [torchscript]
+export_type: [torchscript, pytorch]
 output:
   folder: "classification_experiment"
   save_backbone: false

@@ -18,15 +18,15 @@ print_config: true
 
 model:
   num_classes: ???
-  gradcam: true
   module:
     lr_scheduler_interval: "epoch"
 
 task:
   lr_multiplier: 0.0
   run_test: True
-  export_type: [torchscript]
+  export_type: [torchscript, pytorch]
   report: True
+  gradcam: True
   output:
     example: True
 

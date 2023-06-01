@@ -1,5 +1,5 @@
 _target_: quadra.tasks.Classification
-export_type: [torchscript]
+export_type: [torchscript, pytorch]
 lr_multiplier: null
 output:
   example: false

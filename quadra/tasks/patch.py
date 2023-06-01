@@ -118,7 +118,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         val_dataloader = self.datamodule.val_dataloader()
         train_dataset = cast(PatchSklearnClassificationTrainDataset, train_dataloader.dataset)
         self.trainer.fit(train_dataloader=train_dataloader)
-        _, pd_cm, accuracy, res = self.trainer.test(
+        _, pd_cm, accuracy, res, _ = self.trainer.test(
             test_dataloader=val_dataloader,
             class_to_keep=class_to_keep,
             idx_to_class=train_dataset.idx_to_class,
@@ -326,7 +326,7 @@ class PatchSklearnTestClassification(Task[PatchSklearnClassificationDataModule])
 
         if self.class_to_skip is not None:
             class_to_keep = [x for x in self.datamodule.class_to_idx.keys() if x not in self.class_to_skip]
-        _, pd_cm, accuracy, res = self.trainer.test(
+        _, pd_cm, accuracy, res, _ = self.trainer.test(
             test_dataloader=test_dataloader,
             idx_to_class=self.idx_to_class,
             predict_proba=True,

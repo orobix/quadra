@@ -1,15 +1,19 @@
 from typing import Any, List, Optional, Tuple, Union, cast
 
+import numpy as np
 import timm
 import torch
 import torchmetrics
 import torchmetrics.functional as TMF
 from pytorch_grad_cam import GradCAM
+from scipy import ndimage
 from torch import nn, optim
 
 from quadra.models.classification import BaseNetworkBuilder
 from quadra.modules.base import BaseLightningModule
+from quadra.utils.models import is_vision_transformer
 from quadra.utils.utils import get_logger
+from quadra.utils.vit_explainability import VitAttentionGradRollout
 
 log = get_logger(__name__)
 
@@ -47,9 +51,11 @@ class ClassificationModule(BaseLightningModule):
         self.test_acc = torchmetrics.Accuracy()
         self.cam: GradCAM
 
-        if not isinstance(self.model.features_extractor, timm.models.resnet.ResNet):
+        if not isinstance(self.model.features_extractor, timm.models.resnet.ResNet) and not is_vision_transformer(
+            cast(BaseNetworkBuilder, self.model).features_extractor
+        ):
             log.warning(
-                "Backbone must be compatible with gradcam, at the moment only ResNets supported, disabling gradcam"
+                "Backbone not compatible with gradcam. Only timm ResNets, timm ViTs and TorchHub dinoViTs supported",
             )
             self.gradcam = False
 
@@ -124,25 +130,52 @@ class ClassificationModule(BaseLightningModule):
             prog_bar=False,
         )
 
-    def on_predict_start(self) -> None:
-        """If gradcam will be computed, saves all requires_grad values and set them to True before the predict."""
-        if self.gradcam:
+    def prepare_gradcam(self) -> None:
+        """Instantiate gradcam handlers."""
+        if isinstance(self.model.features_extractor, timm.models.resnet.ResNet):
             target_layers = [cast(BaseNetworkBuilder, self.model).features_extractor.layer4[-1]]  # type: ignore[index]
-            self.cam = GradCAM(model=self.model, target_layers=target_layers, use_cuda=torch.cuda.is_available())
+            self.cam = GradCAM(
+                model=self.model,
+                target_layers=target_layers,
+                use_cuda=torch.cuda.is_available(),
+            )
+            # Activating gradients
+            for p in self.model.features_extractor.layer4[-1].parameters():
+                p.requires_grad = True
+        elif is_vision_transformer(cast(BaseNetworkBuilder, self.model).features_extractor):
+            self.grad_rollout = VitAttentionGradRollout(self.model)
+        else:
+            log.warning("Gradcam not implemented for this backbone, it won't be computed")
+            self.original_requires_grads.clear()
+            self.gradcam = False
 
+    def on_predict_start(self) -> None:
+        """If gradcam, prepares gradcam and saves params requires_grad state."""
+        if self.gradcam:
+            # Saving params requires_grad state
             for p in self.model.parameters():
                 self.original_requires_grads.append(p.requires_grad)
-                p.requires_grad = True
+            self.prepare_gradcam()
 
         return super().on_predict_start()
 
     def on_predict_end(self) -> None:
         """If we computed gradcam, requires_grad values are reset to original value."""
         if self.gradcam:
+            # Get back to initial state
             for i, p in enumerate(self.model.parameters()):
                 p.requires_grad = self.original_requires_grads[i]
 
-            self.cam.activations_and_grads.release()
+            # We are using GradCAM package only for resnets at the moment
+            if isinstance(self.model.features_extractor, timm.models.resnet.ResNet):
+                # Needed to solve jitting bug
+                self.cam.activations_and_grads.release()
+            elif is_vision_transformer(cast(BaseNetworkBuilder, self.model).features_extractor):
+                for handle in self.grad_rollout.f_hook_handles:
+                    handle.remove()
+                for handle in self.grad_rollout.b_hook_handles:
+                    handle.remove()
+
         return super().on_predict_end()
 
     def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0) -> Any:
@@ -158,14 +191,22 @@ class ClassificationModule(BaseLightningModule):
                 grayscale_cam: gray scale gradcams
         """
         im, _ = batch
-        # inference_mode set to false because gradcam needs gradients
         if self.gradcam:
+            outputs = self(im)
+            probs = torch.softmax(outputs, dim=1)
+            predicted_classes = torch.max(probs, dim=1).indices.tolist()
+            # inference_mode set to false because gradcam needs gradients
             with torch.inference_mode(False):
                 im = im.clone()
-                outputs = self(im)
-                probs = torch.softmax(outputs, dim=1)
-                predicted_classes = torch.max(probs, dim=1).indices.tolist()
-                grayscale_cam = self.cam(input_tensor=im, targets=None)
+
+                if isinstance(self.model.features_extractor, timm.models.resnet.ResNet):
+                    grayscale_cam = self.cam(input_tensor=im, targets=None)
+                elif is_vision_transformer(cast(BaseNetworkBuilder, self.model).features_extractor):
+                    grayscale_cam_low_res = self.grad_rollout(input_tensor=im, targets_list=predicted_classes)
+                    orig_shape = grayscale_cam_low_res.shape
+                    new_shape = (orig_shape[0], im.shape[2], im.shape[3])
+                    zoom_factors = tuple(np.array(new_shape) / np.array(orig_shape))
+                    grayscale_cam = ndimage.zoom(grayscale_cam_low_res, zoom_factors, order=1)
         else:
             outputs = self(im)
             probs = torch.softmax(outputs, dim=1)

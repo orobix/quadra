@@ -9,4 +9,3 @@ module:
   _target_: quadra.modules.classification.ClassificationModule
   lr_scheduler_interval: "epoch"
   criterion: ${loss}
-  gradcam: true

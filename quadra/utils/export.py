@@ -59,6 +59,26 @@ def export_torchscript_model(
     return os.path.join(os.getcwd(), model_path)
 
 
+def export_pytorch_model(model: nn.Module, output_path: str, model_name: str = "pytorch_model.pt") -> str:
+    """Export a serialized PyTorch model.
+
+    Args:
+        model: PyTorch model to be exported
+        output_path: Path to save the model
+        model_name: Name of the exported model
+
+    Returns:
+        If the model is exported successfully, the path to the model is returned.
+
+    """
+    os.makedirs(output_path, exist_ok=True)
+    model.eval()
+    model_path = os.path.join(output_path, model_name)
+    torch.save(model.state_dict(), model_path)
+    log.info("Pytorch model saved to %s", os.path.join(output_path, model_name))
+    return os.path.join(os.getcwd(), model_path)
+
+
 # TODO: Update signature when new models are added
 def import_deployment_model(model_path: str, device: str) -> Tuple[RecursiveScriptModule, str]:
     """Try to import a model for deployment, currently only supports torchscript .pt files.
