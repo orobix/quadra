@@ -153,7 +153,7 @@ def test_train_classification(
     overrides = [
         "experiment=base/classification/classification",
         "trainer=lightning_cpu",
-        "trainer.devices=cpu",
+        "trainer.devices=1",
         f"datamodule.data_path={data_path}",
         f"model.num_classes={num_classes}",
         f"backbone={backbone}",
@@ -179,7 +179,7 @@ def test_train_multilabel_classification(
     overrides = [
         "experiment=base/classification/multilabel_classification",
         "trainer=lightning_cpu",
-        "trainer.devices=cpu",
+        "trainer.devices=1",
         f"datamodule.data_path={data_path}",
         f"datamodule.images_and_labels_file={Path(data_path) / 'samples.txt'}",
         f"model.classifier.out_features={len(arguments.samples)}",
