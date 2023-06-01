@@ -12,6 +12,7 @@ try:
     import mlflow  # noqa
     from mlflow.entities import Run  # noqa
     from mlflow.entities.model_registry import ModelVersion  # noqa
+    from mlflow.exceptions import RestException  # noqa
     from mlflow.tracking import MlflowClient  # noqa
 
     MLFLOW_AVAILABLE = True
@@ -111,7 +112,7 @@ class MlflowModelManager(AbstractModelManager):
 
         return model_version
 
-    def transistion_model(self, model_name: str, version: int, stage: str) -> ModelVersion:
+    def transistion_model(self, model_name: str, version: int, stage: str) -> Optional[ModelVersion]:
         """Transition a model to a new stage.
 
         Args:
@@ -119,7 +120,10 @@ class MlflowModelManager(AbstractModelManager):
             version: The version of the model
             stage: The stage of the model
         """
-        previous_stage = self.client.get_model_version(model_name, version).current_stage
+        previous_stage = self._safe_get_stage(model_name, version)
+
+        if previous_stage is None:
+            return None
 
         if previous_stage.lower() == stage.lower():
             log.warning("Model %s version %s is already in stage %s", model_name, version, stage)
@@ -137,13 +141,29 @@ class MlflowModelManager(AbstractModelManager):
         self.client.update_registered_model(model_name, new_model_description)
         return model_version
 
-    def delete_model(self, model_name: str, version: int) -> None:
+    def delete_model(self, model_name: str, version: int, description: str = "") -> None:
         """Delete a model.
 
         Args:
             model_name: The name of the model
             version: The version of the model
+            description: Why the model was deleted, this will be added to the model changelog
         """
+        model_stage = self._safe_get_stage(model_name, version)
+
+        if model_stage is None:
+            return
+
+        if (
+            input(
+                f"Model named `{model_name}`, version {version} is in stage {model_stage}, "
+                "type the model name to continue deletion:"
+            )
+            != model_name
+        ):
+            log.warning("Model name did not match, aborting deletion")
+            return
+
         log.info("Deleting model %s version %s", model_name, version)
         self.client.delete_model_version(model_name, version)
 
@@ -152,6 +172,11 @@ class MlflowModelManager(AbstractModelManager):
         new_model_description += "## **Deletion:**\n"
         new_model_description += f"### Version {version}\n"
         new_model_description += self._get_author_and_date()
+
+        if len(description) > 0:
+            new_model_description += f"### Description: \n{description}\n"
+        else:
+            new_model_description += "### Description: N/A\n"
 
         self.client.update_registered_model(model_name, new_model_description)
 
@@ -234,3 +259,20 @@ class MlflowModelManager(AbstractModelManager):
         author_and_date += f"### Date: {datetime.now().astimezone().strftime('%d/%m/%Y %H:%M:%S %Z')}\n"
 
         return author_and_date
+
+    def _safe_get_stage(self, model_name: str, version: int) -> Optional[str]:
+        """Get the stage of a model version.
+
+        Args:
+            model_name: The name of the model
+            version: The version of the model
+
+        Returns:
+            The stage of the model version if it exists, otherwise None
+        """
+        try:
+            model_stage = self.client.get_model_version(model_name, version).current_stage
+            return model_stage
+        except RestException:
+            log.error("Model named %s with version %s does not exist", model_name, version)
+            return None
