@@ -212,7 +212,7 @@ First clone the repository from `Github`, then we need to install the package wi
 1. `git clone https://github.com/orobix/quadra.git && cd quadra` 
 1. Install `quadra` package in editable mode `pip install -e .[dev,test,docs]`
 2. Install pre-commit hooks `pre-commit install`
-3. Eventually build documentation by calling.
+3. (Optional) Eventually build documentation by calling required commands (see below).
 
 Now you can start developing and the pre-commit hooks will run automatically to prevent you from committing code that does not pass the linting and formatting checks.
 
@@ -221,7 +221,7 @@ We rely on a combination of `Black`, `Pylint`, `Mypy`, `Ruff` and `Isort` to enf
 ## Building Documentations
 
 1. Activate your virtual environment.
-2. install the `quadra` package with at least `doc` version.
+2. Install the `quadra` package with at least `doc` version.
 3. To run the webserver for real-time rendering and editing run `mkdocs serve` and visit `http://localhost:8000/`.
 4. If you want to export the static website to a specific folder  `mkdocs build -d <Destination Folder>`
 

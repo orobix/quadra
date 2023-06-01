@@ -13,12 +13,20 @@ authors = [
   {name = "Refik Can Malli", email = "refikcan.malli@orobix.com"},
   {name = "Silvia Bianchetti", email = "silvia.bianchetti@orobix.com"},
 ]
-keywords = ["deep", "learning", "experiment", "lightning", "hydra-core"]
+keywords = ["deep learning", "experiment", "lightning", "hydra-core"]
 license = {file = "LICENSE"}
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.8,<3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: Apache Software License",
 ]
 
 dependencies = [
