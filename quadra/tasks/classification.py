@@ -781,10 +781,14 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
         self.datamodule.setup(stage="test")
 
         self.test_dataloader = self.datamodule.test_dataloader()
-
-        self.backbone = OmegaConf.load(
-            os.path.join(self.experiment_path, self.export_folder, "backbone_config.yaml")
-        )  # type: ignore[assignment]
+        try:
+            self.backbone = OmegaConf.load(
+                os.path.join(self.experiment_path, self.export_folder, "backbone_config.yaml")
+            )  # type: ignore[assignment]
+        except Exception as e:
+            raise RuntimeError(
+                "You need the backbone config file to load the model. Add 'pytorch' export format to the train task"
+            ) from e
 
         # Load classifier
         self.classifier = os.path.join(self.experiment_path, self.export_folder, "classifier.joblib")
