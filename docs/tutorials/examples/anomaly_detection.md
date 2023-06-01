@@ -53,7 +53,7 @@ crop_area:
 But for the `mnist` example we will use the generic datamodule configuration under `datamodule/generic/mnist/anomaly/base.yaml`.
 
 ```yaml
-_target_: quadraeneric.mnist.MNISTAnomalyDataModule
+_target_: quadra.generic.mnist.MNISTAnomalyDataModule
 data_path: ${oc.env:HOME}/.quadra/datasets/MNIST
 good_number: 9
 num_workers: 8

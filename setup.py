@@ -1,7 +1,4 @@
-from pathlib import Path
-from typing import List
-
-from setuptools import find_namespace_packages, setup
+from setuptools import setup
 from setuptools._distutils.dist import Distribution
 from setuptools.command.install import install
 
@@ -36,70 +33,10 @@ class GitVersionChecker(install):
         install.run(self)
 
 
-BASE_DIR = Path(__file__).parent
-
-# Load packages from requirements.txt
-dependency_links: List[str] = []
-required_packages = []
-with open(Path(BASE_DIR, "requirements.txt")) as file:
-    for line in file.readlines():
-        line = line.strip()
-        required_packages.append(line)
-
-with open(Path(BASE_DIR, "quadra", "__init__.py")) as file:
-    for line in file:
-        if line.startswith("__version__"):
-            __version__ = line.split("=")[1].strip().strip("\"'")
-            break
-
-
-test_packages = [
-    "pytest==7.2.*",
-    "pytest-cov==4.0.*",
-]
-
-dev_packages = [
-    "interrogate==1.5.*",
-    "black==22.12.*",
-    "isort==5.11.*",
-    "pre-commit==3.0.*",
-    "pylint==2.16.*",
-    "bump2version==1.0.*",
-    "types-PyYAML==6.0.12.*",
-    "mypy==1.0.*",
-    "ruff==0.0.257",
-    "pandas-stubs==1.5.3.*",
-]
-
-docs_packages = [
-    "mkdocs==1.4.*",
-    "mkdocs-material==9.0.*",
-    "mkdocstrings-python==0.8.*",
-    "mkdocs-gen-files==0.4.*",
-    "mkdocs-literate-nav==0.6.*",
-    "mkdocs-section-index==0.3.*",
-    "mike==1.1.*",
-]
-
+# We keep setup function for compatibility with older setuptools
+# mentioned here https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+# Also, in the future we may move 'cmdclass' to pyproject.toml if supported and needed.
+# It is also nice example to show how both setup.py and pyproject.toml can be used together.
 setup(
-    name="quadra",
-    version=str(__version__),
-    license="MIT",
-    description="Deep Learning experiment orchestration Library",
-    url='https://github.com/orobix/quadra',
-    author="Alessandro Polidori, Federico Belotti, Lorenzo Mammana, Refik Can Malli, Silvia Bianchetti",
-    author_email="refikcan.malli@orobix.com",
-    python_requires=">=3.8,<3.10",
-    entry_points={"console_scripts": ["quadra = quadra.main:main"]},
-    packages=find_namespace_packages(),
-    install_requires=[required_packages],
-    dependency_links=dependency_links,
-        
-    include_package_data=True,
-    extras_require={
-        "test": test_packages,
-        "dev": test_packages + dev_packages + docs_packages,
-        "docs": docs_packages,
-    },
     cmdclass={"install": GitVersionChecker},
 )
