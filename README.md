@@ -1,4 +1,12 @@
-# Quadra
+<h1 align="center">Quadra</h1>
+
+<p align="center">
+  <a href="https://orobix.github.io/quadra/latest/index.html">Docs</a> •
+  <a href="https://orobix.github.io/quadra/latest/tutorials/install.html">Tutorials</a> •
+  <a href="https://orobix.github.io/quadra/latest/tutorials/configurations.html">Configurations</a>
+</p>
+
+<div align="center">
 
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![interrogate](docs/images/interrogate_badge.svg)](https://github.com/econchick/interrogate)
@@ -8,17 +16,20 @@
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 
 
-
-`Quadra` aims to simplify deep learning experimenting process, allowing researchers or developers to compare, monitor, and share their experiments quickly. It provides a simple and flexible way to train and deploy deep learning models using YAML configuration files and open-source tools such as [Hydra](https://hydra.cc/docs/intro/), [Lightning](https://www.pytorchlightning.ai/index.html) framework, and [Pytorch](https://pytorch.org/). It lets you compose your experiment configurations from single command line interface, so you can conduct multiple experiments with different settings and hyperparameters. Every experiment can be logged using itegrations provided by  [Lightning](https://www.pytorchlightning.ai/index.html) framework such [Mlflow](https://mlflow.org/).
+</div>
 
 ______________________________________________________________________
 
+
+`Quadra` aims to simplify deep learning experimenting process, allowing researchers or developers to compare, monitor, and share their experiments quickly. It provides a simple and flexible way to train and deploy deep learning models using YAML configuration files and open-source tools such as [Hydra](https://hydra.cc/docs/intro/), [Lightning](https://www.pytorchlightning.ai/index.html) framework, and [Pytorch](https://pytorch.org/). It lets you compose your experiment configurations from single command line interface, so you can conduct multiple experiments with different settings and hyperparameters. Every experiment can be logged using integrations provided by  [Lightning](https://www.pytorchlightning.ai/index.html) framework such [Mlflow](https://mlflow.org/).
+
+
 ## Quick Start Guide
 
-`Quadra` is easily installable from PyPI using `pip`:
+Currently we support installing from source since the library is not yet available on `PyPI`.
 
 ```shell
-pip install quadra
+pip install git+https://github.com/orobix/quadra.git@v1.0.0
 ```
 
 If you don't have virtual environment ready, Let's set up our environment for using the `quadra` library. We have two parts in this guide: Common setup and Environment-specific setup.
@@ -57,7 +68,7 @@ source myenv/bin/activate
 
 3. **Install the `quadra` package**:
   ```shell
-  pip install quadra
+  pip install git+https://github.com/orobix/quadra.git@v1.0.0
   ```
 
 4. **Run from CLI**:
@@ -194,11 +205,14 @@ For more information about advanced usage, please check [tutorials](/tutorials/c
 
 ## Development
 
-Follow the quick start steps, from that we need to install the package with `dev` version (generally in editable mode) and enable the pre-commit hooks.
+First clone the repository from Github
 
-1. Install `quadra` package with `dev` version in editable mode `pip install -e .[dev]`
+First clone the repository from `Github`, then we need to install the package with optional dependencies (generally in editable mode) and enable the pre-commit hooks.
+
+1. `git clone https://github.com/orobix/quadra.git && cd quadra` 
+1. Install `quadra` package in editable mode `pip install -e .[dev,test,docs]`
 2. Install pre-commit hooks `pre-commit install`
-3. Eventually build documentation.
+3. (Optional) Eventually build documentation by calling required commands (see below).
 
 Now you can start developing and the pre-commit hooks will run automatically to prevent you from committing code that does not pass the linting and formatting checks.
 
@@ -207,8 +221,8 @@ We rely on a combination of `Black`, `Pylint`, `Mypy`, `Ruff` and `Isort` to enf
 ## Building Documentations
 
 1. Activate your virtual environment.
-2. install the `quadra` package with at least `doc` version or `dev` version.
-3. To run the webserver for realtime rendering and editing run `mkdocs serve` and visit `http://localhost:8000/`.
+2. Install the `quadra` package with at least `doc` version.
+3. To run the webserver for real-time rendering and editing run `mkdocs serve` and visit `http://localhost:8000/`.
 4. If you want to export the static website to a specific folder  `mkdocs build -d <Destination Folder>`
 
 ## FAQ

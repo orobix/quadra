@@ -89,7 +89,7 @@ extra:
   version:
     provider: mike
     default:
-      - stable
+      - latest
   generator: false
 
 extra_css:

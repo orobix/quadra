@@ -50,7 +50,7 @@ In VSCode, you can create a `launch.json` file in the `.vscode` folder of your p
             "name": "segmentation",
             "type": "python",
             "request": "launch",
-            "program": "quadra.main",
+            "module": "quadra.main",
             "console": "integratedTerminal",
             "justMyCode": false,
             "env": {
