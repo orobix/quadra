@@ -7,7 +7,7 @@ name = "quadra"
 version = "1.0.0"
 description = "Deep Learning experiment orchestration library"
 authors = [
-  {name = "Alessandro Polidori", email = "alessandra.polidori@orobix.com"},
+  {name = "Alessandro Polidori", email = "alessandro.polidori@orobix.com"},
   {name = "Federico Belotti", email = "federico.belotti@orobix.com"},
   {name = "Lorenzo Mammana", email = "lorenzo.mammana@orobix.com"},
   {name = "Refik Can Malli", email = "refikcan.malli@orobix.com"},
