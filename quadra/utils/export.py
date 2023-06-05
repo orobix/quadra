@@ -73,6 +73,7 @@ def export_pytorch_model(model: nn.Module, output_path: str, model_name: str = "
     """
     os.makedirs(output_path, exist_ok=True)
     model.eval()
+    model.cpu()
     model_path = os.path.join(output_path, model_name)
     torch.save(model.state_dict(), model_path)
     log.info("Pytorch model saved to %s", os.path.join(output_path, model_name))
