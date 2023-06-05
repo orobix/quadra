@@ -20,6 +20,10 @@ except ImportError:
     MLFLOW_AVAILABLE = False
 
 
+VERSION_MD_TEMPLATE = "## **Version {}**\n"
+DESCRIPTION_MD_TEMPLATE = "### Description: \n{}\n"
+
+
 class AbstractModelManager(ABC):
     """Abstract class for model managers."""
 
@@ -82,18 +86,22 @@ class MlflowModelManager(AbstractModelManager):
         """
         model_version = mlflow.register_model(model_uri=model_location, name=model_name, tags=tags)
         log.info("Registered model %s with version %s", model_name, model_version.version)
-        model_description = self.client.get_registered_model(model_name).description
+        registered_model_description = self.client.get_registered_model(model_name).description
 
-        new_model_description = model_description
-        if model_version.version == "1" and len(model_description) == 0:
+        if model_version.version == "1":
             new_model_description = "# MODEL CHANGELOG\n"
+        else:
+            new_model_description = ""
 
-        new_model_description += f"## **Version {model_version.version}**\n"
+        new_model_description += VERSION_MD_TEMPLATE.format(model_version.version)
         new_model_description += self._get_author_and_date()
-        new_model_description += f"### Description: \n{description}\n"
+        new_model_description += DESCRIPTION_MD_TEMPLATE.format(description)
 
-        self.client.update_registered_model(model_name, new_model_description)
-        self.client.update_model_version(model_name, model_version.version, description)
+        self.client.update_registered_model(model_name, registered_model_description + new_model_description)
+
+        self.client.update_model_version(
+            model_name, model_version.version, "# MODEL CHANGELOG\n" + new_model_description
+        )
 
         return model_version
 
@@ -132,13 +140,18 @@ class MlflowModelManager(AbstractModelManager):
         log.info("Transitioning model %s version %s from %s to %s", model_name, version, previous_stage, stage)
         model_version = self.client.transition_model_version_stage(name=model_name, version=version, stage=stage)
         new_stage = model_version.current_stage
-        new_model_description = self.client.get_registered_model(model_name).description
+        registered_model_description = self.client.get_registered_model(model_name).description
+        single_model_description = self.client.get_model_version(model_name, version).description
 
-        new_model_description += "## **Transition:**\n"
+        new_model_description = "## **Transition:**\n"
         new_model_description += f"### Version {model_version.version} from {previous_stage} to {new_stage}\n"
         new_model_description += self._get_author_and_date()
 
-        self.client.update_registered_model(model_name, new_model_description)
+        self.client.update_registered_model(model_name, registered_model_description + new_model_description)
+        self.client.update_model_version(
+            model_name, model_version.version, single_model_description + new_model_description
+        )
+
         return model_version
 
     def delete_model(self, model_name: str, version: int, description: str = "") -> None:
@@ -167,18 +180,20 @@ class MlflowModelManager(AbstractModelManager):
         log.info("Deleting model %s version %s", model_name, version)
         self.client.delete_model_version(model_name, version)
 
-        new_model_description = self.client.get_registered_model(model_name).description
+        registered_model_description = self.client.get_registered_model(model_name).description
+        single_model_description = self.client.get_model_version(model_name, version).description
 
-        new_model_description += "## **Deletion:**\n"
-        new_model_description += f"### Version {version}\n"
+        new_model_description = "## **Deletion:**\n"
+        new_model_description += VERSION_MD_TEMPLATE.format(version)
         new_model_description += self._get_author_and_date()
 
         if len(description) > 0:
-            new_model_description += f"### Description: \n{description}\n"
+            new_model_description += DESCRIPTION_MD_TEMPLATE.format(description)
         else:
-            new_model_description += "### Description: N/A\n"
+            new_model_description += DESCRIPTION_MD_TEMPLATE.format("N/A")
 
-        self.client.update_registered_model(model_name, new_model_description)
+        self.client.update_registered_model(model_name, registered_model_description + new_model_description)
+        self.client.update_model_version(model_name, version, single_model_description + new_model_description)
 
     def register_best_model(
         self,
