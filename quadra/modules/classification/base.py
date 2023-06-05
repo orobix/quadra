@@ -49,7 +49,8 @@ class ClassificationModule(BaseLightningModule):
         self.train_acc = torchmetrics.Accuracy()
         self.val_acc = torchmetrics.Accuracy()
         self.test_acc = torchmetrics.Accuracy()
-        self.cam: GradCAM
+        self.cam: Optional[GradCAM] = None
+        self.grad_rollout: Optional[VitAttentionGradRollout] = None
 
         if not isinstance(self.model.features_extractor, timm.models.resnet.ResNet) and not is_vision_transformer(
             cast(BaseNetworkBuilder, self.model).features_extractor
@@ -167,10 +168,13 @@ class ClassificationModule(BaseLightningModule):
                 p.requires_grad = self.original_requires_grads[i]
 
             # We are using GradCAM package only for resnets at the moment
-            if isinstance(self.model.features_extractor, timm.models.resnet.ResNet):
+            if isinstance(self.model.features_extractor, timm.models.resnet.ResNet) and self.cam is not None:
                 # Needed to solve jitting bug
                 self.cam.activations_and_grads.release()
-            elif is_vision_transformer(cast(BaseNetworkBuilder, self.model).features_extractor):
+            elif (
+                is_vision_transformer(cast(BaseNetworkBuilder, self.model).features_extractor)
+                and self.grad_rollout is not None
+            ):
                 for handle in self.grad_rollout.f_hook_handles:
                     handle.remove()
                 for handle in self.grad_rollout.b_hook_handles:
@@ -199,9 +203,11 @@ class ClassificationModule(BaseLightningModule):
             with torch.inference_mode(False):
                 im = im.clone()
 
-                if isinstance(self.model.features_extractor, timm.models.resnet.ResNet):
+                if isinstance(self.model.features_extractor, timm.models.resnet.ResNet) and self.cam:
                     grayscale_cam = self.cam(input_tensor=im, targets=None)
-                elif is_vision_transformer(cast(BaseNetworkBuilder, self.model).features_extractor):
+                elif (
+                    is_vision_transformer(cast(BaseNetworkBuilder, self.model).features_extractor) and self.grad_rollout
+                ):
                     grayscale_cam_low_res = self.grad_rollout(input_tensor=im, targets_list=predicted_classes)
                     orig_shape = grayscale_cam_low_res.shape
                     new_shape = (orig_shape[0], im.shape[2], im.shape[3])
