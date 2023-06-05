@@ -42,6 +42,7 @@ def rollout(attentions: List[torch.Tensor], discard_ratio: float = 0.9, head_fus
     width = int(mask.size(-1) ** 0.5)
     mask = mask.reshape(batch_size, width, width).numpy()
     mask = mask / mask.max(axis=(1, 2), keepdims=True)
+
     return mask
 
 
@@ -104,6 +105,7 @@ class VitAttentionRollout:
         with torch.no_grad():
             self.model(input_tensor)
         out = rollout(self.attentions, self.discard_ratio, self.head_fusion)
+
         return out
 
 
@@ -145,6 +147,7 @@ def grad_rollout(
     width = int(mask.size(-1) ** 0.5)
     mask = mask.reshape(batch_size, width, width).numpy()
     mask = mask / mask.max(axis=(1, 2), keepdims=True)
+
     return mask
 
 
@@ -276,4 +279,5 @@ class ClassifierPytorchWrapper(torch.nn.Module):
         self.classifier.bias.data = torch.from_numpy(lr_classifier.intercept_).float()
 
     def forward(self, x):
+
         return torch.nn.Softmax(dim=1)(self.classifier(self.backbone(x)))

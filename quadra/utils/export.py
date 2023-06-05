@@ -77,6 +77,7 @@ def export_pytorch_model(model: nn.Module, output_path: str, model_name: str = "
     model_path = os.path.join(output_path, model_name)
     torch.save(model.state_dict(), model_path)
     log.info("Pytorch model saved to %s", os.path.join(output_path, model_name))
+
     return os.path.join(os.getcwd(), model_path)
 
 
@@ -100,6 +101,7 @@ def import_deployment_model(
         model = cast(RecursiveScriptModule, torch.jit.load(model_path))
         model.eval()
         model.to(device)
+
         return model, "torchscript"
     if file_extension == ".pth":
         if model is None:
@@ -108,6 +110,7 @@ def import_deployment_model(
             model.load_state_dict(torch.load(model_path))
             model.eval()
             model.to(device)
+
             return model, "torch"
 
     raise ValueError(f"Unable to load model with extension {file_extension}, valid extensions are: ['.pt', 'pth']")
