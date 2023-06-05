@@ -89,15 +89,15 @@ class MlflowModelManager(AbstractModelManager):
         registered_model_description = self.client.get_registered_model(model_name).description
 
         if model_version.version == "1":
-            new_model_description = "# MODEL CHANGELOG\n"
+            header = "# MODEL CHANGELOG\n"
         else:
-            new_model_description = ""
+            header = ""
 
-        new_model_description += VERSION_MD_TEMPLATE.format(model_version.version)
+        new_model_description = VERSION_MD_TEMPLATE.format(model_version.version)
         new_model_description += self._get_author_and_date()
         new_model_description += DESCRIPTION_MD_TEMPLATE.format(description)
 
-        self.client.update_registered_model(model_name, registered_model_description + new_model_description)
+        self.client.update_registered_model(model_name, header + registered_model_description + new_model_description)
 
         self.client.update_model_version(
             model_name, model_version.version, "# MODEL CHANGELOG\n" + new_model_description
