@@ -128,6 +128,7 @@ class SklearnClassificationTrainer:
                 dl=test_dataloader,
                 gradcam=gradcam,
                 classifier=self.classifier,
+                input_shape=(self.input_shape[2], self.input_shape[0], self.input_shape[1]),
             )
         else:
             if test_labels is None:

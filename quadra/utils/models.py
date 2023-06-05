@@ -82,6 +82,7 @@ def get_feature(
     iteration_over_training: int = 1,
     gradcam: bool = False,
     classifier: Optional[ClassifierMixin] = None,
+    input_shape: Optional[Tuple[int, int, int]] = None,
 ) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
     """Given a dataloader and a PyTorch model, extract features with the model and return features and labels.
 
@@ -92,6 +93,7 @@ def get_feature(
             (best if used with augmentation)
         gradcam: Whether to compute gradcams. Notice that it will slow the function
         classifier: Scikit-learn classifier
+        input_shape: [H,W,C], backbone input shape, needed by classifier's pytorch wrapper
 
     Returns:
         Tuple containing:
@@ -114,7 +116,9 @@ def get_feature(
                 p.requires_grad = True
         elif is_vision_transformer(feature_extractor.features_extractor):  # type: ignore[arg-type]
             grad_rollout = VitAttentionGradRollout(
-                feature_extractor.features_extractor, classifier=classifier  # type: ignore[arg-type]
+                feature_extractor.features_extractor,  # type: ignore[arg-type]
+                classifier=classifier,
+                example_input=None if input_shape is None else torch.randn(1, *input_shape),
             )
         else:
             log = utils.get_logger(__name__)

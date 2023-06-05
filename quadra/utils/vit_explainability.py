@@ -168,6 +168,7 @@ class VitAttentionGradRollout:
         attention_layer_names: Optional[List[str]] = None,
         discard_ratio: float = 0.9,
         classifier: Optional[ClassifierMixin] = None,
+        example_input: Optional[torch.Tensor] = None,
     ):
         if attention_layer_names is None:
             attention_layer_names = [
@@ -178,8 +179,13 @@ class VitAttentionGradRollout:
             ]
 
         if classifier is not None:
+            if example_input is None:
+                raise ValueError("Must provide an input example to ClassifierPytorchWrapper")
             self.model = ClassifierPytorchWrapper(
-                backbone=model, lr_classifier=classifier, device=next(model.parameters()).device
+                backbone=model,
+                lr_classifier=classifier,
+                example_input=example_input,
+                device=next(model.parameters()).device,
             )
         else:
             self.model = model  # type: ignore[assignment]
@@ -260,18 +266,24 @@ class ClassifierPytorchWrapper(torch.nn.Module):
         backbone: Backbone
         num_classes: Number of classes
         lr_classifier: ScikitLearn classifier model
-        device: The device to use. Defaults to "cpu".
+        device: The device to use. Defaults to "cpu"
+        example_input: Input example needed to obtain output shape
     """
 
-    def __init__(self, backbone: torch.nn.Module, lr_classifier: ClassifierMixin, device: torch.device):
+    def __init__(
+        self,
+        backbone: torch.nn.Module,
+        lr_classifier: ClassifierMixin,
+        example_input: torch.Tensor,
+        device: torch.device,
+    ):
         super().__init__()
         self.device = device
         self.backbone = backbone.to(device)
         self.num_classes = len(lr_classifier.classes_)
         self.lr_classifier = lr_classifier
-        self.example_input_array = torch.rand(1, 3, 224, 224).to(device)  # TODO: Should not be hardcoded
         with torch.no_grad():
-            output = self.backbone(self.example_input_array)
+            output = self.backbone(example_input.to(device))
             num_filters = output.shape[-1]
 
         self.classifier = torch.nn.Linear(num_filters, self.num_classes).to(device)
@@ -279,5 +291,4 @@ class ClassifierPytorchWrapper(torch.nn.Module):
         self.classifier.bias.data = torch.from_numpy(lr_classifier.intercept_).float()
 
     def forward(self, x):
-
         return torch.nn.Softmax(dim=1)(self.classifier(self.backbone(x)))
