@@ -168,12 +168,8 @@ class VitAttentionGradRollout:
     ):
         if attention_layer_names is None:
             attention_layer_names = [
-                "blocks.4.attn.attn_drop",
-                "blocks.5.attn.attn_drop",
                 "blocks.6.attn.attn_drop",
                 "blocks.7.attn.attn_drop",
-                "blocks.8.attn.attn_drop",
-                "blocks.9.attn.attn_drop",
                 "blocks.10.attn.attn_drop",
                 "blocks.11.attn.attn_drop",
             ]

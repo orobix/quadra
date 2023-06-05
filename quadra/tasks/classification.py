@@ -290,7 +290,6 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                 export_pytorch_model(
                     model=module.model,
                     output_path=self.export_folder,
-                    model_name="pytorch_model.pt",
                 )
                 with open(os.path.join(self.export_folder, "model_config.yaml"), "w") as f:
                     OmegaConf.save(self.config.model, f, resolve=True)
@@ -969,17 +968,15 @@ class ClassificationEvaluation(Task[ClassificationDataModuleT]):
     @deployment_model.setter
     def deployment_model(self, model_path: str):
         """Set the deployment model."""
-        model_name = os.path.splitext(os.path.basename(model_path))[0]
-        if model_name == "pytorch_model":
+        if os.path.splitext(os.path.basename(model_path))[1] == ".pth":
             model_config = OmegaConf.load(os.path.join(Path(self.model_path).parent, "model_config.yaml"))
             self.model = model_config  # type: ignore[assignment]
-            self.model.load_state_dict(torch.load(model_path))
-            self._deployment_model = self.model.to(self.device).eval()
-        elif model_name == "model":
-            self._deployment_model, self.deployment_model_type = import_deployment_model(model_path, self.device)
-            if self.gradcam:
-                log.warning("To compute gradcams you need to provide the path to a pytorch_model.pt")
-                self.gradcam = False
+        self._deployment_model, self.deployment_model_type = import_deployment_model(
+            model_path, self.device, self.model
+        )
+        if self.gradcam and self.deployment_model_type != "torch":
+            log.warning("To compute gradcams you need to provide the path to an exported .pth state_dict file")
+            self.gradcam = False
 
     def prepare(self) -> None:
         """Prepare the evaluation."""
@@ -1017,7 +1014,7 @@ class ClassificationEvaluation(Task[ClassificationDataModuleT]):
             self.cam = GradCAM(
                 model=self.deployment_model,
                 target_layers=target_layers,
-                use_cuda=torch.cuda.is_available(),
+                use_cuda=(self.device != "cpu"),
             )
             for p in self.deployment_model.features_extractor.layer4[-1].parameters():
                 p.requires_grad = True
