@@ -195,10 +195,10 @@ class ClassificationModule(BaseLightningModule):
                 grayscale_cam: gray scale gradcams
         """
         im, _ = batch
+        outputs = self(im)
+        probs = torch.softmax(outputs, dim=1)
+        predicted_classes = torch.max(probs, dim=1).indices.tolist()
         if self.gradcam:
-            outputs = self(im)
-            probs = torch.softmax(outputs, dim=1)
-            predicted_classes = torch.max(probs, dim=1).indices.tolist()
             # inference_mode set to false because gradcam needs gradients
             with torch.inference_mode(False):
                 im = im.clone()
@@ -214,9 +214,6 @@ class ClassificationModule(BaseLightningModule):
                     zoom_factors = tuple(np.array(new_shape) / np.array(orig_shape))
                     grayscale_cam = ndimage.zoom(grayscale_cam_low_res, zoom_factors, order=1)
         else:
-            outputs = self(im)
-            probs = torch.softmax(outputs, dim=1)
-            predicted_classes = torch.max(probs, dim=1).indices.tolist()
             grayscale_cam = None
         return predicted_classes, grayscale_cam
 
