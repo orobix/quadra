@@ -1038,28 +1038,29 @@ class ClassificationEvaluation(Task[ClassificationDataModuleT]):
         if self.gradcam:
             self.prepare_gradcam()
 
-        for batch_item in tqdm(test_dataloader):
-            im, target = batch_item
-            im = im.to(self.device).detach()
-            outputs = self.deployment_model(im).detach()
-            probs = torch.softmax(outputs, dim=1)
-            preds = torch.max(probs, dim=1).indices
+        with torch.set_grad_enabled(self.gradcam):
+            for batch_item in tqdm(test_dataloader):
+                im, target = batch_item
+                im = im.to(self.device).detach()
+                outputs = self.deployment_model(im).detach()
+                probs = torch.softmax(outputs, dim=1)
+                preds = torch.max(probs, dim=1).indices
 
-            predicted_classes.append(preds.tolist())
-            image_labels.extend(target.tolist())
-            if self.gradcam:
-                with torch.inference_mode(False):
-                    im = im.clone()
-                    if isinstance(self.deployment_model.features_extractor, timm.models.resnet.ResNet):
-                        grayscale_cam = self.cam(input_tensor=im, targets=None)
-                        grayscale_cams_list.append(torch.from_numpy(grayscale_cam))
-                    elif is_vision_transformer(cast(BaseNetworkBuilder, self.deployment_model).features_extractor):
-                        grayscale_cam_low_res = self.grad_rollout(input_tensor=im, targets_list=preds.tolist())
-                        orig_shape = grayscale_cam_low_res.shape
-                        new_shape = (orig_shape[0], im.shape[2], im.shape[3])
-                        zoom_factors = tuple(np.array(new_shape) / np.array(orig_shape))
-                        grayscale_cam = ndimage.zoom(grayscale_cam_low_res, zoom_factors, order=1)
-                        grayscale_cams_list.append(torch.from_numpy(grayscale_cam))
+                predicted_classes.append(preds.tolist())
+                image_labels.extend(target.tolist())
+                if self.gradcam:
+                    with torch.inference_mode(False):
+                        im = im.clone()
+                        if isinstance(self.deployment_model.features_extractor, timm.models.resnet.ResNet):
+                            grayscale_cam = self.cam(input_tensor=im, targets=None)
+                            grayscale_cams_list.append(torch.from_numpy(grayscale_cam))
+                        elif is_vision_transformer(cast(BaseNetworkBuilder, self.deployment_model).features_extractor):
+                            grayscale_cam_low_res = self.grad_rollout(input_tensor=im, targets_list=preds.tolist())
+                            orig_shape = grayscale_cam_low_res.shape
+                            new_shape = (orig_shape[0], im.shape[2], im.shape[3])
+                            zoom_factors = tuple(np.array(new_shape) / np.array(orig_shape))
+                            grayscale_cam = ndimage.zoom(grayscale_cam_low_res, zoom_factors, order=1)
+                            grayscale_cams_list.append(torch.from_numpy(grayscale_cam))
         grayscale_cams: Optional[torch.Tensor] = None
         if self.gradcam:
             grayscale_cams = torch.cat(grayscale_cams_list, dim=0)
