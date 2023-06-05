@@ -1,0 +1,12 @@
+name: Feature request
+description: Propose a feature for this project
+labels: ["triage", "feature"]
+body:
+  - type: textarea
+    attributes:
+      label: Description & Motivation
+      description: A clear and concise description of the feature proposal
+      placeholder: |
+        Please outline the motivation for the proposal.
+        Is your feature request related to a problem? e.g., I'm always frustrated when [...].
+        If this is related to another GitHub issue, please link it here

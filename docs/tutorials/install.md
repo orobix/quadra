@@ -31,7 +31,7 @@ pip install .
 !!!note
     This installs the package for deployment, there are other ways to install the package based on your needs:
 
-    - `pip install -e .[dev]` (for development) (docs + testing)
+    - `pip install -e .[dev]` (for development) 
     - `pip install -e .[docs]` (for documentation)
     - `pip install -e .[test]` (for testing)
 
@@ -49,7 +49,7 @@ For example this is how a simple classification experiments on the `imagenette` 
 quadra experiment=generic/imagenette/classification/classification
 ```
 
-## Crendentials and Environment variables
+## Credentials and Environment variables
 
 `quadra` uses environment variables to store credentials and other sensitive information. Thanks to [`python-dotenv`](https://pypi.org/project/python-dotenv/) library, you can create a `.env` file in the main folder of your project and store the credentials there. During the runtime, the library will automatically load the environment variables from the `.env` file.
 
