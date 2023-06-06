@@ -12,6 +12,7 @@ def rollout(attentions: List[torch.Tensor], discard_ratio: float = 0.9, head_fus
         attentions: List of Attention matrices coming from different blocks
         discard_ratio: Percentage of elements to discard
         head_fusion: Strategy of fusion of attention heads
+
     Returns:
         mask: Output mask, still needs a resize
     """
@@ -98,6 +99,7 @@ class VitAttentionRollout:
 
         Args:
             input_tensor: Input tensor
+
         Returns:
             out: Batch of output masks
         """
@@ -121,6 +123,7 @@ def grad_rollout(
         attentions: Attention matrices
         gradients: Target class gradient matrices
         discard_ratio: Percentage of elements to discard
+
     Returns:
         mask: Output mask, still needs a resize
     """

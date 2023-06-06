@@ -401,7 +401,8 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                             utils.upload_file_tensorboard(a, tensorboard_logger)
 
     def freeze_layers(self, freeze_parameters_name: List[str]):
-        """Freeze layers specified in freeze_parameters_name
+        """Freeze layers specified in freeze_parameters_name.
+
         Args:
             freeze_parameters_name: Layers that will be frozen during training.
 
