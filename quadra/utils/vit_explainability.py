@@ -2,7 +2,7 @@ from typing import List, Optional
 
 import numpy as np
 import torch
-from sklearn.linear_model._base import ClassifierMixin
+from sklearn.linear_model._base import LinearClassifierMixin
 
 
 def rollout(attentions: List[torch.Tensor], discard_ratio: float = 0.9, head_fusion: str = "mean") -> np.ndarray:
@@ -170,7 +170,7 @@ class VitAttentionGradRollout:
         model: torch.nn.Module,
         attention_layer_names: Optional[List[str]] = None,
         discard_ratio: float = 0.9,
-        classifier: Optional[ClassifierMixin] = None,
+        classifier: Optional[LinearClassifierMixin] = None,
         example_input: Optional[torch.Tensor] = None,
     ):
         if attention_layer_names is None:
@@ -183,10 +183,10 @@ class VitAttentionGradRollout:
 
         if classifier is not None:
             if example_input is None:
-                raise ValueError("Must provide an input example to ClassifierPytorchWrapper")
-            self.model = ClassifierPytorchWrapper(
+                raise ValueError("Must provide an input example to LinearModelPytorchWrapper")
+            self.model = LinearModelPytorchWrapper(
                 backbone=model,
-                lr_classifier=classifier,
+                linear_classifier=classifier,
                 example_input=example_input,
                 device=next(model.parameters()).device,
             )
@@ -262,13 +262,13 @@ class VitAttentionGradRollout:
         return out
 
 
-class ClassifierPytorchWrapper(torch.nn.Module):
-    """Pytorch wrapper for scikit-learn classifiers.
+class LinearModelPytorchWrapper(torch.nn.Module):
+    """Pytorch wrapper for scikit-learn linear models.
 
     Args:
         backbone: Backbone
         num_classes: Number of classes
-        lr_classifier: ScikitLearn classifier model
+        linear_classifier: ScikitLearn linear classifier model
         device: The device to use. Defaults to "cpu"
         example_input: Input example needed to obtain output shape
     """
@@ -276,22 +276,22 @@ class ClassifierPytorchWrapper(torch.nn.Module):
     def __init__(
         self,
         backbone: torch.nn.Module,
-        lr_classifier: ClassifierMixin,
+        linear_classifier: LinearClassifierMixin,
         example_input: torch.Tensor,
         device: torch.device,
     ):
         super().__init__()
         self.device = device
         self.backbone = backbone.to(device)
-        self.num_classes = len(lr_classifier.classes_)
-        self.lr_classifier = lr_classifier
+        self.num_classes = len(linear_classifier.classes_)
+        self.linear_classifier = linear_classifier
         with torch.no_grad():
             output = self.backbone(example_input.to(device))
             num_filters = output.shape[-1]
 
         self.classifier = torch.nn.Linear(num_filters, self.num_classes).to(device)
-        self.classifier.weight.data = torch.from_numpy(lr_classifier.coef_).float()
-        self.classifier.bias.data = torch.from_numpy(lr_classifier.intercept_).float()
+        self.classifier.weight.data = torch.from_numpy(linear_classifier.coef_).float()
+        self.classifier.bias.data = torch.from_numpy(linear_classifier.intercept_).float()
 
     def forward(self, x):
         return torch.nn.Softmax(dim=1)(self.classifier(self.backbone(x)))
