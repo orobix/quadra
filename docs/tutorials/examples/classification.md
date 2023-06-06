@@ -297,7 +297,7 @@ core:
 task:
   output:
       example: true
-  model_path: path/to/pytorch_model.pt
+  model_path: path/to/model.pth
 ```
 
 Notice that we must provide the path to a deployment model file that will be used to perform inferences. In this case class_to_idx is mandatory (we can not infer it from a test-set). We suggest to be careful to set the same class_to_idx that has been used to train the model.
