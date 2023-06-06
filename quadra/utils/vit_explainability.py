@@ -288,6 +288,8 @@ class LinearModelPytorchWrapper(torch.nn.Module):
         super().__init__()
         self.device = device
         self.backbone = backbone.to(device)
+        if not isinstance(linear_classifier, LinearClassifierMixin):
+            raise TypeError("Classifier is not of type LinearClassifierMixin.")
         self.num_classes = len(linear_classifier.classes_)
         self.linear_classifier = linear_classifier
         with torch.no_grad():

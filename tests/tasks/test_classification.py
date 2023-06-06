@@ -56,6 +56,7 @@ def test_inference_sklearn_classification(tmp_path: Path, base_classification_da
         f"task.experiment_path={train_path}",
         "backbone=resnet18",
         "task.device=cpu",
+        "task.gradcam=true",
     ] + BASE_EXPERIMENT_OVERRIDES
     execute_quadra_experiment(overrides=inference_overrides, experiment_path=test_path)
 
