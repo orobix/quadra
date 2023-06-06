@@ -127,7 +127,7 @@ def _run_inference_experiment(data_path: str, train_path: str, test_path: str):
         "datamodule.batch_size=16",
         "logger=csv",
         "task.device=cpu",
-        f"task.model_path={os.path.join(train_path, 'deployment_model', 'pytorch_model.pt')}",
+        f"task.model_path={os.path.join(train_path, 'deployment_model', 'model.pth')}",
     ]
 
     execute_quadra_experiment(overrides=test_overrides, experiment_path=test_path)
