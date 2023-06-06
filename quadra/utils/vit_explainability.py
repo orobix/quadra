@@ -1,3 +1,8 @@
+# Original Author: jacobgil
+# Title: Explainability for Vision Transformers
+# Source: https://github.com/jacobgil/vit-explain (MIT license)
+# Description: This is a heavily modified version of the original jacobgil code (the underlying math is still the same).
+
 from typing import List, Optional
 
 import numpy as np
