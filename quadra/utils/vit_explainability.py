@@ -188,7 +188,9 @@ class VitAttentionGradRollout:
 
         if classifier is not None:
             if example_input is None:
-                raise ValueError("Must provide an input example to LinearModelPytorchWrapper")
+                raise ValueError(
+                    "Must provide an input example to LinearModelPytorchWrapper when classifier is not None"
+                )
             self.model = LinearModelPytorchWrapper(
                 backbone=model,
                 linear_classifier=classifier,
