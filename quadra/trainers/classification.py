@@ -69,10 +69,11 @@ class SklearnClassificationTrainer:
 
         if train_dataloader is not None:  # train_features is None or train_labels is None:
             log.info("Extracting features from training set")
-            train_features, train_labels = get_feature(
+            train_features, train_labels, _ = get_feature(
                 feature_extractor=self.backbone,
                 dl=train_dataloader,
                 iteration_over_training=self.iteration_over_training,
+                gradcam=False,
             )
         else:
             log.info("Using cached features for training set")
@@ -95,7 +96,11 @@ class SklearnClassificationTrainer:
         class_to_keep: Optional[List[int]] = None,
         idx_to_class: Optional[Dict[int, str]] = None,
         predict_proba: bool = True,
-    ) -> Union[Tuple[Union[str, Dict], DataFrame, float, DataFrame], Tuple[None, None, None, DataFrame]]:
+        gradcam: bool = False,
+    ) -> Union[
+        Tuple[Union[str, Dict], DataFrame, float, DataFrame, Optional[np.ndarray]],
+        Tuple[None, None, None, DataFrame, Optional[np.ndarray]],
+    ]:
         """Test classifier on test set.
 
         Args:
@@ -105,11 +110,26 @@ class SklearnClassificationTrainer:
             class_to_keep: list of class to keep
             idx_to_class: dictionary mapping class index to class name
             predict_proba: if True, predict also probability for each test image
+            gradcam: Whether to compute gradcam
+
+        Returns:
+            cl_rep: Classification report
+            pd_cm: Confusion matrix dataframe
+            accuracy: Test accuracy
+            res: Test results
+            cams: Gradcams
         """
+        cams = None
         # Extract feature
         if test_features is None:
             log.info("Extracting features from test set")
-            test_features, final_test_labels = get_feature(feature_extractor=self.backbone, dl=test_dataloader)
+            test_features, final_test_labels, cams = get_feature(
+                feature_extractor=self.backbone,
+                dl=test_dataloader,
+                gradcam=gradcam,
+                classifier=self.classifier,
+                input_shape=(self.input_shape[2], self.input_shape[0], self.input_shape[1]),
+            )
         else:
             if test_labels is None:
                 raise ValueError("Test labels must be provided when using cached data")
@@ -143,6 +163,8 @@ class SklearnClassificationTrainer:
 
         if not all(t == -1 for t in filtered_test_labels):
             test_real_label_cm = np.array(filtered_test_labels)
+            if cams is not None:
+                cams = cams[test_real_label_cm != -1]  # TODO: Is class_to_keep still used?
             pred_labels_cm = np.array(test_prediction_label)[test_real_label_cm != -1]
             test_real_label_cm = test_real_label_cm[test_real_label_cm != -1].astype(pred_labels_cm.dtype)
             cl_rep, pd_cm, accuracy = get_results(test_real_label_cm, pred_labels_cm, idx_to_class)
@@ -150,6 +172,6 @@ class SklearnClassificationTrainer:
             if predict_proba:
                 res["probability"] = test_probability
 
-            return cl_rep, pd_cm, accuracy, res
+            return cl_rep, pd_cm, accuracy, res, cams
 
-        return None, None, None, res
+        return None, None, None, res, cams

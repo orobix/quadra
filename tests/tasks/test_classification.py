@@ -56,6 +56,7 @@ def test_inference_sklearn_classification(tmp_path: Path, base_classification_da
         f"task.experiment_path={train_path}",
         "backbone=resnet18",
         "task.device=cpu",
+        "task.gradcam=true",
     ] + BASE_EXPERIMENT_OVERRIDES
     execute_quadra_experiment(overrides=inference_overrides, experiment_path=test_path)
 
@@ -122,19 +123,20 @@ def test_inference_patches(tmp_path: Path, base_patch_classification_dataset: ba
 def _run_inference_experiment(data_path: str, train_path: str, test_path: str):
     test_overrides = [
         "experiment=base/classification/classification_evaluation",
-        "task.device=cpu",
         f"datamodule.data_path={data_path}",
         "datamodule.num_workers=1",
         "datamodule.batch_size=16",
         "logger=csv",
-        f"task.model_path={os.path.join(train_path, 'deployment_model', 'model.pt')}",
+        "task.device=cpu",
+        f"task.model_path={os.path.join(train_path, 'deployment_model', 'model.pth')}",
     ]
 
     execute_quadra_experiment(overrides=test_overrides, experiment_path=test_path)
 
 
 @pytest.mark.parametrize(
-    "run_test, backbone, gradcam", [(True, "resnet18", True), (False, "resnet18", False), (True, "dino_vits8", False)]
+    "run_test, backbone, gradcam, freeze",
+    [(True, "resnet18", True, False), (False, "resnet18", False, False), (True, "dino_vits8", False, True)],
 )
 def test_train_classification(
     tmp_path: Path,
@@ -142,6 +144,7 @@ def test_train_classification(
     run_test: bool,
     backbone: str,
     gradcam: bool,
+    freeze: bool,
 ):
     data_path, arguments = base_classification_dataset
 
@@ -156,7 +159,8 @@ def test_train_classification(
         f"datamodule.data_path={data_path}",
         f"model.num_classes={num_classes}",
         f"backbone={backbone}",
-        f"model.module.gradcam={gradcam}",
+        f"backbone.model.freeze={freeze}",
+        f"task.gradcam={gradcam}",
         "trainer.max_epochs=1",
         "task.report=True",
         f"task.run_test={run_test}",

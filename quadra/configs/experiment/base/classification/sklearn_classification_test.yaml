@@ -16,6 +16,15 @@ core:
   tag: run
   name: sklearn-classification-test
 
+task:
+  device: cuda:0
+  gradcam: false
+  output:
+    folder: classification_experiment
+    report: true
+    example: true
+  experiment_path: ???
+  
 datamodule:
   num_workers: 8
   batch_size: 32

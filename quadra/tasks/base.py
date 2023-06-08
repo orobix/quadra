@@ -10,6 +10,7 @@ from pytorch_lightning.loggers import Logger, MLFlowLogger
 from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from torch.jit._script import RecursiveScriptModule
+from torch.nn import Module
 
 from quadra import get_version
 from quadra.callbacks.mlflow import get_mlflow_logger
@@ -32,7 +33,7 @@ class Task(Generic[DataModuleT]):
     """Base Experiment Task.
 
     Args:
-        config: The experiment configuration
+        config: The experiment configuration.
         export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
     """
 
@@ -341,19 +342,19 @@ class Evaluation(Task):
         self.model_path = model_path
         self.device = utils.get_device()
         self.report_folder = report_folder
-        self._deployment_model: RecursiveScriptModule
+        self._deployment_model: Union[RecursiveScriptModule, Module]
         self.deployment_model_type: str
         if self.report_folder is None:
             log.warning("Report folder is not provided, using default report folder")
             self.report_folder = "report"
 
     @property
-    def deployment_model(self) -> RecursiveScriptModule:
+    def deployment_model(self) -> Union[RecursiveScriptModule, Module]:
         """RecursiveScriptModule: The deployment model."""
         return self._deployment_model
 
     @deployment_model.setter
-    def deployment_model(self, model: RecursiveScriptModule) -> None:
+    def deployment_model(self, model: Union[RecursiveScriptModule, Module]) -> None:
         """RecursiveScriptModule: The deployment model."""
         self._deployment_model = model
 
