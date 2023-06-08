@@ -10,11 +10,15 @@ import hydra
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import timm
 import torch
 from joblib import dump, load
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
+from pytorch_grad_cam import GradCAM
+from scipy import ndimage
 from sklearn.base import ClassifierMixin
 from sklearn.metrics import ConfusionMatrixDisplay
+from torch import nn
 from tqdm import tqdm
 
 from quadra.callbacks.mlflow import get_mlflow_logger
@@ -25,13 +29,15 @@ from quadra.datamodules import (
     SklearnClassificationDataModule,
 )
 from quadra.datasets.classification import ImageClassificationListDataset
+from quadra.models.classification import BaseNetworkBuilder
 from quadra.modules.classification import ClassificationModule
 from quadra.tasks.base import LightningTask, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
 from quadra.utils.classification import get_results, save_classification_result
-from quadra.utils.export import export_torchscript_model, import_deployment_model
-from quadra.utils.models import get_feature
+from quadra.utils.export import export_pytorch_model, export_torchscript_model, import_deployment_model
+from quadra.utils.models import get_feature, is_vision_transformer
+from quadra.utils.vit_explainability import VitAttentionGradRollout
 
 log = utils.get_logger(__name__)
 
@@ -53,6 +59,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         config: The experiment configuration
         output: The otuput configuration.
         export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
+        gradcam: Whether to compute gradcams
         checkpoint_path: The path to the checkpoint to load the model from. Defaults to None.
         lr_multiplier: The multiplier for the backbone learning rate. Defaults to None.
         output: The ouput configuration (under task config). It contains the bool "example" to generate
@@ -68,20 +75,28 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         checkpoint_path: Optional[str] = None,
         lr_multiplier: Optional[float] = None,
         export_type: Optional[List[str]] = None,
+        gradcam: bool = False,
         report: bool = False,
         run_test: bool = False,
     ):
         super().__init__(
-            config=config, checkpoint_path=checkpoint_path, run_test=run_test, report=report, export_type=export_type
+            config=config,
+            checkpoint_path=checkpoint_path,
+            run_test=run_test,
+            report=report,
+            export_type=export_type,
         )
         self.output = output
+        self.gradcam = gradcam
         self._lr_multiplier = lr_multiplier
-        self._pre_classifier: torch.nn.Module
-        self._classifier: torch.nn.Module
-        self._model: torch.nn.Module
+        self._pre_classifier: nn.Module
+        self._classifier: nn.Module
+        self._model: nn.Module
         self._optimizer: torch.optim.Optimizer
         self._scheduler: torch.optim.lr_scheduler._LRScheduler
+        self.model_json: Optional[Dict[str, Any]] = None
         self.export_folder: str = "deployment_model"
+        self.deploy_info_file: str = "model.json"
         self.report_confmat: pd.DataFrame
 
     @property
@@ -93,9 +108,9 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
     def optimizer(self, optimizer_config: DictConfig) -> None:
         """Set the optimizer."""
         if (
-            isinstance(self.model.features_extractor, torch.nn.Module)
-            and isinstance(self.model.pre_classifier, torch.nn.Module)
-            and isinstance(self.model.classifier, torch.nn.Module)
+            isinstance(self.model.features_extractor, nn.Module)
+            and isinstance(self.model.pre_classifier, nn.Module)
+            and isinstance(self.model.classifier, nn.Module)
         ):
             log.info("Instantiating optimizer <%s>", self.config.optimizer["_target_"])
             if self._lr_multiplier is not None and self._lr_multiplier > 0:
@@ -155,6 +170,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             model=self.model,
             optimizer=self.optimizer,
             lr_scheduler=self.scheduler,
+            gradcam=self.gradcam,
         )
         if self.checkpoint_path is not None:
             log.info("Loading model from lightning checkpoint: %s", self.checkpoint_path)
@@ -164,12 +180,12 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                 optimizer=self.optimizer,
                 lr_scheduler=self.scheduler,
                 criterion=module.criterion,
-                gradcam=self.config.model.module.gradcam,
+                gradcam=self.gradcam,
             )
         self._module = module
 
     @property
-    def pre_classifier(self) -> torch.nn.Module:
+    def pre_classifier(self) -> nn.Module:
         return self._pre_classifier
 
     @pre_classifier.setter
@@ -178,11 +194,11 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             log.info("Instantiating pre_classifier <%s>", model_config.pre_classifier["_target_"])
             self._pre_classifier = hydra.utils.instantiate(model_config.pre_classifier, _convert_="partial")
         else:
-            log.info("No pre-classifier found in the config: instantiate a torch.nn.Identity instead")
-            self._pre_classifier = torch.nn.Identity()
+            log.info("No pre-classifier found in config: instantiate a torch.nn.Identity instead")
+            self._pre_classifier = nn.Identity()
 
     @property
-    def classifier(self) -> torch.nn.Module:
+    def classifier(self) -> nn.Module:
         return self._classifier
 
     @classifier.setter
@@ -194,7 +210,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             raise ValueError("A `classifier` definition must be specified in the config")
 
     @property
-    def model(self) -> torch.nn.Module:
+    def model(self) -> nn.Module:
         return self._model
 
     @model.setter
@@ -227,17 +243,31 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             self.trainer.test(datamodule=self.datamodule, model=self.module, ckpt_path="best")
 
     def export(self) -> None:
-        """Generate deployment model for the task."""
+        """Generate deployment models for the task."""
         if self.export_type is None:
             raise ValueError("`Export_type` must be specified in the config to export the model")
 
         input_width = self.config.transforms.get("input_width")
         input_height = self.config.transforms.get("input_height")
 
+        if self.datamodule.class_to_idx is None:
+            log.warning(
+                "No `class_to_idx` found in the datamodule, class information will not be saved in the model.json"
+            )
+            idx_to_class = {}
+        else:
+            idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
+        self.model_json = {
+            "input_size": [input_width, input_height, 3],
+            "classes": idx_to_class,
+            "mean": list(self.config.transforms.mean),
+            "std": list(self.config.transforms.std),
+        }
+
         if self.trainer.checkpoint_callback is None:
             raise ValueError("No checkpoint callback found in the trainer")
         best_model_path = self.trainer.checkpoint_callback.best_model_path  # type: ignore[attr-defined]
-        log.info("Saving runtime model for %s checkpoint", best_model_path)
+        log.info("Saving deployment model for %s checkpoint", best_model_path)
 
         module = self.module.load_from_checkpoint(
             best_model_path,
@@ -245,7 +275,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             optimizer=self.optimizer,
             lr_scheduler=self.scheduler,
             criterion=self.module.criterion,
-            gradcam=self.module.gradcam,
+            gradcam=False,
         )
 
         for export_type in self.export_type:
@@ -256,22 +286,18 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                     self.export_folder,
                     half_precision=int(self.trainer.precision) == 16,
                 )
-        if self.datamodule.class_to_idx is None:
-            log.warning(
-                "No `class_to_idx` found in the datamodule, class information will not be saved in the model.json"
-            )
-            idx_to_class = {}
-        else:
-            idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
-        model_json = {
-            "input_size": [input_width, input_height, 3],
-            "classes": idx_to_class,
-            "mean": list(self.config.transforms.mean),
-            "std": list(self.config.transforms.std),
-        }
+            elif export_type == "pytorch":
+                export_pytorch_model(
+                    model=module.model,
+                    output_path=self.export_folder,
+                )
+                with open(os.path.join(self.export_folder, "model_config.yaml"), "w") as f:
+                    OmegaConf.save(self.config.model, f, resolve=True)
+            else:
+                log.warning("Export type: %s not implemented", export_type)
 
-        with open(os.path.join(self.export_folder, "model.json"), "w") as f:
-            json.dump(model_json, f)
+        with open(os.path.join(self.export_folder, self.deploy_info_file), "w") as f:
+            json.dump(self.model_json, f)
 
     def generate_report(self) -> None:
         """Generate a report for the task."""
@@ -284,8 +310,12 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             return
 
         log.info("Generating report!")
-
-        predictions_outputs = self.trainer.predict(model=self.module, datamodule=self.datamodule, ckpt_path="best")
+        if not self.run_test or self.config.trainer.get("fast_dev_run"):
+            self.datamodule.setup(stage="test")
+        best_model_path = self.trainer.checkpoint_callback.best_model_path  # type: ignore[union-attr]
+        predictions_outputs = self.trainer.predict(
+            model=self.module, datamodule=self.datamodule, ckpt_path=best_model_path
+        )
         if not predictions_outputs:
             log.warning("There is no prediction to generate the report. Skipping report generation.")
             return
@@ -371,7 +401,8 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                             utils.upload_file_tensorboard(a, tensorboard_logger)
 
     def freeze_layers(self, freeze_parameters_name: List[str]):
-        """Freeze layers specified in freeze_parameters_name
+        """Freeze layers specified in freeze_parameters_name.
+
         Args:
             freeze_parameters_name: Layers that will be frozen during training.
 
@@ -409,7 +440,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
         self._device = device
         self.output = output
-        self._backbone: torch.nn.Module
+        self._backbone: nn.Module
         self._trainer: SklearnClassificationTrainer
         self._model: ClassifierMixin
         self.metadata: Dict[str, Any] = {
@@ -418,7 +449,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             "test_results": [],
             "test_labels": [],
         }
-        self.export_folder: str = "deployment_model"
+        self.export_folder = "deployment_model"
+        self.deploy_info_file = "model.json"
         self.train_dataloader_list: List[torch.utils.data.DataLoader] = []
         self.test_dataloader_list: List[torch.utils.data.DataLoader] = []
 
@@ -452,7 +484,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self._model = hydra.utils.instantiate(model_config)
 
     @property
-    def backbone(self) -> torch.nn.Module:
+    def backbone(self) -> nn.Module:
         """Backbone: The backbone."""
         return self._backbone
 
@@ -497,7 +529,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                 raise AttributeError("Cache is only supported when iteration over training is set to 1")
 
             full_dataloader = self.datamodule.full_dataloader()
-            all_features, all_labels = get_feature(
+            all_features, all_labels, _ = get_feature(
                 feature_extractor=self.backbone, dl=full_dataloader, iteration_over_training=1
             )
 
@@ -527,7 +559,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                     train_features=all_features_sorted[0:train_len], train_labels=all_labels_sorted[0:train_len]
                 )
 
-                _, pd_cm, accuracy, res = self.trainer.test(
+                _, pd_cm, accuracy, res, _ = self.trainer.test(
                     test_dataloader=test_dataloader,
                     test_features=all_features_sorted[train_len:],
                     test_labels=all_labels_sorted[train_len:],
@@ -537,7 +569,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                 )
             else:
                 self.trainer.fit(train_dataloader=train_dataloader)
-                _, pd_cm, accuracy, res = self.trainer.test(
+                _, pd_cm, accuracy, res, _ = self.trainer.test(
                     test_dataloader=test_dataloader,
                     class_to_keep=class_to_keep,
                     idx_to_class=train_dataloader.dataset.idx_to_class,
@@ -581,7 +613,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             log.info("No test data, skipping test")
             return
 
-        _, pd_cm, accuracy, res = self.trainer.test(
+        _, pd_cm, accuracy, res, _ = self.trainer.test(
             test_dataloader=test_dataloader, idx_to_class=idx_to_class, predict_proba=True
         )
 
@@ -613,10 +645,19 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                 export_torchscript_model(
                     self.backbone, (1, 3, input_height, input_width), self.export_folder, half_precision=False
                 )
+            elif export_type == "pytorch":
+                os.makedirs(self.export_folder, exist_ok=True)
+                # We only need to save classifier.joblib + backbone config file
+                with open(os.path.join(self.export_folder, "backbone_config.yaml"), "w") as f:
+                    OmegaConf.save(self.config.backbone, f, resolve=True)
+                log.info("backbone_config.yaml saved (export type 'pytorch')")
+            else:
+                log.warning("Export type: %s not implemented", export_type)
 
         dump(self.model, os.path.join(self.export_folder, "classifier.joblib"))
 
         idx_to_class = {v: k for k, v in self.datamodule.full_dataset.class_to_idx.items()}
+
         model_json = {
             "input_size": [input_width, input_height, 3],
             "classes": idx_to_class,
@@ -624,7 +665,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             "std": list(self.config.transforms.std),
         }
 
-        with open(os.path.join(self.export_folder, "model.json"), "w") as f:
+        with open(os.path.join(self.export_folder, self.deploy_info_file), "w") as f:
             json.dump(model_json, f)
 
     def generate_report(self) -> None:
@@ -678,13 +719,14 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
 
 class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
-    """Perform a test of an already trained classification model.
+    """Perform a test using an imported SklearnClassification pytorch model.
 
     Args:
         config: The experiment configuration
         output: where to save results
         experiment_path: path to training experiment generated from SklearnClassification task.
         device: the device where to run the model (cuda or cpu)
+        gradcam: Whether to compute gradcams
     """
 
     def __init__(
@@ -693,29 +735,33 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
         output: DictConfig,
         experiment_path: str,
         device: str,
+        gradcam: bool = False,
     ):
         super().__init__(config=config)
         self._device = device
+        self.gradcam = gradcam
         self.output = output
         self.experiment_path = experiment_path
-        self._backbone: torch.nn.Module
+        self._backbone: nn.Module
         self._classifier: ClassifierMixin
         self.class_to_idx: Dict[str, int]
         self.idx_to_class: Dict[int, str]
-        self.runtime_info_file = "model.json"
+        self.export_folder = "deployment_model"
+        self.deploy_info_file = "model.json"
         self.test_dataloader: torch.utils.data.DataLoader
         self.metadata: Dict[str, Any] = {
             "test_confusion_matrix": None,
             "test_accuracy": None,
             "test_results": None,
             "test_labels": None,
+            "cams": None,
         }
         self.model_info: Any
 
     def prepare(self) -> None:
         """Prepare the experiment."""
         # Read the information of the already trained model
-        with open(os.path.join(self.experiment_path, "deployment_model", self.runtime_info_file), "r") as f:
+        with open(os.path.join(self.experiment_path, self.export_folder, self.deploy_info_file), "r") as f:
             self.model_info = json.load(f)
 
         idx_to_class = {}
@@ -735,12 +781,17 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
         self.datamodule.setup(stage="test")
 
         self.test_dataloader = self.datamodule.test_dataloader()
-
-        # TODO: It is not currently possible to load a deployed backbone!!
-        self.backbone = self.config.backbone
+        try:
+            self.backbone = OmegaConf.load(
+                os.path.join(self.experiment_path, self.export_folder, "backbone_config.yaml")
+            )  # type: ignore[assignment]
+        except Exception as e:
+            raise RuntimeError(
+                "You need the backbone config file to load the model. Add 'pytorch' export format to the train task"
+            ) from e
 
         # Load classifier
-        self.classifier = os.path.join(self.experiment_path, "deployment_model", "classifier.joblib")
+        self.classifier = os.path.join(self.experiment_path, self.export_folder, "classifier.joblib")
 
         # Configure trainer
         self.trainer = self.config.trainer
@@ -756,7 +807,7 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
         self._classifier = load(classifier_path)
 
     @property
-    def backbone(self) -> torch.nn.Module:
+    def backbone(self) -> nn.Module:
         """Backbone: The backbone."""
         return self._backbone
 
@@ -790,8 +841,11 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
 
     def test(self) -> None:
         """Run the test."""
-        _, pd_cm, accuracy, res = self.trainer.test(
-            test_dataloader=self.test_dataloader, idx_to_class=self.idx_to_class, predict_proba=True
+        _, pd_cm, accuracy, res, cams = self.trainer.test(
+            test_dataloader=self.test_dataloader,
+            idx_to_class=self.idx_to_class,
+            predict_proba=True,
+            gradcam=self.gradcam,
         )
 
         # save results
@@ -801,12 +855,12 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
         self.metadata["test_labels"] = [
             self.idx_to_class[i] if i != -1 else "N/A" for i in res["real_label"].unique().tolist()
         ]
+        self.metadata["cams"] = cams
 
     def generate_report(self) -> None:
         """Generate a report for the task."""
         log.info("Generating report!")
         os.makedirs(self.output.folder, exist_ok=True)
-
         save_classification_result(
             results=self.metadata["test_results"],
             output_folder=self.output.folder,
@@ -815,6 +869,7 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
             test_dataloader=self.test_dataloader,
             config=self.config,
             output=self.output,
+            grayscale_cams=self.metadata["cams"],
         )
 
     def execute(self) -> None:
@@ -830,13 +885,15 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
         return self._device
 
 
-class ClassificationEvaluation(Task[ClassificationDataModule]):
-    """Evaluation task for Classification.
+class ClassificationEvaluation(Task[ClassificationDataModuleT]):
+    """Perform a test on an imported Classification pytorch model.
 
     Args:
         config: Task configuration
         output: Configuration for the output
-        model_path: Path to .pt model file
+        model_path: Path to pytorch .pt model file
+        report: Whether to generate the report of the predictions
+        gradcam: Whether to compute gradcams
         device: Device to use for evaluation. If None, the device is automatically determined
 
     """
@@ -846,23 +903,63 @@ class ClassificationEvaluation(Task[ClassificationDataModule]):
         config: DictConfig,
         output: DictConfig,
         model_path: str,
+        report: bool = True,
+        gradcam: bool = False,
         device: Optional[str] = None,
     ):
         super().__init__(config=config)
         self.model_data: Dict[str, Any]
-        self._deployment_model: Any
-        self.deployment_model_type: str
         self.model_path = model_path
         self.output_path = "test_output"
         self.output = output
+        self.report = report
+        self.gradcam = gradcam
         self.config = config
-        self.report_path = ""
         self.metadata = {"report_files": []}
-        self.model_info_filename = "model.json"
+        self.deploy_info_file = "model.json"
+        self.cam: GradCAM
         if device is None:
             self.device = utils.get_device()
         else:
             self.device = device
+
+    @property
+    def model(self) -> nn.Module:
+        return self._model
+
+    @model.setter
+    def model(self, model_config: DictConfig) -> None:
+        self.pre_classifier = model_config  # type: ignore[assignment]
+        self.classifier = model_config  # type: ignore[assignment]
+        log.info("Instantiating backbone <%s>", model_config.model["_target_"])
+        self._model: nn.Module = hydra.utils.instantiate(
+            model_config.model, classifier=self.classifier, pre_classifier=self.pre_classifier, _convert_="partial"
+        )
+
+    @property
+    def pre_classifier(self) -> nn.Module:
+        return self._pre_classifier
+
+    @pre_classifier.setter
+    def pre_classifier(self, model_config: DictConfig) -> None:
+        if "pre_classifier" in model_config and model_config.pre_classifier is not None:
+            log.info("Instantiating pre_classifier <%s>", model_config.pre_classifier["_target_"])
+            self._pre_classifier = hydra.utils.instantiate(model_config.pre_classifier, _convert_="partial")
+        else:
+            log.info("No pre-classifier found in config: instantiate a torch.nn.Identity instead")
+            self._pre_classifier = nn.Identity()
+
+    @property
+    def classifier(self) -> nn.Module:
+        return self._classifier
+
+    @classifier.setter
+    def classifier(self, model_config: DictConfig) -> None:
+        if "classifier" in model_config:
+            log.info("Instantiating classifier <%s>", model_config.classifier["_target_"])
+            self._classifier = hydra.utils.instantiate(model_config.classifier, _convert_="partial")
+        else:
+            raise ValueError("A `classifier` definition must be specified in the config")
 
     @property
     def deployment_model(self):
@@ -872,11 +969,19 @@ class ClassificationEvaluation(Task[ClassificationDataModule]):
     @deployment_model.setter
     def deployment_model(self, model_path: str):
         """Set the deployment model."""
-        self._deployment_model, self.deployment_model_type = import_deployment_model(model_path, self.device)
+        if os.path.splitext(os.path.basename(model_path))[1] == ".pth":
+            model_config = OmegaConf.load(os.path.join(Path(self.model_path).parent, "model_config.yaml"))
+            self.model = model_config  # type: ignore[assignment]
+        self._deployment_model, self.deployment_model_type = import_deployment_model(
+            model_path, self.device, self.model
+        )
+        if self.gradcam and self.deployment_model_type != "torch":
+            log.warning("To compute gradcams you need to provide the path to an exported .pth state_dict file")
+            self.gradcam = False
 
     def prepare(self) -> None:
         """Prepare the evaluation."""
-        with open(os.path.join(Path(self.model_path).parent, self.model_info_filename)) as f:
+        with open(os.path.join(Path(self.model_path).parent, self.deploy_info_file)) as f:
             self.model_data = json.load(f)
 
         if not isinstance(self.model_data, dict):
@@ -901,6 +1006,25 @@ class ClassificationEvaluation(Task[ClassificationDataModule]):
         super().prepare()
         self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
 
+    def prepare_gradcam(self) -> None:
+        """Initializing gradcam for the predictions."""
+        if isinstance(self.deployment_model.features_extractor, timm.models.resnet.ResNet):
+            target_layers = [
+                cast(BaseNetworkBuilder, self.deployment_model).features_extractor.layer4[-1]  # type: ignore[index]
+            ]
+            self.cam = GradCAM(
+                model=self.deployment_model,
+                target_layers=target_layers,
+                use_cuda=(self.device != "cpu"),
+            )
+            for p in self.deployment_model.features_extractor.layer4[-1].parameters():
+                p.requires_grad = True
+        elif is_vision_transformer(cast(BaseNetworkBuilder, self.deployment_model).features_extractor):
+            self.grad_rollout = VitAttentionGradRollout(self.deployment_model)
+        else:
+            log.warning("Gradcam not implemented for this backbone, it will not be computed")
+            self.gradcam = False
+
     def test(self) -> None:
         """Perform test."""
         log.info("Running test")
@@ -910,17 +1034,37 @@ class ClassificationEvaluation(Task[ClassificationDataModule]):
 
         image_labels = []
         predicted_classes = []
+        grayscale_cams_list = []
 
-        with torch.no_grad():
+        if self.gradcam:
+            self.prepare_gradcam()
+
+        with torch.set_grad_enabled(self.gradcam):
             for batch_item in tqdm(test_dataloader):
                 im, target = batch_item
-
-                outputs = self.deployment_model(im.to(self.device))
+                im = im.to(self.device).detach()
+                outputs = self.deployment_model(im).detach()
                 probs = torch.softmax(outputs, dim=1)
                 preds = torch.max(probs, dim=1).indices
 
                 predicted_classes.append(preds.tolist())
                 image_labels.extend(target.tolist())
+                if self.gradcam:
+                    with torch.inference_mode(False):
+                        im = im.clone()
+                        if isinstance(self.deployment_model.features_extractor, timm.models.resnet.ResNet):
+                            grayscale_cam = self.cam(input_tensor=im, targets=None)
+                            grayscale_cams_list.append(torch.from_numpy(grayscale_cam))
+                        elif is_vision_transformer(cast(BaseNetworkBuilder, self.deployment_model).features_extractor):
+                            grayscale_cam_low_res = self.grad_rollout(input_tensor=im, targets_list=preds.tolist())
+                            orig_shape = grayscale_cam_low_res.shape
+                            new_shape = (orig_shape[0], im.shape[2], im.shape[3])
+                            zoom_factors = tuple(np.array(new_shape) / np.array(orig_shape))
+                            grayscale_cam = ndimage.zoom(grayscale_cam_low_res, zoom_factors, order=1)
+                            grayscale_cams_list.append(torch.from_numpy(grayscale_cam))
+        grayscale_cams: Optional[torch.Tensor] = None
+        if self.gradcam:
+            grayscale_cams = torch.cat(grayscale_cams_list, dim=0)
 
         predicted_classes = [item for sublist in predicted_classes for item in sublist]
         if self.datamodule.class_to_idx is not None:
@@ -938,6 +1082,7 @@ class ClassificationEvaluation(Task[ClassificationDataModule]):
         self.metadata["test_accuracy"] = test_accuracy
         self.metadata["test_results"] = predicted_classes
         self.metadata["test_labels"] = image_labels
+        self.metadata["grayscale_cams"] = grayscale_cams
 
     def generate_report(self) -> None:
         """Generate a report for the task."""
@@ -961,13 +1106,13 @@ class ClassificationEvaluation(Task[ClassificationDataModule]):
             test_dataloader=self.datamodule.test_dataloader(),
             config=self.config,
             output=self.output,
-            grayscale_cams=None,
+            grayscale_cams=self.metadata["grayscale_cams"],
         )
 
     def execute(self) -> None:
         """Execute the evaluation."""
         self.prepare()
         self.test()
-        self.generate_report()
-        log.info("Evaluation finished")
+        if self.report:
+            self.generate_report()
         self.finalize()

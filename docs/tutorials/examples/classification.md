@@ -94,14 +94,14 @@ print_config: true
 
 model:
   num_classes: ???
-  gradcam: true
   module:
     lr_scheduler_interval: "epoch"
 
 task:
   lr_multiplier: 0.0
+  gradcam: true
   run_test: True
-  export_type: [torchscript]
+  export_type: [torchscript, pytorch]
   report: True
   output:
     example: True
@@ -169,8 +169,9 @@ datamodule:
     class_3: 2
 
 task:
+  gradcam: True # Enable gradcam computation during evaluation
   run_test: True # Perform test evaluation at the end of training
-  export_type: [torchscript]
+  export_type: [torchscript, pytorch]
   report: True 
   output:
     example: True # Generate an example of concordants and discordants predictions for each class
@@ -179,7 +180,6 @@ model:
   num_classes: 3 # This is very important
   module:
     lr_scheduler_interval: "epoch"
-    gradcam: True # Enable gradcam computation during evaluation
     
 backbone:
   model:
@@ -258,8 +258,14 @@ core:
   upload_artifacts: true
   name: classification_evalutation_base
 
+logger:
+  mlflow:
+    experiment_name: name_of_the_experiment
+    run_name: ${core.name}
+
 task:
   _target_: quadra.tasks.ClassificationEvaluation
+  gradcam: true
   output:
     example: true
   model_path: ???
@@ -283,9 +289,6 @@ datamodule:
     class_2: 1
     class_3: 2
 
-model:
-  num_classes: 3
-
 core:
   tag: "run"
   upload_artifacts: true
@@ -294,7 +297,7 @@ core:
 task:
   output:
       example: true
-  model_path: path/to/deployment_model
+  model_path: path/to/model.pth
 ```
 
 Notice that we must provide the path to a deployment model file that will be used to perform inferences. In this case class_to_idx is mandatory (we can not infer it from a test-set). We suggest to be careful to set the same class_to_idx that has been used to train the model.

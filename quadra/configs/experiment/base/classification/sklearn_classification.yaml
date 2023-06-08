@@ -13,6 +13,9 @@ backbone:
     pretrained: true
     freeze: true
 
+task:
+  export_type: [torchscript, pytorch]
+  
 core:
   tag: "run"
   name: "sklearn-classification"

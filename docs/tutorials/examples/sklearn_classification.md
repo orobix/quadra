@@ -100,6 +100,9 @@ backbone:
     pretrained: true
     freeze: true
 
+task:
+  export_type: [torchscript, pytorch]
+
 core:
   tag: "run"
   name: "sklearn-classification"
@@ -112,6 +115,7 @@ datamodule:
 ```
 
 By default the experiment will use dino_vitb8 as backbone, resizing the images to 224x224 and training a logistic regression classifier. Setting the `n_splits` parameter to 1 will use a standard 70/30 train/validation split (given the parameters specified in the base datamodule) instead of cross validation.
+It will also export the model in two formats, "torchscript" and "pytorch".
 
 An actual configuration file based on the above could be this one (suppose it's saved under `configs/experiment/custom_experiment/sklearn_classification.yaml`):
 ```yaml
@@ -139,7 +143,7 @@ datamodule:
 
 task:
   device: cuda:0
-  export_type: [torchscript]
+  export_type: [torchscript, pytorch]
   output:
     folder: classification_experiment
     save_backbone: true
@@ -223,6 +227,7 @@ datamodule:
 
 task:
   device: cuda:0
+  gradcam: true
   output:
     folder: classification_test_experiment
     report: true
@@ -230,7 +235,7 @@ task:
   experiment_path:
 ```
 
-This will test the model trained in the given experiment on the given dataset. The experiment results will be saved under the `classification_test_experiment` folder.
+This will test the model trained in the given experiment on the given dataset. The experiment results will be saved under the `classification_test_experiment` folder. If gradcam is set to True, original and gradcam results will be saved during the generate_report().
 
 ### Run
 

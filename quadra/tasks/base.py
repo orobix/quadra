@@ -24,7 +24,7 @@ class Task(Generic[DataModuleT]):
     """Base Experiment Task.
 
     Args:
-        config: The experiment configuration
+        config: The experiment configuration.
         export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
     """
 

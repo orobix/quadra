@@ -19,6 +19,7 @@ logger:
     run_name: ${core.name}
 
 task:
+  gradcam: true
   output:
     example: true
   model_path: ???
