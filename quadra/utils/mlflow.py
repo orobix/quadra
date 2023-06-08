@@ -6,7 +6,7 @@ try:
 except ImportError:
     MLFLOW_AVAILABLE = False
 
-from typing import Optional, TypeVar
+from typing import List, Optional, TypeVar
 
 import torch
 from torch import nn
@@ -15,14 +15,14 @@ NnModuleT = TypeVar("NnModuleT", bound=nn.Module)
 
 
 @torch.inference_mode()
-def infer_signature_torch(model: NnModuleT, data: torch.Tensor) -> Optional[ModelSignature]:
+def infer_signature_torch(model: NnModuleT, data: List[torch.Tensor]) -> Optional[ModelSignature]:
     """Infer signature for a PyTorch/Torchscript model."""
     from aigo_research.utils.utils import get_logger  # pylint: disable=[import-outside-toplevel]
 
     log = get_logger(__name__)
 
     model = model.eval()
-    model_output = model(data)
+    model_output = model(*data)
 
     if isinstance(model_output, tuple):
         # Mlflow currently does not support tuple outputs, so we use a dict instead
@@ -35,4 +35,9 @@ def infer_signature_torch(model: NnModuleT, data: torch.Tensor) -> Optional[Mode
         log.warning("Unable to infer signature for model output type %s", type(model_output))
         return None
 
-    return infer_signature(data.cpu().numpy(), model_output)
+    if len(data) == 1:
+        signature_input = data[0].cpu().numpy()
+    else:
+        signature_input = {f"input_{i}": x.cpu().numpy() for i, x in enumerate(data)}
+
+    return infer_signature(signature_input, model_output)

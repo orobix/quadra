@@ -274,9 +274,18 @@ def finish(
                 for model_path in deployed_models:
                     if model_path.endswith(".pt"):
                         model, _ = quadra_export.import_deployment_model(model_path, device="cpu")
+
+                        input_size = model_json["input_size"]
+
+                        # Not a huge fan of this check
+                        if not isinstance(input_size[0], list):
+                            # Input size is not a list of lists
+                            input_size = [input_size]
+
                         # WxHxC -> 1xCxHxW
-                        input_shape = (1, *np.array(model_json["input_size"])[[2, 1, 0]])
-                        signature = infer_signature_torch(model, torch.randn(input_shape))
+                        inputs = [torch.randn(1, *np.array(size)[[2, 1, 0]]) for size in input_size]
+                        signature = infer_signature_torch(model, inputs)
+
                         with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
                             mlflow.pytorch.log_model(
                                 model,
