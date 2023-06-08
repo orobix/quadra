@@ -110,7 +110,6 @@ class MlflowModelManager(AbstractModelManager):
 
         Args:
             model_name: The name of the model
-            stage: The stage of the model
 
         Returns:
             The model version

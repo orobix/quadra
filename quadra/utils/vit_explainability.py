@@ -274,10 +274,9 @@ class LinearModelPytorchWrapper(torch.nn.Module):
 
     Args:
         backbone: Backbone
-        num_classes: Number of classes
         linear_classifier: ScikitLearn linear classifier model
-        device: The device to use. Defaults to "cpu"
         example_input: Input example needed to obtain output shape
+        device: The device to use. Defaults to "cpu"
     """
 
     def __init__(
