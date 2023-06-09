@@ -31,7 +31,7 @@ graph LR;
     T-->E(Evaluation);
     L-->SG(Segmentation);
     L-->CL(Classification);
-    L-->SCL(SklearnClassification);
+    T-->SCL(SklearnClassification);
     L-->SSL(SSL);
     L-->AD(AnomalibDetection)
 ```
