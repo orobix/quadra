@@ -17,7 +17,7 @@ NnModuleT = TypeVar("NnModuleT", bound=nn.Module)
 @torch.inference_mode()
 def infer_signature_torch(model: NnModuleT, data: List[torch.Tensor]) -> Optional[ModelSignature]:
     """Infer signature for a PyTorch/Torchscript model."""
-    from aigo_research.utils.utils import get_logger  # pylint: disable=[import-outside-toplevel]
+    from quadra.utils.utils import get_logger  # pylint: disable=[import-outside-toplevel]
 
     log = get_logger(__name__)
 

@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from aigo_research.utils.utils import get_logger
+from quadra.utils.utils import get_logger
 
 log = get_logger(__name__)
 
