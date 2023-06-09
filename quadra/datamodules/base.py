@@ -51,7 +51,7 @@ class DecorateParentMethod(type):
         return super().__new__(cls, name, bases, dct)
 
 
-def compute_file_hash(path: str, hash_size: int) -> str:
+def compute_file_hash(path: str, hash_size: Literal[32, 64, 128] = 64) -> str:
     """Get hash of a file.
 
     Args:

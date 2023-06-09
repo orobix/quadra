@@ -28,7 +28,9 @@ class AbstractModelManager(ABC):
     """Abstract class for model managers."""
 
     @abstractmethod
-    def register_model(self, model_location: str, model_name: str, tags: Optional[Dict[str, Any]]) -> Any:
+    def register_model(
+        self, model_location: str, model_name: str, description: str, tags: Optional[Dict[str, Any]]
+    ) -> Any:
         """Register a model in the model registry."""
 
     @abstractmethod
@@ -71,15 +73,15 @@ class MlflowModelManager(AbstractModelManager):
         self.client = MlflowClient()
 
     def register_model(
-        self, model_location: str, model_name: str, tags: Optional[Dict[str, Any]] = None, description: str = ""
+        self, model_location: str, model_name: str, description: str, tags: Optional[Dict[str, Any]] = None
     ) -> ModelVersion:
         """Register a model in the model registry.
 
         Args:
             model_location: The model uri
             model_name: The name of the model after it is registered
-            tags: A dictionary of tags to add to the model
             description: A description of the model, this will be added to the model changelog
+            tags: A dictionary of tags to add to the model
 
         Returns:
             The model version
