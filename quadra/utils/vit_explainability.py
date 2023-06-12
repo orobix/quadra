@@ -305,8 +305,8 @@ class LinearModelPytorchWrapper(torch.nn.Module):
     def forward(self, x):
         if self.num_classes == 2:
             sig = torch.nn.Sigmoid()
-            class_zero_probabilities = sig(self.classifier(self.backbone(x)))
-            class_one_probabilities = 1 - sig(self.classifier(self.backbone(x)))
+            class_zero_probabilities = 1 - sig(self.classifier(self.backbone(x)))
+            class_one_probabilities = sig(self.classifier(self.backbone(x)))
             two_class_probs = torch.cat((class_zero_probabilities, class_one_probabilities), dim=1)
             return torch.nn.Softmax(dim=1)(two_class_probs)
         return torch.nn.Softmax(dim=1)(self.classifier(self.backbone(x)))
