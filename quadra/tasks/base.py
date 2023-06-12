@@ -141,6 +141,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             for logger in self.logger:
                 if (
                     isinstance(logger, MLFlowLogger)
+                    and self.config.core.upload_artifacts
                     and MLFLOW_AVAILABLE
                     and os.environ.get("MLFLOW_TRACKING_URI") is not None
                 ):
@@ -256,7 +257,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
 
         mlflow_logger = get_mlflow_logger(self.trainer)
 
-        if mlflow_logger is not None:
+        if mlflow_logger is not None and self.config.core.upload_artifacts:
             with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
                 self.trainer.fit(model=self.module, datamodule=self.datamodule)
         else:
