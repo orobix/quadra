@@ -293,8 +293,6 @@ class LinearModelPytorchWrapper(torch.nn.Module):
         if not isinstance(linear_classifier, LinearClassifierMixin):
             raise TypeError("Classifier is not of type LinearClassifierMixin.")
         self.num_classes = len(linear_classifier.classes_)
-        if self.num_classes == 2:
-            self.sig = torch.nn.Sigmoid()
         self.linear_classifier = linear_classifier
         with torch.no_grad():
             output = self.backbone(example_input.to(device))
@@ -306,8 +304,10 @@ class LinearModelPytorchWrapper(torch.nn.Module):
 
     def forward(self, x):
         if self.num_classes == 2:
-            class_one_probabilities = self.sig(self.classifier(self.backbone(x)))
+            class_one_probabilities = torch.nn.Sigmoid()(self.classifier(self.backbone(x)))
             class_zero_probabilities = 1 - class_one_probabilities
             two_class_probs = torch.cat((class_zero_probabilities, class_one_probabilities), dim=1)
-            return torch.nn.Softmax(dim=1)(two_class_probs)
+
+            return two_class_probs
+
         return torch.nn.Softmax(dim=1)(self.classifier(self.backbone(x)))
