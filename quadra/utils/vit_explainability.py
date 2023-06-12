@@ -303,4 +303,11 @@ class LinearModelPytorchWrapper(torch.nn.Module):
         self.classifier.bias.data = torch.from_numpy(linear_classifier.intercept_).float()
 
     def forward(self, x):
+        if self.num_classes == 2:
+            class_one_probabilities = torch.nn.Sigmoid()(self.classifier(self.backbone(x)))
+            class_zero_probabilities = 1 - class_one_probabilities
+            two_class_probs = torch.cat((class_zero_probabilities, class_one_probabilities), dim=1)
+
+            return two_class_probs
+
         return torch.nn.Softmax(dim=1)(self.classifier(self.backbone(x)))
