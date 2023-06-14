@@ -152,7 +152,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
             if export_type == "torchscript":
                 out = export_torchscript_model(
                     model=module.model,
-                    inputs_shape=input_shape,
+                    input_shapes=input_shape,
                     output_path=self.export_folder,
                     half_precision=half_precision,
                 )

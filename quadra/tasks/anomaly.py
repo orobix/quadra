@@ -21,6 +21,7 @@ from tqdm import tqdm
 
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.datamodules import AnomalyDataModule
+from quadra.modules.base import ModelWrapper
 from quadra.tasks.base import LightningTask, Task
 from quadra.utils import utils
 from quadra.utils.classification import get_results
@@ -104,6 +105,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         """Prepare the task."""
         super().prepare()
         self.module = self.config.model
+        self.module.model = ModelWrapper(self.module.model)
 
     def export(self) -> None:
         """Export model for production."""
@@ -115,24 +117,30 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             log.warning("Skipping export since fast_dev_run is enabled")
             return
 
-        input_width = self.config.transforms.get("input_width")
-        input_height = self.config.transforms.get("input_height")
-
         model = self.module.model
 
-        half_precision = self.trainer.precision == 16
+        # TODO: Take it from the config
+        input_shapes = None
+
+        half_precision = int(self.trainer.precision) == 16
 
         for export_type in self.export_type:
             if export_type == "torchscript":
-                export_torchscript_model(
+                out = export_torchscript_model(
                     model=model,
-                    inputs_shape=[(1, 3, input_height, input_width)],
+                    input_shapes=input_shapes,
                     output_path=self.export_folder,
                     half_precision=half_precision,
                 )
 
+                if out is None:
+                    log.warning("Skipping torchscript export since the model is not supported")
+                    continue
+
+                self.exported_model_path, input_shapes = out
+
         model_json = {
-            "input_size": [self.config.transforms.input_width, self.config.transforms.input_height, 3],
+            "input_size": input_shapes,
             "classes": {0: "good", 1: "defect"},
             "mean": list(self.config.transforms.mean),
             "std": list(self.config.transforms.std),

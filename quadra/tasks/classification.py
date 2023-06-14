@@ -282,7 +282,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             if export_type == "torchscript":
                 export_torchscript_model(
                     model=module.model,
-                    inputs_shape=[(1, 3, input_height, input_width)],
+                    input_shapes=[(1, 3, input_height, input_width)],
                     output_path=self.export_folder,
                     half_precision=int(self.trainer.precision) == 16,
                 )
@@ -644,7 +644,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             if export_type == "torchscript":
                 export_torchscript_model(
                     model=self.backbone,
-                    inputs_shape=[(1, 3, input_height, input_width)],
+                    input_shapes=[(1, 3, input_height, input_width)],
                     output_path=self.export_folder,
                     half_precision=False,
                 )

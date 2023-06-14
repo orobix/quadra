@@ -111,7 +111,7 @@ class SSL(LightningTask):
         if "torchscript" in self.export_type:
             export_torchscript_model(
                 model=cast(nn.Module, self.module.model),
-                inputs_shape=[(1, 3, input_height, input_width)],
+                input_shapes=[(1, 3, input_height, input_width)],
                 half_precision=half_precision,
                 output_path=self.export_folder,
             )

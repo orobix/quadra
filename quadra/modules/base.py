@@ -1,12 +1,12 @@
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import pytorch_lightning as pl
 import sklearn
 import torch
 import torchmetrics
-from git import Sequence
 from sklearn.linear_model import LogisticRegression
-from torch import nn
+from torch import Tensor, nn
+from torch.nn.modules.module import Module
 from torch.optim import Optimizer
 
 __all__ = ["BaseLightningModule", "SSLModule"]
@@ -18,21 +18,21 @@ class ModelWrapper(nn.Module):
     def __init__(self, model: nn.Module):
         super().__init__()
         self.instance = model
-        self.inputs_shape: Any = None
+        self.input_shapes: Any = None
 
         if isinstance(self.instance, ModelWrapper):
             # Handle nested ModelWrapper
-            self.inputs_shape = self.instance.inputs_shape
+            self.input_shapes = self.instance.input_shapes
             self.instance = self.instance.instance
 
     def forward(self, *args, **kwargs) -> torch.Tensor:
         """Retrieve the input shape and forward the model."""
-        if self.inputs_shape is None:
-            self.inputs_shape = self._get_inputs_shape(*args, **kwargs)
+        if self.input_shapes is None:
+            self.input_shapes = self._get_input_shapes(*args, **kwargs)
 
         return self.instance.forward(*args, **kwargs)
 
-    def _get_inputs_shape(self, *args, **kwargs) -> List[Any]:
+    def _get_input_shapes(self, *args, **kwargs) -> List[Any]:
         """Retrieve the input shapes from the input."""
         input_shapes = []
         for arg in args:
@@ -53,6 +53,24 @@ class ModelWrapper(nn.Module):
             return tuple(inp.shape[1:])
 
         raise ValueError(f"Input type {type(inp)} not supported")
+
+    def __getattr__(self, name: str) -> Union[Tensor, Module]:
+        if name in ["instance", "input_shapes"]:
+            return self.__dict__[name]
+
+        return getattr(self.__dict__["instance"], name)
+
+    def __setattr__(self, name: str, value: Union[Tensor, Module]) -> None:
+        if name in ["instance", "input_shapes"]:
+            self.__dict__[name] = value
+        else:
+            setattr(self.instance, name, value)
+
+    def __getattribute__(self, __name: str) -> Any:
+        if __name in ["instance", "input_shapes", "__dict__", "forward", "_get_input_shapes", "_get_input_shape"]:
+            return super().__getattribute__(__name)
+
+        return getattr(self.instance, __name)
 
 
 class BaseLightningModule(pl.LightningModule):

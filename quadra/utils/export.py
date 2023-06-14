@@ -35,7 +35,7 @@ def generate_torch_inputs(
 def export_torchscript_model(
     model: nn.Module,
     output_path: str,
-    inputs_shape: Optional[List[Any]] = None,
+    input_shapes: Optional[List[Any]] = None,
     half_precision: bool = False,
     model_name: str = "model.pt",
 ) -> Optional[Tuple[str, Any]]:
@@ -43,7 +43,7 @@ def export_torchscript_model(
 
     Args:
         model: PyTorch model to be exported
-        inputs_shape: Inputs shape for tracing
+        input_shapes: Inputs shape for tracing
         output_path: Path to save the model
         half_precision: If True, the model will be exported with half precision
         model_name: Name of the exported model
@@ -55,10 +55,10 @@ def export_torchscript_model(
     log = safe_get_logger()
 
     if isinstance(model, ModelWrapper):
-        inputs_shape = model.inputs_shape
+        input_shapes = model.input_shapes
         model = model.instance
 
-    if inputs_shape is None:
+    if input_shapes is None:
         # TODO: Improve logging message
         log.warning("Input shape is None, can not trace model")
         return None
@@ -73,12 +73,12 @@ def export_torchscript_model(
         model.to("cuda:0")
         model = model.half()
         inp = generate_torch_inputs(
-            input_shapes=inputs_shape, device="cuda:0", half_precision=True, dtype=torch.float16
+            input_shapes=input_shapes, device="cuda:0", half_precision=True, dtype=torch.float16
         )
     else:
         log.info("Jitting model with double precision")
         model.cpu()
-        inp = generate_torch_inputs(input_shapes=inputs_shape, device="cpu", half_precision=False, dtype=torch.float32)
+        inp = generate_torch_inputs(input_shapes=input_shapes, device="cpu", half_precision=False, dtype=torch.float32)
 
     with torch.no_grad():
         model_jit = torch.jit.trace(model, inp)
@@ -90,7 +90,7 @@ def export_torchscript_model(
 
     log.info("Torchscript model saved to %s", os.path.join(os.getcwd(), model_path))
 
-    return os.path.join(os.getcwd(), model_path), inputs_shape
+    return os.path.join(os.getcwd(), model_path), input_shapes
 
 
 def export_pytorch_model(model: nn.Module, output_path: str, model_name: str = "model.pth") -> str:
