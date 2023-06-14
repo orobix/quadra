@@ -113,8 +113,8 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
     def export(self) -> None:
         """Generate a deployment model for the task."""
         log.info("Exporting model ready for deployment")
-        input_width = self.config.transforms.get("input_width")
-        input_height = self.config.transforms.get("input_height")
+        self.config.transforms.get("input_width")
+        self.config.transforms.get("input_height")
 
         # Get best model!
         if self.trainer.checkpoint_callback is None:
@@ -136,19 +136,38 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         else:
             log.info("idx_to_class is present")
             classes = self.config.datamodule.idx_to_class
+
         if self.export_type is None:
             raise ValueError(
                 "No export type specified. This should not happen, please check if you have set "
                 "the export_type or assign it to a default value."
             )
+
+        # TODO: Take it from the config
+        input_shape = None
+
+        half_precision = self.trainer.precision == 16
+
         for export_type in self.export_type:
             if export_type == "torchscript":
-                self.exported_model_path = export_torchscript_model(
-                    module.model, (1, 3, input_height, input_width), self.export_folder, half_precision=False
+                out = export_torchscript_model(
+                    model=module.model,
+                    inputs_shape=input_shape,
+                    output_path=self.export_folder,
+                    half_precision=half_precision,
                 )
 
+                if out is None:
+                    log.warning("Skipping torchscript export since the model is not supported")
+                    continue
+
+                self.exported_model_path, input_shape = out
+
+        if input_shape is None:
+            log.warning("Not able to export the model in any format")
+
         model_json = {
-            "input_size": [input_width, input_height, 3],
+            "input_size": input_shape,
             "classes": classes,
             "mean": self.config.transforms.mean,
             "std": self.config.transforms.std,

@@ -124,7 +124,12 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
         for export_type in self.export_type:
             if export_type == "torchscript":
-                export_torchscript_model(model, (1, 3, input_height, input_width), self.export_folder, half_precision)
+                export_torchscript_model(
+                    model=model,
+                    inputs_shape=[(1, 3, input_height, input_width)],
+                    output_path=self.export_folder,
+                    half_precision=half_precision,
+                )
 
         model_json = {
             "input_size": [self.config.transforms.input_width, self.config.transforms.input_height, 3],

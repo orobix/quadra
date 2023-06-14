@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, List, Optional, Tuple, cast
+from typing import Any, List, Optional, Tuple, Union, cast
 
 import hydra
 import torch
@@ -111,7 +111,7 @@ class SSL(LightningTask):
         if "torchscript" in self.export_type:
             export_torchscript_model(
                 model=cast(nn.Module, self.module.model),
-                input_shape=(1, 3, input_height, input_width),
+                inputs_shape=[(1, 3, input_height, input_width)],
                 half_precision=half_precision,
                 output_path=self.export_folder,
             )
@@ -501,7 +501,7 @@ class EmbeddingVisualization(Task):
         self.embedding_writer = SummaryWriter(self.embeddings_path)
         self.writer_step = 0  # for tensorboard
         self.embedding_image_size = embedding_image_size
-        self._deployment_model: RecursiveScriptModule
+        self._deployment_model: Union[RecursiveScriptModule, nn.Module]
         self.deployment_model_type: str
 
     @property

@@ -207,7 +207,10 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         for export_type in self.export_type:
             if export_type == "torchscript":
                 export_torchscript_model(
-                    self.backbone, (1, 3, input_height, input_width), self.export_folder, half_precision=False
+                    model=self.backbone,
+                    inputs_shape=[(1, 3, input_height, input_width)],
+                    output_path=self.export_folder,
+                    half_precision=False,
                 )
 
         dump(self.model, os.path.join(self.export_folder, "classifier.joblib"))

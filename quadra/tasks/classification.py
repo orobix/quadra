@@ -281,9 +281,9 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         for export_type in self.export_type:
             if export_type == "torchscript":
                 export_torchscript_model(
-                    module.model,
-                    (1, 3, input_height, input_width),
-                    self.export_folder,
+                    model=module.model,
+                    inputs_shape=[(1, 3, input_height, input_width)],
+                    output_path=self.export_folder,
                     half_precision=int(self.trainer.precision) == 16,
                 )
             elif export_type == "pytorch":
@@ -643,7 +643,10 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         for export_type in self.export_type:
             if export_type == "torchscript":
                 export_torchscript_model(
-                    self.backbone, (1, 3, input_height, input_width), self.export_folder, half_precision=False
+                    model=self.backbone,
+                    inputs_shape=[(1, 3, input_height, input_width)],
+                    output_path=self.export_folder,
+                    half_precision=False,
                 )
             elif export_type == "pytorch":
                 os.makedirs(self.export_folder, exist_ok=True)

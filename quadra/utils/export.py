@@ -1,11 +1,13 @@
 import os
 from logging import Logger
-from typing import Optional, Tuple, Union, cast
+from typing import Any, List, Optional, Tuple, Union, cast
 
 import torch
 from anomalib.models.cflow import CflowLightning
 from torch import nn
 from torch.jit._script import RecursiveScriptModule
+
+from quadra.modules.base import ModelWrapper
 
 
 def safe_get_logger() -> Logger:
@@ -16,42 +18,67 @@ def safe_get_logger() -> Logger:
     return get_logger(__name__)
 
 
+def generate_torch_inputs(
+    input_shapes: List[Any], device: str, half_precision: bool = False, dtype: torch.dtype = torch.float32
+) -> List[Any]:
+    """Get a list of inputs for the model."""
+    if isinstance(input_shapes, list):
+        return [generate_torch_inputs(inp, device, half_precision, dtype) for inp in input_shapes]
+
+    inp = torch.randn((1, *input_shapes), dtype=dtype, device=device)
+    if half_precision:
+        inp = inp.half()
+
+    return inp
+
+
 def export_torchscript_model(
     model: nn.Module,
-    input_shape: Tuple[int, ...],
     output_path: str,
+    inputs_shape: Optional[List[Any]] = None,
     half_precision: bool = False,
     model_name: str = "model.pt",
-) -> Optional[str]:
+) -> Optional[Tuple[str, Any]]:
     """Export a PyTorch model with TorchScript.
 
     Args:
         model: PyTorch model to be exported
-        input_shape: Input shape for tracing
+        inputs_shape: Inputs shape for tracing
         output_path: Path to save the model
         half_precision: If True, the model will be exported with half precision
         model_name: Name of the exported model
 
     Returns:
-        If the model is exported successfully, the path to the model is returned.
+        If the model is exported successfully, the path to the model and the input shape are returned.
 
     """
     log = safe_get_logger()
 
-    model.eval()
+    if isinstance(model, ModelWrapper):
+        inputs_shape = model.inputs_shape
+        model = model.instance
+
+    if inputs_shape is None:
+        # TODO: Improve logging message
+        log.warning("Input shape is None, can not trace model")
+        return None
+
     if isinstance(model, CflowLightning):
         log.warning("Exporting cflow model with torchscript is not supported yet.")
         return None
 
+    model.eval()
     if half_precision:
         log.info("Jitting model with half precision on GPU")
         model.to("cuda:0")
         model = model.half()
-        inp = torch.randn(input_shape, dtype=torch.float16, device="cuda:0")
+        inp = generate_torch_inputs(
+            input_shapes=inputs_shape, device="cuda:0", half_precision=True, dtype=torch.float16
+        )
     else:
         log.info("Jitting model with double precision")
         model.cpu()
-        inp = torch.randn(input_shape, dtype=torch.float32)
+        inp = generate_torch_inputs(input_shapes=inputs_shape, device="cpu", half_precision=False, dtype=torch.float32)
 
     with torch.no_grad():
         model_jit = torch.jit.trace(model, inp)
@@ -63,7 +90,7 @@ def export_torchscript_model(
 
     log.info("Torchscript model saved to %s", os.path.join(os.getcwd(), model_path))
 
-    return os.path.join(os.getcwd(), model_path)
+    return os.path.join(os.getcwd(), model_path), inputs_shape
 
 
 def export_pytorch_model(model: nn.Module, output_path: str, model_name: str = "model.pth") -> str:
