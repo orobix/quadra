@@ -1,14 +1,58 @@
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import pytorch_lightning as pl
 import sklearn
 import torch
 import torchmetrics
+from git import Sequence
 from sklearn.linear_model import LogisticRegression
 from torch import nn
 from torch.optim import Optimizer
 
 __all__ = ["BaseLightningModule", "SSLModule"]
+
+
+class ModelWrapper(nn.Module):
+    """Model wrapper to retrieve input shape."""
+
+    def __init__(self, model: nn.Module):
+        super().__init__()
+        self.instance = model
+        self.inputs_shape: Any = None
+
+        if isinstance(self.instance, ModelWrapper):
+            # Handle nested ModelWrapper
+            self.inputs_shape = self.instance.inputs_shape
+            self.instance = self.instance.instance
+
+    def forward(self, *args, **kwargs) -> torch.Tensor:
+        """Retrieve the input shape and forward the model."""
+        if self.inputs_shape is None:
+            self.inputs_shape = self._get_inputs_shape(*args, **kwargs)
+
+        return self.instance.forward(*args, **kwargs)
+
+    def _get_inputs_shape(self, *args, **kwargs) -> List[Any]:
+        """Retrieve the input shapes from the input."""
+        input_shapes = []
+        for arg in args:
+            input_shapes.append(self._get_input_shape(arg))
+
+        for kwarg in kwargs.values():
+            input_shapes.append(self._get_input_shape(kwarg))
+
+        return input_shapes
+
+    def _get_input_shape(self, inp) -> Union[List[Any], Tuple[int, ...]]:
+        """Recursive function to retrieve the input shapes."""
+        # TODO: Do we need to support dicts?
+        if isinstance(inp, Sequence):
+            return [self._get_input_shape(i) for i in inp]
+
+        if isinstance(inp, torch.Tensor):
+            return tuple(inp.shape[1:])
+
+        raise ValueError(f"Input type {type(inp)} not supported")
 
 
 class BaseLightningModule(pl.LightningModule):
@@ -28,7 +72,7 @@ class BaseLightningModule(pl.LightningModule):
         lr_scheduler_interval: Optional[str] = "epoch",
     ):
         super().__init__()
-        self.model = model
+        self.model = ModelWrapper(model)
         self.optimizer = optimizer
         self.schedulers = lr_scheduler
         self.lr_scheduler_interval = lr_scheduler_interval
@@ -90,7 +134,6 @@ class SSLModule(BaseLightningModule):
         lr_scheduler: Optional[object] = None,
         lr_scheduler_interval: Optional[str] = "epoch",
     ):
-
         super().__init__(model, optimizer, lr_scheduler, lr_scheduler_interval)
         self.criterion = criterion
         self.classifier_train_loader: Optional[torch.utils.data.DataLoader]
@@ -176,7 +219,6 @@ class SegmentationModel(BaseLightningModule):
         optimizer: Optional[Optimizer] = None,
         lr_scheduler: Optional[object] = None,
     ):
-
         super().__init__(model, optimizer, lr_scheduler)
         self.loss_fun = loss_fun
 
