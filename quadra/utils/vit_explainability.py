@@ -10,10 +10,6 @@ import numpy as np
 import torch
 from sklearn.linear_model._base import LinearClassifierMixin
 
-from quadra.utils.utils import get_logger
-
-log = get_logger(__name__)
-
 
 def rollout(
     attentions: List[torch.Tensor], discard_ratio: float = 0.9, head_fusion: str = "mean", aspect_ratio: float = 1
