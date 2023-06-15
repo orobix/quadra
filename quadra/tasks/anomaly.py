@@ -350,19 +350,25 @@ class AnomalibEvaluation(Task[AnomalyDataModule]):
         if not isinstance(self.model_data, dict):
             raise ValueError("Model info file is not a valid json")
 
-        if self.model_data["input_size"][0] != self.config.transforms.input_height:
-            log.warning(
-                f"Input height of the model ({self.model_data['input_size'][0]}) is different from the one specified "
-                + f"in the config ({self.config.transforms.input_height}). Fixing the config."
-            )
-            self.config.transforms.input_height = self.model_data["input_size"][0]
+        for input_size in self.model_data["input_size"]:
+            if len(input_size) != 3:
+                continue
 
-        if self.model_data["input_size"][1] != self.config.transforms.input_width:
-            log.warning(
-                f"Input width of the model ({self.model_data['input_size'][1]}) is different from the one specified "
-                + f"in the config ({self.config.transforms.input_width}). Fixing the config."
-            )
-            self.config.transforms.input_width = self.model_data["input_size"][1]
+            # Adjust the transform for 2D models (CxHxW)
+            # We assume that each input size has the same height and width
+            if input_size[1] != self.config.transforms.input_height:
+                log.warning(
+                    f"Input height of the model ({input_size[1]}) is different from the one specified "
+                    + f"in the config ({self.config.transforms.input_height}). Fixing the config."
+                )
+                self.config.transforms.input_height = input_size[1]
+
+            if input_size[2] != self.config.transforms.input_width:
+                log.warning(
+                    f"Input width of the model ({input_size[2]}) is different from the one specified "
+                    + f"in the config ({self.config.transforms.input_width}). Fixing the config."
+                )
+                self.config.transforms.input_width = input_size[2]
 
         self.deployment_model = self.model_path
 
