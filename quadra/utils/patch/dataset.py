@@ -371,7 +371,6 @@ def __save_patch_dataset(
                             discard_in_training = False
 
                 if save_mask:
-
                     mask_name = f"{image_name}_{row_index * image_patches.shape[1] + col_index}{mask_extension}.png"
 
                     if discard_in_training:
