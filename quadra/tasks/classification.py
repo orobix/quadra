@@ -30,6 +30,7 @@ from quadra.datamodules import (
 )
 from quadra.datasets.classification import ImageClassificationListDataset
 from quadra.models.classification import BaseNetworkBuilder
+from quadra.modules.base import ModelWrapper
 from quadra.modules.classification import ClassificationModule
 from quadra.tasks.base import LightningTask, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
@@ -247,9 +248,6 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         if self.export_type is None:
             raise ValueError("`Export_type` must be specified in the config to export the model")
 
-        input_width = self.config.transforms.get("input_width")
-        input_height = self.config.transforms.get("input_height")
-
         if self.datamodule.class_to_idx is None:
             log.warning(
                 "No `class_to_idx` found in the datamodule, class information will not be saved in the model.json"
@@ -257,15 +255,10 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             idx_to_class = {}
         else:
             idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
-        self.model_json = {
-            "input_size": [input_width, input_height, 3],
-            "classes": idx_to_class,
-            "mean": list(self.config.transforms.mean),
-            "std": list(self.config.transforms.std),
-        }
 
         if self.trainer.checkpoint_callback is None:
             raise ValueError("No checkpoint callback found in the trainer")
+
         best_model_path = self.trainer.checkpoint_callback.best_model_path  # type: ignore[attr-defined]
         log.info("Saving deployment model for %s checkpoint", best_model_path)
 
@@ -278,14 +271,26 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             gradcam=False,
         )
 
+        # TODO: Take from config
+        input_shapes = None
+
+        # TODO: This breaks with bf16 precision!!!
+        half_precision = int(self.trainer.precision) == 16
+
         for export_type in self.export_type:
             if export_type == "torchscript":
-                export_torchscript_model(
+                out = export_torchscript_model(
                     model=module.model,
-                    input_shapes=[(1, 3, input_height, input_width)],
+                    input_shapes=input_shapes,
                     output_path=self.export_folder,
-                    half_precision=int(self.trainer.precision) == 16,
+                    half_precision=half_precision,
                 )
+
+                if out is None:
+                    log.warning("Skipping torchscript export since the model is not supported")
+                    continue
+
+                _, input_shapes = out
             elif export_type == "pytorch":
                 export_pytorch_model(
                     model=module.model,
@@ -295,6 +300,13 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                     OmegaConf.save(self.config.model, f, resolve=True)
             else:
                 log.warning("Export type: %s not implemented", export_type)
+
+        self.model_json = {
+            "input_size": input_shapes,
+            "classes": idx_to_class,
+            "mean": list(self.config.transforms.mean),
+            "std": list(self.config.transforms.std),
+        }
 
         with open(os.path.join(self.export_folder, self.deploy_info_file), "w") as f:
             json.dump(self.model_json, f)
@@ -497,6 +509,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         else:
             log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
             self._backbone = hydra.utils.instantiate(backbone_config.model)
+
+        self._backbone = ModelWrapper(self._backbone)
         self._backbone.eval()
         self._backbone = self._backbone.to(self.device)
 
@@ -633,21 +647,30 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
     def export(self) -> None:
         """Generate deployment model for the task."""
-        input_width = self.config.transforms.get("input_width")
-        input_height = self.config.transforms.get("input_height")
+        self.config.transforms.get("input_width")
+        self.config.transforms.get("input_height")
 
         if self.export_type is None:
             log.info("No export type specified, skipping export")
             return
 
+        # TODO: Take from config
+        input_shapes = None
+
         for export_type in self.export_type:
             if export_type == "torchscript":
-                export_torchscript_model(
+                out = export_torchscript_model(
                     model=self.backbone,
-                    input_shapes=[(1, 3, input_height, input_width)],
+                    input_shapes=input_shapes,
                     output_path=self.export_folder,
                     half_precision=False,
                 )
+
+                if out is None:
+                    log.warning("Skipping torchscript export since the model is not supported")
+                    continue
+
+                _, input_shapes = out
             elif export_type == "pytorch":
                 os.makedirs(self.export_folder, exist_ok=True)
                 # We only need to save classifier.joblib + backbone config file
@@ -662,7 +685,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         idx_to_class = {v: k for k, v in self.datamodule.full_dataset.class_to_idx.items()}
 
         model_json = {
-            "input_size": [input_width, input_height, 3],
+            "input_size": input_shapes,
             "classes": idx_to_class,
             "mean": list(self.config.transforms.mean),
             "std": list(self.config.transforms.std),
@@ -823,6 +846,7 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
         else:
             log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
             self._backbone = hydra.utils.instantiate(backbone_config.model)
+
         self._backbone.eval()
         self._backbone = self._backbone.to(self.device)
 

@@ -201,17 +201,26 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         if self.export_type is None or len(self.export_type) == 0:
             log.info("No export type specified skipping export")
             return
-        input_width = self.config.transforms.get("input_width")
-        input_height = self.config.transforms.get("input_height")
+        self.config.transforms.get("input_width")
+        self.config.transforms.get("input_height")
+
+        # TODO: Take from config
+        input_shapes = None
 
         for export_type in self.export_type:
             if export_type == "torchscript":
-                export_torchscript_model(
+                out = export_torchscript_model(
                     model=self.backbone,
-                    input_shapes=[(1, 3, input_height, input_width)],
+                    input_shapes=input_shapes,
                     output_path=self.export_folder,
                     half_precision=False,
                 )
+
+                if out is None:
+                    log.warning("Skipping torchscript export since the model is not supported")
+                    continue
+
+                _, input_shapes = out
 
         dump(self.model, os.path.join(self.export_folder, "classifier.joblib"))
 
@@ -226,7 +235,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
 
         model_json = {
-            "input_size": [input_width, input_height, 3],
+            "input_size": input_shapes,
             "classes": idx_to_class,
             "mean": self.config.transforms.mean,
             "std": self.config.transforms.std,

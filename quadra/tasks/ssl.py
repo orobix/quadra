@@ -13,6 +13,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from quadra.callbacks.scheduler import WarmupInit
+from quadra.modules.base import ModelWrapper
 from quadra.tasks.base import LightningTask, Task
 from quadra.utils import utils
 from quadra.utils.export import export_torchscript_model, import_deployment_model
@@ -102,22 +103,30 @@ class SSL(LightningTask):
         if self.export_type is None:
             return
 
-        input_width = self.config.transforms.get("input_width")
-        input_height = self.config.transforms.get("input_height")
         mean = self.config.transforms.mean
         std = self.config.transforms.std
-        half_precision = self.trainer.precision == 16
+        half_precision = int(self.trainer.precision) == 16
 
-        if "torchscript" in self.export_type:
-            export_torchscript_model(
-                model=cast(nn.Module, self.module.model),
-                input_shapes=[(1, 3, input_height, input_width)],
-                half_precision=half_precision,
-                output_path=self.export_folder,
-            )
+        # TODO: Take from config
+        input_shapes = None
+
+        for export_type in self.export_type:
+            if export_type == "torchscript":
+                out = export_torchscript_model(
+                    model=cast(nn.Module, self.module.model),
+                    input_shapes=input_shapes,
+                    output_path=self.export_folder,
+                    half_precision=half_precision,
+                )
+
+                if out is None:
+                    log.warning("Skipping torchscript export since the model is not supported")
+                    continue
+
+                _, input_shapes = out
 
         model_json = {
-            "input_size": [3, input_width, input_height],
+            "input_size": input_shapes,
             "classes": None,
             "mean": mean,
             "std": std,
@@ -258,6 +267,7 @@ class SimCLR(SSL):
                 lr_scheduler=self.scheduler,
             )
         self._module = module
+        self._module.model = ModelWrapper(self._module.model)
 
 
 class Barlow(SimCLR):

@@ -137,7 +137,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
                     log.warning("Skipping torchscript export since the model is not supported")
                     continue
 
-                self.exported_model_path, input_shapes = out
+                _, input_shapes = out
 
         model_json = {
             "input_size": input_shapes,
