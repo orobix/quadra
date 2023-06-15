@@ -29,8 +29,8 @@ from quadra.datamodules import (
     SklearnClassificationDataModule,
 )
 from quadra.datasets.classification import ImageClassificationListDataset
+from quadra.models.base import ModelWrapper
 from quadra.models.classification import BaseNetworkBuilder
-from quadra.modules.base import ModelWrapper
 from quadra.modules.classification import ClassificationModule
 from quadra.tasks.base import LightningTask, Task
 from quadra.trainers.classification import SklearnClassificationTrainer

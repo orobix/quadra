@@ -13,7 +13,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from quadra.callbacks.scheduler import WarmupInit
-from quadra.modules.base import ModelWrapper
+from quadra.models.base import ModelWrapper
 from quadra.tasks.base import LightningTask, Task
 from quadra.utils import utils
 from quadra.utils.export import export_torchscript_model, import_deployment_model

@@ -7,7 +7,7 @@ from anomalib.models.cflow import CflowLightning
 from torch import nn
 from torch.jit._script import RecursiveScriptModule
 
-from quadra.modules.base import ModelWrapper
+from quadra.models.base import ModelWrapper
 
 
 def safe_get_logger() -> Logger:

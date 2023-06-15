@@ -11,7 +11,8 @@ from torch.utils.data import DataLoader
 
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.datamodules import SegmentationDataModule, SegmentationMulticlassDataModule
-from quadra.modules.base import ModelWrapper, SegmentationModel
+from quadra.models.base import ModelWrapper
+from quadra.modules.base import SegmentationModel
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
 from quadra.utils.evaluation import create_mask_report
