@@ -38,6 +38,7 @@ class ModelWrapper(nn.Module):
         for arg in args:
             input_shapes.append(self._get_input_shape(arg))
 
+        # TODO: This is probably incorrect as we are not considering the order of the kwargs
         for kwarg in kwargs.values():
             input_shapes.append(self._get_input_shape(kwarg))
 
