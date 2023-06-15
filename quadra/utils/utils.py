@@ -282,8 +282,7 @@ def finish(
                             # Input size is not a list of lists
                             input_size = [input_size]
 
-                        # WxHxC -> 1xCxHxW
-                        inputs = [torch.randn(1, *np.array(size)[[2, 1, 0]]) for size in input_size]
+                        inputs = [torch.randn(1, *np.array(size)) for size in input_size]
                         signature = infer_signature_torch(model, inputs)
 
                         with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
