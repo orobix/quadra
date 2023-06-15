@@ -3,20 +3,28 @@
 # Source: https://github.com/jacobgil/vit-explain (MIT license)
 # Description: This is a heavily modified version of the original jacobgil code (the underlying math is still the same).
 
+import math
 from typing import List, Optional
 
 import numpy as np
 import torch
 from sklearn.linear_model._base import LinearClassifierMixin
 
+from quadra.utils.utils import get_logger
 
-def rollout(attentions: List[torch.Tensor], discard_ratio: float = 0.9, head_fusion: str = "mean") -> np.ndarray:
+log = get_logger(__name__)
+
+
+def rollout(
+    attentions: List[torch.Tensor], discard_ratio: float = 0.9, head_fusion: str = "mean", aspect_ratio: float = 1
+) -> np.ndarray:
     """Apply rollout on Attention matrices.
 
     Args:
         attentions: List of Attention matrices coming from different blocks
         discard_ratio: Percentage of elements to discard
         head_fusion: Strategy of fusion of attention heads
+        aspect_ratio: Model inputs' width divided by height
 
     Returns:
         mask: Output mask, still needs a resize
@@ -44,9 +52,14 @@ def rollout(attentions: List[torch.Tensor], discard_ratio: float = 0.9, head_fus
     # Look at the total attention between the class token and the image patches
     mask = result[:, 0, 1:]
     batch_size = mask.size(0)
-    # In case of 224x224 image, this brings us from 196 to 14
-    width = int(mask.size(-1) ** 0.5)
-    mask = mask.reshape(batch_size, width, width).numpy()
+    # TODO: Non squared input-size handling can be improved. Not easy though
+    height = math.floor((mask.size(-1) / aspect_ratio) ** 0.5)
+    total_size = mask.size(-1)
+    width = math.floor(total_size / height)
+    if mask.size(-1) > (height * width):
+        to_remove = mask.size(-1) - (height * width)
+        mask = mask[:, :-to_remove]
+    mask = mask.reshape(batch_size, height, width).numpy()
     mask = mask / mask.max(axis=(1, 2), keepdims=True)
 
     return mask
@@ -111,7 +124,12 @@ class VitAttentionRollout:
         self.attentions.clear()
         with torch.no_grad():
             self.model(input_tensor)
-        out = rollout(self.attentions, self.discard_ratio, self.head_fusion)
+        out = rollout(
+            self.attentions,
+            self.discard_ratio,
+            self.head_fusion,
+            aspect_ratio=(input_tensor.shape[-1] / input_tensor.shape[-2]),
+        )
 
         return out
 
@@ -120,7 +138,7 @@ class VitAttentionRollout:
 
 
 def grad_rollout(
-    attentions: List[torch.Tensor], gradients: List[torch.Tensor], discard_ratio: float = 0.9
+    attentions: List[torch.Tensor], gradients: List[torch.Tensor], discard_ratio: float = 0.9, aspect_ratio: float = 1
 ) -> np.ndarray:
     """Apply gradient rollout on Attention matrices.
 
@@ -128,6 +146,7 @@ def grad_rollout(
         attentions: Attention matrices
         gradients: Target class gradient matrices
         discard_ratio: Percentage of elements to discard
+        aspect_ratio: Model inputs' width divided by height
 
     Returns:
         mask: Output mask, still needs a resize
@@ -151,9 +170,14 @@ def grad_rollout(
     # and the image patches
     mask = result[:, 0, 1:]
     batch_size = mask.size(0)
-    # In case of 224x224 image, this brings us from 196 to 14
-    width = int(mask.size(-1) ** 0.5)
-    mask = mask.reshape(batch_size, width, width).numpy()
+    # TODO: Non squared input-size handling can be improved. Not easy though
+    height = math.floor((mask.size(-1) / aspect_ratio) ** 0.5)
+    total_size = mask.size(-1)
+    width = math.floor(total_size / height)
+    if mask.size(-1) > (height * width):
+        to_remove = mask.size(-1) - (height * width)
+        mask = mask[:, :-to_remove]
+    mask = mask.reshape(batch_size, height, width).numpy()
     mask = mask / mask.max(axis=(1, 2), keepdims=True)
 
     return mask
@@ -264,7 +288,12 @@ class VitAttentionGradRollout:
         class_mask[torch.arange(output.shape[0]), targets_list] = 1
         loss = (output * class_mask).sum()
         loss.backward()
-        out = grad_rollout(self.attentions, self.attention_gradients, self.discard_ratio)
+        out = grad_rollout(
+            self.attentions,
+            self.attention_gradients,
+            self.discard_ratio,
+            aspect_ratio=(input_tensor.shape[-1] / input_tensor.shape[-2]),
+        )
 
         return out
 
