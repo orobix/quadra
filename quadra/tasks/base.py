@@ -6,24 +6,16 @@ import torch
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Callback, LightningModule, Trainer
-from pytorch_lightning.loggers import Logger, MLFlowLogger
+from pytorch_lightning.loggers import Logger
 from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from torch.jit._script import RecursiveScriptModule
 from torch.nn import Module
 
 from quadra import get_version
-from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.datamodules.base import BaseDataModule
 from quadra.utils import utils
 from quadra.utils.export import import_deployment_model
-
-try:
-    import mlflow  # noqa
-
-    MLFLOW_AVAILABLE = True
-except ImportError:
-    MLFLOW_AVAILABLE = False
 
 log = utils.get_logger(__name__)
 DataModuleT = TypeVar("DataModuleT", bound=BaseDataModule)
@@ -138,16 +130,6 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         if "logger" in self.config:
             self.logger = self.config.logger
 
-            for logger in self.logger:
-                if (
-                    isinstance(logger, MLFlowLogger)
-                    and self.config.core.upload_artifacts
-                    and MLFLOW_AVAILABLE
-                    and os.environ.get("MLFLOW_TRACKING_URI") is not None
-                ):
-                    mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
-                    mlflow.pytorch.autolog()
-
         self.devices = self.config.trainer.devices
         self.trainer = self.config.trainer
 
@@ -255,13 +237,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             trainer=self.trainer,
         )
 
-        mlflow_logger = get_mlflow_logger(self.trainer)
-
-        if mlflow_logger is not None and self.config.core.upload_artifacts:
-            with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
-                self.trainer.fit(model=self.module, datamodule=self.datamodule)
-        else:
-            self.trainer.fit(model=self.module, datamodule=self.datamodule)
+        self.trainer.fit(model=self.module, datamodule=self.datamodule)
 
     def test(self) -> Any:
         """Test the model."""
