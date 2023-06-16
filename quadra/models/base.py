@@ -18,14 +18,14 @@ class ModelWrapper(nn.Module):
             self.input_shapes = self.instance.input_shapes
             self.instance = self.instance.instance
 
-    def forward(self, *args, **kwargs) -> torch.Tensor:
+    def forward(self, *args: Any, **kwargs: Any) -> torch.Tensor:
         """Retrieve the input shape and forward the model."""
         if self.input_shapes is None:
             self.input_shapes = self._get_input_shapes(*args, **kwargs)
 
         return self.instance.forward(*args, **kwargs)
 
-    def _get_input_shapes(self, *args, **kwargs) -> List[Any]:
+    def _get_input_shapes(self, *args: Any, **kwargs: Any) -> List[Any]:
         """Retrieve the input shapes from the input."""
         input_shapes = []
         for arg in args:
@@ -37,7 +37,7 @@ class ModelWrapper(nn.Module):
 
         return input_shapes
 
-    def _get_input_shape(self, inp) -> Union[List[Any], Tuple[int, ...]]:
+    def _get_input_shape(self, inp: Union[Sequence, torch.Tensor]) -> Union[List[Any], Tuple[int, ...]]:
         """Recursive function to retrieve the input shapes."""
         # TODO: Do we need to support dicts?
         if isinstance(inp, Sequence):
