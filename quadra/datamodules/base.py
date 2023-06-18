@@ -51,8 +51,8 @@ class DecorateParentMethod(type):
         return super().__new__(cls, name, bases, dct)
 
 
-def compute_file_hash(path: str, hash_size: Literal[32, 64, 128] = 64) -> str:
-    """Get hash of a file.
+def compute_file_content_hash(path: str, hash_size: Literal[32, 64, 128] = 64) -> str:
+    """Get hash of a file based on its content.
 
     Args:
         path: Path to the file.
@@ -72,6 +72,30 @@ def compute_file_hash(path: str, hash_size: Literal[32, 64, 128] = 64) -> str:
             file_hash = xxhash.xxh128(data, seed=42).hexdigest()
         else:
             raise ValueError(f"Invalid hash size {hash_size}. Must be one of [32, 64, 128].")
+
+    return file_hash
+
+
+def compute_file_size_hash(path: str, hash_size: Literal[32, 64, 128] = 64) -> str:
+    """Get hash of a file based on its size.
+
+    Args:
+        path: Path to the file.
+        hash_size: Size of the hash. Must be one of [32, 64, 128].
+
+    Returns:
+        The hash of the file.
+    """
+    data = str(os.path.getsize(path))
+
+    if hash_size == 32:
+        file_hash = xxhash.xxh32(data, seed=42).hexdigest()
+    elif hash_size == 64:
+        file_hash = xxhash.xxh64(data, seed=42).hexdigest()
+    elif hash_size == 128:
+        file_hash = xxhash.xxh128(data, seed=42).hexdigest()
+    else:
+        raise ValueError(f"Invalid hash size {hash_size}. Must be one of [32, 64, 128].")
 
     return file_hash
 
@@ -109,6 +133,10 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
             Defaults to None.
         test_transform: Transformations for test dataset.
             Defaults to None.
+        enable_hashing: Whether to enable hashing of images. Defaults to True.
+        hash_size: Size of the hash. Must be one of [32, 64, 128]. Defaults to 64.
+        hash_type: Type of hash to use, if content hash is used, the hash is computed on the file content, otherwise
+            the hash is computed on the file size which is faster but less safe. Defaults to "content".
     """
 
     def __init__(
@@ -128,6 +156,7 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
         test_transform: Optional[albumentations.Compose] = None,
         enable_hashing: bool = True,
         hash_size: Literal[32, 64, 128] = 64,
+        hash_type: Literal["content", "size"] = "content",
     ):
         super().__init__()
         self.num_workers = num_workers
@@ -140,6 +169,7 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
         self.test_transform = test_transform
         self.enable_hashing = enable_hashing
         self.hash_size = hash_size
+        self.hash_type = hash_type
 
         if self.hash_size not in [32, 64, 128]:
             raise ValueError(f"Invalid hash size {self.hash_size}. Must be one of [32, 64, 128].")
@@ -234,13 +264,15 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
             self.data["hash"] = list(
                 tqdm(
                     pool.istarmap(  # type: ignore[attr-defined]
-                        compute_file_hash,
+                        compute_file_content_hash if self.hash_type == "content" else compute_file_size_hash,
                         paths_and_hash_length,
                     ),
                     total=len(self.data),
                     desc="Computing hashes",
                 )
             )
+
+        self.data["hash_type"] = self.hash_type
 
     def prepare_data(self) -> None:
         """Prepares the data, should be overridden by subclasses."""
