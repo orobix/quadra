@@ -21,9 +21,14 @@ def safe_get_logger() -> Logger:
 def generate_torch_inputs(
     input_shapes: List[Any], device: str, half_precision: bool = False, dtype: torch.dtype = torch.float32
 ) -> List[Any]:
-    """Get a list of inputs for the model."""
+    """Given a list of input shapes that can contain either lists, tuples or dicts, with tuples being the input shapes
+    of the model, generate a list of torch tensors with the given device and dtype.
+    """
     if isinstance(input_shapes, list):
         return [generate_torch_inputs(inp, device, half_precision, dtype) for inp in input_shapes]
+
+    if isinstance(input_shapes, dict):
+        return {k: generate_torch_inputs(v, device, half_precision, dtype) for k, v in input_shapes.items()}
 
     inp = torch.randn((1, *input_shapes), dtype=dtype, device=device)
     if half_precision:
