@@ -1,8 +1,10 @@
-from typing import Any, List, Sequence, Tuple, Union
+from __future__ import annotations
+
+import inspect
+from typing import Any, Sequence
 
 import torch
-from torch import Tensor, nn
-from torch.nn.modules.module import Module
+from torch import nn
 
 
 class ModelWrapper(nn.Module):
@@ -25,36 +27,47 @@ class ModelWrapper(nn.Module):
 
         return self.instance.forward(*args, **kwargs)
 
-    def _get_input_shapes(self, *args: Any, **kwargs: Any) -> List[Any]:
+    def _get_input_shapes(self, *args: Any, **kwargs: Any) -> list[Any]:
         """Retrieve the input shapes from the input."""
         input_shapes = []
+
         for arg in args:
             input_shapes.append(self._get_input_shape(arg))
 
-        # TODO: This is probably incorrect as we are not considering the order of the kwargs
-        for kwarg in kwargs.values():
-            input_shapes.append(self._get_input_shape(kwarg))
+        signature = inspect.signature(self.instance.forward)
+
+        for i, key in enumerate(signature.parameters.keys()):
+            if i < len(args):
+                continue
+
+            if key in kwargs:
+                input_shapes.append(self._get_input_shape(kwargs[key]))
+            else:
+                # Retrieve the default value
+                input_shapes.append(self._get_input_shape(signature.parameters[key].default))
 
         return input_shapes
 
-    def _get_input_shape(self, inp: Union[Sequence, torch.Tensor]) -> Union[List[Any], Tuple[int, ...]]:
+    def _get_input_shape(self, inp: Sequence | torch.Tensor) -> list[Any] | tuple[int, ...]:
         """Recursive function to retrieve the input shapes."""
-        # TODO: Do we need to support dicts?
         if isinstance(inp, Sequence):
             return [self._get_input_shape(i) for i in inp]
 
         if isinstance(inp, torch.Tensor):
             return tuple(inp.shape[1:])
 
+        if isinstance(inp, dict):
+            return {k: self._get_input_shape(v) for k, v in inp.items()}
+
         raise ValueError(f"Input type {type(inp)} not supported")
 
-    def __getattr__(self, name: str) -> Union[Tensor, Module]:
+    def __getattr__(self, name: str) -> torch.Tensor | nn.Module:
         if name in ["instance", "input_shapes"]:
             return self.__dict__[name]
 
         return getattr(self.__dict__["instance"], name)
 
-    def __setattr__(self, name: str, value: Union[Tensor, Module]) -> None:
+    def __setattr__(self, name: str, value: torch.Tensor | nn.Module) -> None:
         if name in ["instance", "input_shapes"]:
             self.__dict__[name] = value
         else:
