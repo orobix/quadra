@@ -512,7 +512,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
         self._backbone = ModelWrapper(self._backbone)
         self._backbone.eval()
-        self._backbone = self._backbone.to(self.device)
+        self._backbone.to(self.device)
 
     @property
     def trainer(self) -> SklearnClassificationTrainer:
