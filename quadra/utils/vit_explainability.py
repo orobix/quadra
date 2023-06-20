@@ -12,7 +12,7 @@ from sklearn.linear_model._base import LinearClassifierMixin
 
 
 def rollout(
-    attentions: List[torch.Tensor], discard_ratio: float = 0.9, head_fusion: str = "mean", aspect_ratio: float = 1
+    attentions: List[torch.Tensor], discard_ratio: float = 0.9, head_fusion: str = "mean", aspect_ratio: float = 1.0
 ) -> np.ndarray:
     """Apply rollout on Attention matrices.
 
@@ -134,7 +134,7 @@ class VitAttentionRollout:
 
 
 def grad_rollout(
-    attentions: List[torch.Tensor], gradients: List[torch.Tensor], discard_ratio: float = 0.9, aspect_ratio: float = 1
+    attentions: List[torch.Tensor], gradients: List[torch.Tensor], discard_ratio: float = 0.9, aspect_ratio: float = 1.0
 ) -> np.ndarray:
     """Apply gradient rollout on Attention matrices.
 
