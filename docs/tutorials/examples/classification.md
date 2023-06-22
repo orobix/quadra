@@ -68,6 +68,16 @@ We give a small description for each tweakable parameter inside the base datamod
 - `label_map`: You can map classes to other ones in order to group more sub-classes into one macro-class.
 - `class_to_idx`: Map classes to indexes, if you need to ensure that one specific mapping is respected (otherwise a ordered class_to_idx is built)
 
+If you want to choose which files to put in training/val/test set, provide the split files paths in train_split_file,val_split_file,test_split_file. You can leave val_split_file empty and the training set will be automatically split in train/val.
+
+The content of the files must be formatted in the same way for `train.txt`/`val.txt`/`test.txt`:
+
+```txt
+images/abc.xyz,class_1,class_2
+images/abc_2.xyz,class_3
+```
+
+The first column is the path to the image, while the other columns are the labels associated with that image. The labels must be separated by a comma.
 
 ### Experiment
 
