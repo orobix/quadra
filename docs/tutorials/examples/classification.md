@@ -195,7 +195,11 @@ backbone:
   model:
     pretrained: True
     freeze: False
-  freeze_parameters_name: # Here we could specify a list of layer names to freeze
+  freeze_parameters_name:
+    - conv1
+    - bn1
+    - layer1
+    - layer2
 
 core:
   tag: "run"
