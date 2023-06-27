@@ -1,29 +1,33 @@
 """Common utility functions.
 Some of them are mostly based on https://github.com/ashleve/lightning-hydra-template.
 """
+from __future__ import annotations
+
 import json
 import logging
 import os
 import subprocess
 import sys
 import warnings
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Dict, Iterable, Iterator, List, Optional, Sequence
 
 import cv2
 import dotenv
 import numpy as np
-import pytorch_lightning as pl
 import rich.syntax
 import rich.tree
 import torch
 from hydra.core.hydra_config import HydraConfig
 from hydra.utils import get_original_cwd
 from omegaconf import DictConfig, OmegaConf
-from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities import rank_zero_only
 
 import quadra
 from quadra.callbacks.mlflow import check_file_server_dependencies, check_minio_credentials, get_mlflow_logger
+
+if TYPE_CHECKING:
+    import pytorch_lightning as pl
+    from pytorch_lightning.loggers import TensorBoardLogger
 
 
 def get_logger(name=__name__) -> logging.Logger:
