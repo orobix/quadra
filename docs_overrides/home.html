@@ -1,0 +1,209 @@
+{% extends "main.html" %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tw-elements/dist/css/tw-elements.min.css" />
+<!-- Additional styles for landing page -->
+<style>
+    [data-md-color-scheme="default"] {
+        --md-primary-bg-color: : #000;
+        --md-default-fg-color: #000;
+    }
+
+    /* Application header should be static for the landing page */
+    .md-header {
+        position: initial;
+        /* remove background color */
+        background-color: transparent;
+    }
+
+
+    .md-tabs {
+        background-color: transparent;
+    }
+
+    /* Remove spacing, as we cannot hide it completely */
+    .md-main__inner {
+        margin: 0;
+    }
+
+    /* Hide main content for now */
+    .md-content {
+        display: none;
+    }
+
+    /* .md-header__option {
+        display: none;
+    } */
+
+    /* Force header title visibility */
+    .md-header__title--active .md-header__topic {
+        opacity: 1;
+    }
+
+    .md-header__title--active .md-header__topic+.md-header__topic {
+        opacity: 0;
+    }
+
+    /* Hide table of contents */
+    @media screen and (min-width: 60em) {
+        .md-sidebar--secondary {
+            display: none;
+        }
+    }
+
+    @media screen and (min-width: 76.25em) {
+        .md-sidebar--primary {
+            display: none;
+        }
+    }
+
+    /* Enable navigation  */
+    @media screen and (min-width: 60em) {
+        .md-sidebar--primary {
+            display: block;
+        }
+    }
+
+    .lp-rolling-text-mask {
+        height: calc(1em + var(--rolling-text-offset));
+        position: relative;
+        overflow: hidden;
+        margin-top: var(--rolling-text-offset);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lp-rolling-text-mask span {
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        top: 1.2em;
+        padding-bottom: var(--rolling-text-offset);
+        background-size: 100% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-repeat: no-repeat;
+    }
+
+    .lp-rolling-text-mask span[data-show] {
+        transform: translateY(-100%);
+        transition: 0.5s transform ease-in-out;
+    }
+
+    .lp-rolling-text-mask span[data-up] {
+        transform: translateY(-200%);
+        transition: 0.5s transform ease-in-out;
+    }
+
+    .lp-rolling-text-mask span:nth-child(1) {
+        background-image: linear-gradient(45deg, var(--quadra-blue) 50%, var(--quadra-blue-dark));
+    }
+
+    .lp-rolling-text-mask span:nth-child(2) {
+        background-image: linear-gradient(45deg, var(--quadra-green) 50%, var(--quadra-green-dark));
+    }
+
+    .lp-rolling-text-mask span:nth-child(3) {
+        background-image: linear-gradient(45deg, var(--quadra-purple) 50%, var(--quadra-purple-dark));
+    }
+
+    .lp-rolling-text-mask span:nth-child(4) {
+        background-image: linear-gradient(45deg, var(--quadra-orange) 50%, var(--quadra-orange-dark));
+    }
+
+    .lp-hero-explain {
+        margin-top: -2em;
+        margin-left: 15%;
+        margin-right: 15%;
+    }
+
+    .lp-hero-button-container {
+        margin-top: 1.5em;
+        display: flex;
+        justify-content: center;
+    }
+
+    .lp-hero-button {
+        margin-top: 2%;
+        margin-left: 1%;
+        margin-right: 1%;
+        margin-bottom: 2%;
+    }
+
+    .lp-quadra-container {
+        justify-content: center;
+        height: 100vh;
+        height: 100dvh;
+
+    }
+</style>
+{% endblock %}
+
+{% block tabs %}
+{{ super() }}
+
+<div class="lp-quadra-container py-24 px-6 text-center">
+    <h1 class="mt-2 mb-12 text-2xl font-bold tracking-tight md:text-5xl xl:text-6xl sm:text-2xl">
+
+        Effortless deep learning <br />
+        experiments with:
+        <div class="lp-rolling-text-mask">
+            <span data-show>Configuration files.</span>
+            <span>Reproducible workflows.</span>
+            <span>Model manager.</span>
+            <span>Modular tasks.</span>
+        </div>
+    </h1>
+    <p class="text-base lp-hero-explain sm:text-sm">
+        Quadra simplifies handling many deep learning experiments by skipping boilerplate code.
+    </p>
+
+    <div class="md-hero__inner lp-hero_button-container md-typeset">
+        <a href="{{ page.next_page.url | url }}" title="{{ page.next_page.title | striptags }}"
+            class="md-button md-button--primary lp-hero-button">Get
+            Started </a>
+        <a href="{{ config.repo_url }}" title="{{ lang.t('source.link.title') }}"
+            class="md-button md-button--secondary lp-hero-button">GitHub</a>
+    </div>
+
+</div>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/tw-elements/dist/js/tw-elements.umd.min.js"></script>
+
+<script>
+
+    setInterval(function () {
+        const rollingTextMask = document.querySelector('div.lp-rolling-text-mask');
+        const show = rollingTextMask.querySelector('span[data-show]');
+        const next = show.nextElementSibling || rollingTextMask.querySelector('span:first-child');
+        const up = rollingTextMask.querySelector('span[data-up]');
+
+        if (up) {
+            up.removeAttribute('data-up');
+        }
+
+        show.removeAttribute('data-show');
+        show.setAttribute('data-up', '');
+
+        next.setAttribute('data-show', '');
+    }, 2000);
+
+</script>
+
+{% endblock %}
+
+
+<!-- Application footer -->
+{% block footer %}
+{% endblock %}
+
+<!-- Scripts -->
+{% block scripts %}
+{{ super() }}
+{% endblock %}
