@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import getpass
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from quadra.utils.utils import get_logger
 
@@ -29,7 +31,7 @@ class AbstractModelManager(ABC):
 
     @abstractmethod
     def register_model(
-        self, model_location: str, model_name: str, description: str, tags: Optional[Dict[str, Any]]
+        self, model_location: str, model_name: str, description: str, tags: dict[str, Any] | None = None
     ) -> Any:
         """Register a model in the model registry."""
 
@@ -38,11 +40,11 @@ class AbstractModelManager(ABC):
         """Get the latest version of a model for all the possible stages or filtered by stage."""
 
     @abstractmethod
-    def transistion_model(self, model_name: str, version: int, stage: str) -> Any:
+    def transistion_model(self, model_name: str, version: int, stage: str, description: str | None = None) -> Any:
         """Transition the model with the given version to a new stage."""
 
     @abstractmethod
-    def delete_model(self, model_name: str, version: int) -> None:
+    def delete_model(self, model_name: str, version: int, description: str | None = None) -> None:
         """Delete a model with the given version."""
 
     @abstractmethod
@@ -51,8 +53,8 @@ class AbstractModelManager(ABC):
         experiment_name: str,
         metric: str,
         model_name: str,
-        tags: Optional[Dict[str, Any]] = None,
-        description: str = "",
+        description: str,
+        tags: dict[str, Any] | None = None,
         mode: str = "max",
         model_path: str = "model",
     ) -> Any:
@@ -73,7 +75,7 @@ class MlflowModelManager(AbstractModelManager):
         self.client = MlflowClient()
 
     def register_model(
-        self, model_location: str, model_name: str, description: str, tags: Optional[Dict[str, Any]] = None
+        self, model_location: str, model_name: str, description: str | None = None, tags: dict[str, Any] | None = None
     ) -> ModelVersion:
         """Register a model in the model registry.
 
@@ -97,7 +99,7 @@ class MlflowModelManager(AbstractModelManager):
 
         new_model_description = VERSION_MD_TEMPLATE.format(model_version.version)
         new_model_description += self._get_author_and_date()
-        new_model_description += DESCRIPTION_MD_TEMPLATE.format(description)
+        new_model_description += self._generate_description(description)
 
         self.client.update_registered_model(model_name, header + registered_model_description + new_model_description)
 
@@ -121,13 +123,16 @@ class MlflowModelManager(AbstractModelManager):
 
         return model_version
 
-    def transistion_model(self, model_name: str, version: int, stage: str) -> Optional[ModelVersion]:
+    def transistion_model(
+        self, model_name: str, version: int, stage: str, description: str | None = None
+    ) -> ModelVersion | None:
         """Transition a model to a new stage.
 
         Args:
             model_name: The name of the model
             version: The version of the model
             stage: The stage of the model
+            description: A description of the transition, this will be added to the model changelog
         """
         previous_stage = self._safe_get_stage(model_name, version)
 
@@ -147,6 +152,7 @@ class MlflowModelManager(AbstractModelManager):
         new_model_description = "## **Transition:**\n"
         new_model_description += f"### Version {model_version.version} from {previous_stage} to {new_stage}\n"
         new_model_description += self._get_author_and_date()
+        new_model_description += self._generate_description(description)
 
         self.client.update_registered_model(model_name, registered_model_description + new_model_description)
         self.client.update_model_version(
@@ -155,7 +161,7 @@ class MlflowModelManager(AbstractModelManager):
 
         return model_version
 
-    def delete_model(self, model_name: str, version: int, description: str = "") -> None:
+    def delete_model(self, model_name: str, version: int, description: str | None = None) -> None:
         """Delete a model.
 
         Args:
@@ -182,38 +188,32 @@ class MlflowModelManager(AbstractModelManager):
         self.client.delete_model_version(model_name, version)
 
         registered_model_description = self.client.get_registered_model(model_name).description
-        single_model_description = self.client.get_model_version(model_name, version).description
 
         new_model_description = "## **Deletion:**\n"
-        new_model_description += VERSION_MD_TEMPLATE.format(version)
+        new_model_description += f"### Version {version} from stage: {model_stage}\n"
         new_model_description += self._get_author_and_date()
-
-        if len(description) > 0:
-            new_model_description += DESCRIPTION_MD_TEMPLATE.format(description)
-        else:
-            new_model_description += DESCRIPTION_MD_TEMPLATE.format("N/A")
+        new_model_description += self._generate_description(description)
 
         self.client.update_registered_model(model_name, registered_model_description + new_model_description)
-        self.client.update_model_version(model_name, version, single_model_description + new_model_description)
 
     def register_best_model(
         self,
         experiment_name: str,
         metric: str,
         model_name: str,
-        tags: Optional[Dict[str, Any]] = None,
-        description: str = "",
+        description: str | None = None,
+        tags: dict[str, Any] | None = None,
         mode: str = "max",
         model_path: str = "model",
-    ) -> Optional[ModelVersion]:
+    ) -> ModelVersion | None:
         """Register the best model from an experiment.
 
         Args:
             experiment_name: The name of the experiment
             metric: The metric to use to determine the best model
             model_name: The name of the model after it is registered
-            tags: A dictionary of tags to add to the model
             description: A description of the model, this will be added to the model changelog
+            tags: A dictionary of tags to add to the model
             mode: The mode to use to determine the best model, either "max" or "min"
             model_path: The path to the model within the experiment run
 
@@ -230,7 +230,7 @@ class MlflowModelManager(AbstractModelManager):
             log.error("No runs found for experiment %s", experiment_name)
             return None
 
-        best_run: Optional[Run] = None
+        best_run: Run | None = None
 
         # We can only make comparisons if the model is on the top folder, otherwise just check if the folder exists
         # TODO: Is there a better way to do this?
@@ -269,6 +269,14 @@ class MlflowModelManager(AbstractModelManager):
         return model_version
 
     @staticmethod
+    def _generate_description(description: str | None = None) -> str:
+        """Generate the description markdown template."""
+        if description is None:
+            return ""
+
+        return DESCRIPTION_MD_TEMPLATE.format(description)
+
+    @staticmethod
     def _get_author_and_date() -> str:
         """Get the author and date markdown template."""
         author_and_date = f"### Author: {getpass.getuser()}\n"
@@ -276,7 +284,7 @@ class MlflowModelManager(AbstractModelManager):
 
         return author_and_date
 
-    def _safe_get_stage(self, model_name: str, version: int) -> Optional[str]:
+    def _safe_get_stage(self, model_name: str, version: int) -> str | None:
         """Get the stage of a model version.
 
         Args:
