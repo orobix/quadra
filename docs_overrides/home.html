@@ -118,6 +118,7 @@
         margin-top: -2em;
         margin-left: 15%;
         margin-right: 15%;
+        opacity: 0.7;
     }
 
     .lp-hero-button-container {
@@ -163,15 +164,15 @@
 
     <div class="md-hero__inner lp-hero_button-container md-typeset">
         <a href="{{ page.next_page.url | url }}" title="{{ page.next_page.title | striptags }}"
-            class="md-button md-button--primary lp-hero-button">Get
-            Started </a>
+            class="md-button md-button--primary lp-hero-button">Learn More</a>
         <a href="{{ config.repo_url }}" title="{{ lang.t('source.link.title') }}"
             class="md-button md-button--secondary lp-hero-button">GitHub</a>
     </div>
 
+    <hr
+        class="my-12 h-px border-t-0 bg-transparent bg-gradient-to-r from-transparent via-neutral-500 to-transparent opacity-25 dark:opacity-100" />
+
 </div>
-
-
 
 
 <script src="https://cdn.jsdelivr.net/npm/tw-elements/dist/js/tw-elements.umd.min.js"></script>
