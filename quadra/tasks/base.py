@@ -318,7 +318,6 @@ class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
         self.config = config
         self.model_data: Dict[str, Any]
         self.model_path = model_path
-        self.device = utils.get_device()
         self._deployment_model: RecursiveScriptModule
         self.deployment_model_type: str
         self.model_info_filename = "model.json"
