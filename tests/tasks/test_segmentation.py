@@ -7,6 +7,8 @@ import pytest
 from quadra.utils.tests.fixtures import base_binary_segmentation_dataset, base_multiclass_segmentation_dataset
 from quadra.utils.tests.helpers import execute_quadra_experiment
 
+# TODO: NEED TO ADD SEGMENTATION EVALUATION TESTS
+
 BASE_EXPERIMENT_OVERRIDES = [
     "trainer=lightning_cpu",
     "trainer.devices=1",
