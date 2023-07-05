@@ -2,8 +2,7 @@ import glob
 import json
 import os
 from collections import Counter
-from pathlib import Path
-from typing import Any, Dict, Generic, List, Optional, TypeVar, Union, cast
+from typing import Dict, Generic, List, Optional, TypeVar, Union, cast
 
 import cv2
 import hydra
@@ -21,10 +20,10 @@ from tqdm import tqdm
 
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.datamodules import AnomalyDataModule
-from quadra.tasks.base import LightningTask, Task
+from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
 from quadra.utils.classification import get_results
-from quadra.utils.export import export_torchscript_model, import_deployment_model
+from quadra.utils.export import export_torchscript_model
 
 log = utils.get_logger(__name__)
 
@@ -287,7 +286,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
                     utils.upload_file_tensorboard(a, tensorboard_logger)
 
 
-class AnomalibEvaluation(Task[AnomalyDataModule]):
+class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
     """Evaluation task for Anomalib.
 
     Args:
@@ -301,59 +300,9 @@ class AnomalibEvaluation(Task[AnomalyDataModule]):
     def __init__(
         self, config: DictConfig, model_path: str, use_training_threshold: bool = False, device: Optional[str] = None
     ):
-        super().__init__(config=config)
-        self.model_data: Dict[str, Any]
-        self._deployment_model: Any
-        self.deployment_model_type: str
-        self.model_path = model_path
-        self.output_path = ""
+        super().__init__(config=config, model_path=model_path, device=device)
 
-        if device is None:
-            self.device = utils.get_device()
-        else:
-            self.device = device
-
-        self.config = config
-        self.report_path = ""
-        self.metadata = {"report_files": []}
-        self.model_info_filename = "model.json"
         self.use_training_threshold = use_training_threshold
-
-    @property
-    def deployment_model(self):
-        """Deployment model."""
-        return self._deployment_model
-
-    @deployment_model.setter
-    def deployment_model(self, model_path: str):
-        """Set the deployment model."""
-        self._deployment_model, self.deployment_model_type = import_deployment_model(model_path, self.device)
-
-    def prepare(self) -> None:
-        """Prepare the evaluation."""
-        with open(os.path.join(Path(self.model_path).parent, self.model_info_filename)) as f:
-            self.model_data = json.load(f)
-
-        if not isinstance(self.model_data, dict):
-            raise ValueError("Model info file is not a valid json")
-
-        if self.model_data["input_size"][0] != self.config.transforms.input_height:
-            log.warning(
-                f"Input height of the model ({self.model_data['input_size'][0]}) is different from the one specified "
-                + f"in the config ({self.config.transforms.input_height}). Fixing the config."
-            )
-            self.config.transforms.input_height = self.model_data["input_size"][0]
-
-        if self.model_data["input_size"][1] != self.config.transforms.input_width:
-            log.warning(
-                f"Input width of the model ({self.model_data['input_size'][1]}) is different from the one specified "
-                + f"in the config ({self.config.transforms.input_width}). Fixing the config."
-            )
-            self.config.transforms.input_width = self.model_data["input_size"][1]
-
-        self.deployment_model = self.model_path
-
-        super().prepare()
 
     def test(self) -> None:
         """Perform test."""
@@ -422,8 +371,8 @@ class AnomalibEvaluation(Task[AnomalyDataModule]):
         if len(self.report_path) > 0:
             os.makedirs(self.report_path, exist_ok=True)
 
-        os.makedirs(os.path.join(self.output_path, "predictions"), exist_ok=True)
-        os.makedirs(os.path.join(self.output_path, "heatmaps"), exist_ok=True)
+        os.makedirs(os.path.join(self.report_path, "predictions"), exist_ok=True)
+        os.makedirs(os.path.join(self.report_path, "heatmaps"), exist_ok=True)
 
         anomaly_scores = self.metadata["anomaly_scores"].cpu().numpy()
         good_scores = anomaly_scores[np.where(np.array(self.metadata["image_labels"]) == 0)]
@@ -517,7 +466,7 @@ class AnomalibEvaluation(Task[AnomalyDataModule]):
 
             output_mask = output_mask * 255
             output_mask = cv2.resize(output_mask, (img.shape[1], img.shape[0]))
-            cv2.imwrite(os.path.join(self.output_path, "predictions", output_mask_name), output_mask)
+            cv2.imwrite(os.path.join(self.report_path, "predictions", output_mask_name), output_mask)
 
             # Normalize the heatmaps based on the current min and max anomaly score, otherwise even on good images the
             # anomaly map looks like there are defects while it's not true
@@ -529,7 +478,7 @@ class AnomalibEvaluation(Task[AnomalyDataModule]):
             output_heatmap = anomaly_map_to_color_map(output_heatmap, normalize=False)
             output_heatmap = cv2.resize(output_heatmap, (img.shape[1], img.shape[0]))
             cv2.imwrite(
-                os.path.join(self.output_path, "heatmaps", output_mask_name),
+                os.path.join(self.report_path, "heatmaps", output_mask_name),
                 cv2.cvtColor(output_heatmap, cv2.COLOR_RGB2BGR),
             )
 
@@ -541,7 +490,7 @@ class AnomalibEvaluation(Task[AnomalyDataModule]):
             ],
         }
 
-        with open(os.path.join(self.output_path, "anomaly_test_output.json"), "w") as f:
+        with open(os.path.join(self.report_path, "anomaly_test_output.json"), "w") as f:
             json.dump(json_output, f)
 
     def execute(self) -> None:
