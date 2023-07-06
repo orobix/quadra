@@ -309,6 +309,7 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
 
     def test(self) -> None:
         """Run the test."""
+        # prepare_data() must be explicitly called because there is no training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
         test_dataloader = self.datamodule.test_dataloader()

@@ -769,6 +769,7 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
         self.config.datamodule.class_to_idx = class_to_idx
 
         self.datamodule = self.config.datamodule
+        # prepare_data() must be explicitly called because there is no training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
 
@@ -988,6 +989,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
     def test(self) -> None:
         """Perform test."""
         log.info("Running test")
+        # prepare_data() must be explicitly called because there is no training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
         test_dataloader = self.datamodule.test_dataloader()

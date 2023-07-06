@@ -212,6 +212,7 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
     Args:
         config: The experiment configuration
         model_path: The experiment path.
+        device: Device to use for evaluation. If None, the device is automatically determined.
 
     Raises:
         ValueError: If the model path is not provided
@@ -221,8 +222,9 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
         self,
         config: DictConfig,
         model_path: str,
+        device: str = "cpu",
     ):
-        super().__init__(config=config, model_path=model_path)
+        super().__init__(config=config, model_path=model_path, device=device)
         self.config = config
 
     def save_config(self) -> None:
@@ -232,6 +234,8 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
         """Prepare the evaluation."""
         super().prepare()
         self.datamodule = self.config.datamodule
+        # prepare_data() must be explicitly called because there is no training
+        self.datamodule.prepare_data()
         self.deployment_model = self.model_path
 
     @torch.no_grad()
@@ -269,10 +273,16 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
     Args:
         config: The experiment configuration
         model_path: The model path.
+        device: Device to use for evaluation. If None, the device is automatically determined.
     """
 
-    def __init__(self, config: DictConfig, model_path: str):
-        super().__init__(config=config, model_path=model_path)
+    def __init__(
+        self,
+        config: DictConfig,
+        model_path: str,
+        device: str = "cpu",
+    ):
+        super().__init__(config=config, model_path=model_path, device=device)
         self.test_output: Dict[str, Any] = {}
 
     def train(self) -> None:

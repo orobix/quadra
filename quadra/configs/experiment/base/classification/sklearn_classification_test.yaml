@@ -23,8 +23,8 @@ task:
     folder: classification_experiment
     report: true
     example: true
-  experiment_path: ???
-  
+  model_path: ???
+
 datamodule:
   num_workers: 8
   batch_size: 32
