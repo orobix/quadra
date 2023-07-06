@@ -718,13 +718,13 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self.finalize()
 
 
-class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
+class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
     """Perform a test using an imported SklearnClassification pytorch model.
 
     Args:
         config: The experiment configuration
         output: where to save results
-        experiment_path: path to training experiment generated from SklearnClassification task.
+        model_path: path to trained model generated from SklearnClassification task.
         device: the device where to run the model (cuda or cpu)
         gradcam: Whether to compute gradcams
     """
@@ -733,21 +733,17 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
         self,
         config: DictConfig,
         output: DictConfig,
-        experiment_path: str,
+        model_path: str,
         device: str,
         gradcam: bool = False,
     ):
-        super().__init__(config=config)
-        self._device = device
+        super().__init__(config=config, model_path=model_path, device=device)
         self.gradcam = gradcam
         self.output = output
-        self.experiment_path = experiment_path
         self._backbone: nn.Module
         self._classifier: ClassifierMixin
         self.class_to_idx: Dict[str, int]
         self.idx_to_class: Dict[int, str]
-        self.export_folder = "deployment_model"
-        self.deploy_info_file = "model.json"
         self.test_dataloader: torch.utils.data.DataLoader
         self.metadata: Dict[str, Any] = {
             "test_confusion_matrix": None,
@@ -756,17 +752,14 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
             "test_labels": None,
             "cams": None,
         }
-        self.model_info: Any
 
     def prepare(self) -> None:
         """Prepare the experiment."""
-        # Read the information of the already trained model
-        with open(os.path.join(self.experiment_path, self.export_folder, self.deploy_info_file), "r") as f:
-            self.model_info = json.load(f)
+        super().prepare()
 
         idx_to_class = {}
         class_to_idx = {}
-        for k, v in self.model_info["classes"].items():
+        for k, v in self.model_data["classes"].items():
             idx_to_class[int(k)] = v
             class_to_idx[v] = int(k)
 
@@ -775,15 +768,15 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
 
         self.config.datamodule.class_to_idx = class_to_idx
 
-        # Setup datamodule
         self.datamodule = self.config.datamodule
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
 
         self.test_dataloader = self.datamodule.test_dataloader()
+
         try:
             self.backbone = OmegaConf.load(
-                os.path.join(self.experiment_path, self.export_folder, "backbone_config.yaml")
+                os.path.join(Path(self.model_path).parent, "backbone_config.yaml")
             )  # type: ignore[assignment]
         except Exception as e:
             raise RuntimeError(
@@ -791,7 +784,7 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
             ) from e
 
         # Load classifier
-        self.classifier = os.path.join(self.experiment_path, self.export_folder, "classifier.joblib")
+        self.classifier = os.path.join(Path(self.model_path).parent, "classifier.joblib")
 
         # Configure trainer
         self.trainer = self.config.trainer
@@ -879,10 +872,6 @@ class SklearnTestClassification(Task[SklearnClassificationDataModuleT]):
         if self.output.report:
             self.generate_report()
         self.finalize()
-
-    @property
-    def device(self) -> str:
-        return self._device
 
 
 class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
@@ -973,7 +962,8 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
     def prepare(self) -> None:
         """Prepare the evaluation."""
         super().prepare()
-
+        self.deployment_model = self.model_path
+        self.datamodule = self.config.datamodule
         self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
 
     def prepare_gradcam(self) -> None:

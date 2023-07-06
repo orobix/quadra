@@ -304,6 +304,12 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
 
         self.use_training_threshold = use_training_threshold
 
+    def prepare(self) -> None:
+        """Prepare the evaluation."""
+        super().prepare()
+        self.datamodule = self.config.datamodule
+        self.deployment_model = self.model_path
+
     def test(self) -> None:
         """Perform test."""
         log.info("Running test")

@@ -357,7 +357,3 @@ class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
                 + f"in the config ({self.config.transforms.input_width}). Fixing the config."
             )
             self.config.transforms.input_width = self.model_data["input_size"][1]
-
-        self.deployment_model = self.model_path
-
-        super().prepare()

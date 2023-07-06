@@ -228,6 +228,12 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
     def save_config(self) -> None:
         """Skip saving the config."""
 
+    def prepare(self) -> None:
+        """Prepare the evaluation."""
+        super().prepare()
+        self.datamodule = self.config.datamodule
+        self.deployment_model = self.model_path
+
     @torch.no_grad()
     def inference(
         self, dataloader: DataLoader, deployment_model: torch.nn.Module, device: torch.device

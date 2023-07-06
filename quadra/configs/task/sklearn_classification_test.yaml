@@ -5,4 +5,4 @@ output:
   folder: classification_experiment
   report: true
   example: true
-experiment_path: ???
+model_path: ???

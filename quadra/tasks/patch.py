@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional, cast
 
 import hydra
@@ -10,7 +11,7 @@ from sklearn.base import ClassifierMixin
 
 from quadra.datamodules import PatchSklearnClassificationDataModule
 from quadra.datasets.patch import PatchSklearnClassificationTrainDataset
-from quadra.tasks.base import Task
+from quadra.tasks.base import Evaluation, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
 from quadra.utils.export import export_torchscript_model
@@ -250,13 +251,13 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         self.finalize()
 
 
-class PatchSklearnTestClassification(Task[PatchSklearnClassificationDataModule]):
+class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataModule]):
     """Perform a test of an already trained classification model.
 
     Args:
         config: The experiment configuration
         output: where to save resultss
-        experiment_path: path to training experiment generated from SklearnClassification task.
+        model_path: path to trained model from PatchSklearnClassification task.
         device: the device where to run the model (cuda or cpu). Defaults to 'cpu'.
     """
 
@@ -264,53 +265,44 @@ class PatchSklearnTestClassification(Task[PatchSklearnClassificationDataModule])
         self,
         config: DictConfig,
         output: DictConfig,
-        experiment_path: str,
+        model_path: str,
         device: str = "cpu",
     ):
-        super().__init__(config=config)
-        self._device = device
+        super().__init__(config=config, model_path=model_path, device=device)
         self.output = output
-        self.experiment_path = experiment_path
         self._backbone: torch.nn.Module
         self._classifier: ClassifierMixin
         self.class_to_idx: Dict[str, int]
         self.idx_to_class: Dict[int, str]
-        self.runtime_info_file = "model.json"
         self.metadata: Dict[str, Any] = {
             "test_confusion_matrix": None,
             "test_accuracy": None,
             "test_results": None,
             "test_labels": None,
         }
-        self.model_info: Any
         self.class_to_skip: List[str] = []
         self.reconstruction_results: Dict[str, Any]
         self.return_polygon: bool = True
 
     def prepare(self) -> None:
         """Prepare the experiment."""
-        # Read the information of the already trained model
-        with open(os.path.join(self.experiment_path, "deployment_model", self.runtime_info_file), "r") as f:
-            self.model_info = json.load(f)
+        super().prepare()
 
         idx_to_class = {}
         class_to_idx = {}
-        for k, v in self.model_info["classes"].items():
+        for k, v in self.model_data["classes"].items():
             idx_to_class[int(k)] = v
             class_to_idx[v] = int(k)
 
         self.idx_to_class = idx_to_class
         self.class_to_idx = class_to_idx
-
         self.config.datamodule.class_to_idx = class_to_idx
 
-        # Setup datamodule
         self.datamodule = self.config.datamodule
-
         self.backbone = self.config.backbone
 
         # Load classifier
-        self.classifier = os.path.join(self.experiment_path, "deployment_model", "classifier.joblib")
+        self.classifier = os.path.join(Path(self.model_path).parent, "classifier.joblib")
 
         # Configure trainer
         self.trainer = self.config.trainer
@@ -321,7 +313,7 @@ class PatchSklearnTestClassification(Task[PatchSklearnClassificationDataModule])
         self.datamodule.setup(stage="test")
         test_dataloader = self.datamodule.test_dataloader()
 
-        self.class_to_skip = self.model_info["class_to_skip"] if hasattr(self.model_info, "class_to_skip") else None
+        self.class_to_skip = self.model_data["class_to_skip"] if hasattr(self.model_data, "class_to_skip") else None
         class_to_keep = None
 
         if self.class_to_skip is not None:
@@ -454,7 +446,3 @@ class PatchSklearnTestClassification(Task[PatchSklearnClassificationDataModule])
         if self.output.report:
             self.generate_report()
         self.finalize()
-
-    @property
-    def device(self) -> str:
-        return self._device
