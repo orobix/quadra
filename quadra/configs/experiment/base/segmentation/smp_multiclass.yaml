@@ -11,6 +11,11 @@ defaults:
   - override /backbone: smp
   - override /trainer: lightning_gpu
 
+trainer:
+  devices: [0]
+  max_epochs: 100
+  num_sanity_val_steps: 0
+
 core:
   tag: "run"
   name: "quadra_default"
