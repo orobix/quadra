@@ -280,7 +280,7 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
         self,
         config: DictConfig,
         model_path: str,
-        device: str = "cpu",
+        device: Optional[str] = "cpu",
     ):
         super().__init__(config=config, model_path=model_path, device=device)
         self.test_output: Dict[str, Any] = {}

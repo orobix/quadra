@@ -465,6 +465,9 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self.backbone = self.config.backbone
 
         self.model = self.config.model
+        # TODO: here we call prepare_data() because this task extends
+        # Task so there is no automatic prepare_data call before traininig as in Lightning ones?
+        # If yes i would add a comment here to clarify.
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="fit")
 
