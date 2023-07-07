@@ -10,11 +10,6 @@ core:
   name: "quadra_default"
   upload_artifacts: True
 
-trainer:
-  devices: [0]
-  max_epochs: 100
-  num_sanity_val_steps: 0
-
 task:
   model_path: ???
 
