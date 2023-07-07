@@ -11,6 +11,7 @@ from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.loggers import Logger
 from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
+from torch import nn
 from torch.jit._script import RecursiveScriptModule
 
 from quadra import get_version
@@ -325,7 +326,7 @@ class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
         self.metadata = {"report_files": []}
 
     @property
-    def deployment_model(self):
+    def deployment_model(self) -> Union[RecursiveScriptModule, nn.Module]:
         """Deployment model."""
         return self._deployment_model
 
