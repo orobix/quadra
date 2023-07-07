@@ -222,7 +222,7 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
         self,
         config: DictConfig,
         model_path: str,
-        device: str = "cpu",
+        device: Optional[str] = "cpu",
     ):
         super().__init__(config=config, model_path=model_path, device=device)
         self.config = config
@@ -236,7 +236,7 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
         self.datamodule = self.config.datamodule
         # prepare_data() must be explicitly called because there is no training
         self.datamodule.prepare_data()
-        self.deployment_model = self.model_path
+        self.deployment_model = self.model_path  # type: ignore[assignment]
 
     @torch.no_grad()
     def inference(
