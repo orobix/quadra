@@ -300,17 +300,12 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
         self.config.datamodule.class_to_idx = class_to_idx
 
         self.datamodule = self.config.datamodule
-        self.backbone = self.config.backbone
-
-        # Load classifier
-        self.classifier = os.path.join(Path(self.model_path).parent, "classifier.joblib")
-
         # Configure trainer
         self.trainer = self.config.trainer
 
     def test(self) -> None:
         """Run the test."""
-        # prepare_data() must be explicitly called because there is no training
+        # prepare_data() must be explicitly called because there is no lightning training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
         test_dataloader = self.datamodule.test_dataloader()
@@ -334,6 +329,18 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
         self.metadata["test_labels"] = [
             self.idx_to_class[i] if i != -1 else "N/A" for i in res["real_label"].unique().tolist()
         ]
+
+    @property
+    def deployment_model(self):
+        """Deployment model."""
+        return None
+
+    @deployment_model.setter
+    def deployment_model(self, model_path: str):
+        """Set backbone and classifier."""
+        self.backbone = self.config.backbone
+        # Load classifier
+        self.classifier = os.path.join(Path(model_path).parent, "classifier.joblib")
 
     @property
     def classifier(self) -> ClassifierMixin:

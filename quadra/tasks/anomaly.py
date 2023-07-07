@@ -308,12 +308,11 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         """Prepare the evaluation."""
         super().prepare()
         self.datamodule = self.config.datamodule
-        self.deployment_model = self.model_path
 
     def test(self) -> None:
         """Perform test."""
         log.info("Running test")
-        # prepare_data() must be explicitly called because there is no training
+        # prepare_data() must be explicitly called because there is no lightning training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
         test_dataloader = self.datamodule.test_dataloader()

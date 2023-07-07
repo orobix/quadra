@@ -234,9 +234,8 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
         """Prepare the evaluation."""
         super().prepare()
         self.datamodule = self.config.datamodule
-        # prepare_data() must be explicitly called because there is no training
+        # prepare_data() must be explicitly called because there is no lightning training
         self.datamodule.prepare_data()
-        self.deployment_model = self.model_path  # type: ignore[assignment]
 
     @torch.no_grad()
     def inference(

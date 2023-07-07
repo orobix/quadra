@@ -770,26 +770,33 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
         self.config.datamodule.class_to_idx = class_to_idx
 
         self.datamodule = self.config.datamodule
-        # prepare_data() must be explicitly called because there is no training
+        # prepare_data() must be explicitly called because there is no lightning training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
 
         self.test_dataloader = self.datamodule.test_dataloader()
 
+        # Configure trainer
+        self.trainer = self.config.trainer
+
+    @property
+    def deployment_model(self):
+        """Deployment model."""
+        return None
+
+    @deployment_model.setter
+    def deployment_model(self, model_path: str):
+        """Set backbone and classifier."""
         try:
             self.backbone = OmegaConf.load(
-                os.path.join(Path(self.model_path).parent, "backbone_config.yaml")
+                os.path.join(Path(model_path).parent, "backbone_config.yaml")
             )  # type: ignore[assignment]
         except Exception as e:
             raise RuntimeError(
                 "You need the backbone config file to load the model. Add 'pytorch' export format to the train task"
             ) from e
-
         # Load classifier
-        self.classifier = os.path.join(Path(self.model_path).parent, "classifier.joblib")
-
-        # Configure trainer
-        self.trainer = self.config.trainer
+        self.classifier = os.path.join(Path(model_path).parent, "classifier.joblib")
 
     @property
     def classifier(self) -> ClassifierMixin:
@@ -964,7 +971,6 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
     def prepare(self) -> None:
         """Prepare the evaluation."""
         super().prepare()
-        self.deployment_model = self.model_path
         self.datamodule = self.config.datamodule
         self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
 
