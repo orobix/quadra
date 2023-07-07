@@ -105,9 +105,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
     def train(self) -> None:
         """Train the model."""
         log.info("Starting training...!")
-        # TODO: here we call prepare_data() because this task extends
-        # Task so there is no automatic prepare_data call before traininig as in Lightning ones?
-        # If yes i would add a comment here to clarify.
+        # prepare_data() must be explicitly called if the task does not include a lightining training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="fit")
         class_to_keep = None
