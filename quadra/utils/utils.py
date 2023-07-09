@@ -8,7 +8,7 @@ import os
 import subprocess
 import sys
 import warnings
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, cast
 
 import cv2
 import dotenv
@@ -282,7 +282,7 @@ def finish(
                             # Input size is not a list of lists
                             input_size = [input_size]
 
-                        inputs = [torch.randn(1, *np.array(size)) for size in input_size]
+                        inputs = cast(List[Any], quadra_export.generate_torch_inputs(input_size, device="cpu"))
                         signature = infer_signature_torch(model, inputs)
 
                         with mlflow.start_run(run_id=mlflow_logger.run_id) as _:

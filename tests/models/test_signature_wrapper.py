@@ -1,18 +1,21 @@
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 from torch import nn
 
 from quadra.models.base import ModelSignatureWrapper
+from quadra.utils.export import generate_torch_inputs
 
 
-class SimpleModel(nn.Module):
+class SingleInputModel(nn.Module):
     """Model taking a single input."""
 
     def __init__(self):
         super().__init__()
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: Any):
         return x
 
 
@@ -22,48 +25,8 @@ class DoubleInputModel(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, x: torch.Tensor, y: torch.Tensor):
+    def forward(self, x: Any, y: Any):
         return x, y
-
-
-class DictInputModel(nn.Module):
-    """Model taking a dict as input."""
-
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, x: dict[str, torch.Tensor]):
-        return x
-
-
-class TupleInputModel(nn.Module):
-    """Model taking a tuple as input."""
-
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, x: tuple[torch.Tensor, torch.Tensor]):
-        return x
-
-
-class ListOfTensorsInputModel(nn.Module):
-    """Model taking a list of tensors as input."""
-
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, x: list[torch.Tensor]):
-        return x
-
-
-class ListOfDictsInputModel(nn.Module):
-    """Model taking a list of dicts as input."""
-
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, x: list[dict[str, torch.Tensor]]):
-        return x
 
 
 class UnsupportedInputModel(nn.Module):
@@ -78,12 +41,15 @@ class UnsupportedInputModel(nn.Module):
 
 def test_simple_model():
     """Test the input shape retrieval for a simple model."""
-    model = ModelSignatureWrapper(SimpleModel())
+    model = ModelSignatureWrapper(SingleInputModel())
     assert model.input_shapes is None
 
     x = torch.zeros(1, 3, 224, 224)
     model(x)
     assert model.input_shapes == [(3, 224, 224)]
+
+    inputs = generate_torch_inputs(model.input_shapes, device="cpu")
+    model(*inputs)
 
 
 def test_double_input_model():
@@ -101,20 +67,32 @@ def test_double_input_model():
     # Check that the order of the inputs does not matter
     assert model.input_shapes == [(3, 224, 224), (3, 448, 448)]
 
+    inputs = generate_torch_inputs(model.input_shapes, device="cpu")
+    assert len(inputs) == 2
+    assert inputs[0].shape == (1, 3, 224, 224)
+    assert inputs[1].shape == (1, 3, 448, 448)
+    model(*inputs)
+
 
 def test_dict_input_model():
     """Test the input shape retrieval for a model with a dict input."""
-    model = ModelSignatureWrapper(DictInputModel())
+    model = ModelSignatureWrapper(SingleInputModel())
     assert model.input_shapes is None
 
     x = torch.zeros(1, 3, 224, 224)
     model({"x": x})
     assert model.input_shapes == [{"x": (3, 224, 224)}]
 
+    inputs = generate_torch_inputs(model.input_shapes, device="cpu")
+    assert len(inputs) == 1
+    assert isinstance(inputs[0], dict)
+    assert inputs[0]["x"].shape == (1, 3, 224, 224)
+    model(*inputs)
+
 
 def test_tuple_input_model():
     """Test the input shape retrieval for a model with a tuple input."""
-    model = ModelSignatureWrapper(TupleInputModel())
+    model = ModelSignatureWrapper(SingleInputModel())
     assert model.input_shapes is None
 
     x = torch.zeros(1, 3, 224, 224)
@@ -122,10 +100,18 @@ def test_tuple_input_model():
     model((x, y))
     assert model.input_shapes == [((3, 224, 224), (3, 448, 448))]
 
+    inputs = generate_torch_inputs(model.input_shapes, device="cpu")
+    assert len(inputs) == 1
+    assert len(inputs[0]) == 2
+    assert isinstance(inputs[0], tuple)
+    assert inputs[0][0].shape == (1, 3, 224, 224)
+    assert inputs[0][1].shape == (1, 3, 448, 448)
+    model(*inputs)
+
 
 def test_list_of_tensors_input_model():
     """Test the input shape retrieval for a model with a list of tensors input."""
-    model = ModelSignatureWrapper(ListOfTensorsInputModel())
+    model = ModelSignatureWrapper(SingleInputModel())
     assert model.input_shapes is None
 
     x = torch.zeros(1, 3, 224, 224)
@@ -133,16 +119,51 @@ def test_list_of_tensors_input_model():
     model([x, y])
     assert model.input_shapes == [[(3, 224, 224), (3, 448, 448)]]
 
+    inputs = generate_torch_inputs(model.input_shapes, device="cpu")
+    assert len(inputs) == 1
+    assert isinstance(inputs[0], list)
+    assert len(inputs[0]) == 2
+    assert inputs[0][0].shape == (1, 3, 224, 224)
+    assert inputs[0][1].shape == (1, 3, 448, 448)
+    model(*inputs)
+
 
 def test_list_of_dicts_input_model():
     """Test the input shape retrieval for a model with a list of dicts input."""
-    model = ModelSignatureWrapper(ListOfDictsInputModel())
+    model = ModelSignatureWrapper(SingleInputModel())
     assert model.input_shapes is None
 
     x = torch.zeros(1, 3, 224, 224)
     y = torch.zeros(1, 3, 448, 448)
     model([{"x": x}, {"y": y}])
     assert model.input_shapes == [[{"x": (3, 224, 224)}, {"y": (3, 448, 448)}]]
+
+    inputs = generate_torch_inputs(model.input_shapes, device="cpu")
+    assert len(inputs) == 1
+    assert isinstance(inputs[0], list)
+    assert len(inputs[0]) == 2
+    assert inputs[0][0]["x"].shape == (1, 3, 224, 224)
+    assert inputs[0][1]["y"].shape == (1, 3, 448, 448)
+    model(*inputs)
+
+
+def test_tuple_of_dicts_input_model():
+    """Test the input shape retrieval for a model with a tuple of dicts input."""
+    model = ModelSignatureWrapper(SingleInputModel())
+    assert model.input_shapes is None
+
+    x = torch.zeros(1, 3, 224, 224)
+    y = torch.zeros(1, 3, 448, 448)
+    model(({"x": x}, {"y": y}))
+    assert model.input_shapes == [({"x": (3, 224, 224)}, {"y": (3, 448, 448)})]
+
+    inputs = generate_torch_inputs(model.input_shapes, device="cpu")
+    assert len(inputs) == 1
+    assert isinstance(inputs[0], tuple)
+    assert len(inputs[0]) == 2
+    assert inputs[0][0]["x"].shape == (1, 3, 224, 224)
+    assert inputs[0][1]["y"].shape == (1, 3, 448, 448)
+    model(*inputs)
 
 
 def test_unsupported_input_model():
