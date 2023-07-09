@@ -15,6 +15,7 @@ class ModelSignatureWrapper(nn.Module):
         super().__init__()
         self.instance = model
         self.input_shapes: Any = None
+        self.disable = False
 
         if isinstance(self.instance, ModelSignatureWrapper):
             # Handle nested ModelSignatureWrapper
@@ -23,8 +24,22 @@ class ModelSignatureWrapper(nn.Module):
 
     def forward(self, *args: Any, **kwargs: Any) -> torch.Tensor:
         """Retrieve the input shape and forward the model."""
-        if self.input_shapes is None:
-            self.input_shapes = self._get_input_shapes(*args, **kwargs)
+        if self.input_shapes is None and not self.disable:
+            try:
+                self.input_shapes = self._get_input_shapes(*args, **kwargs)
+            except Exception:
+                # Avoid circular import
+                # pylint: disable=import-outside-toplevel
+                from quadra.utils.utils import get_logger  # noqa
+
+                log = get_logger(__name__)
+                log.warning(
+                    "Failed to retrieve input shapes after forward! To export the model you'll need to "
+                    "provide the input shapes manually setting the export_config.input_shapes parameter! "
+                    "Alternatively you could try to use a forward with supported input types (and their compositions) "
+                    "(list, tuple, dict, tensors)."
+                )
+                self.disable = True
 
         return self.instance.forward(*args, **kwargs)
 

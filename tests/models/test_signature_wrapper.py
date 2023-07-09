@@ -66,6 +66,16 @@ class ListOfDictsInputModel(nn.Module):
         return x
 
 
+class UnsupportedInputModel(nn.Module):
+    """Model taking an unsupported input."""
+
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x: torch.Tensor, y: str):
+        return x
+
+
 def test_simple_model():
     """Test the input shape retrieval for a simple model."""
     model = ModelSignatureWrapper(SimpleModel())
@@ -133,3 +143,15 @@ def test_list_of_dicts_input_model():
     y = torch.zeros(1, 3, 448, 448)
     model([{"x": x}, {"y": y}])
     assert model.input_shapes == [[{"x": (3, 224, 224)}, {"y": (3, 448, 448)}]]
+
+
+def test_unsupported_input_model():
+    """Test the input shape retrieval for a model with an unsupported input."""
+    model = ModelSignatureWrapper(UnsupportedInputModel())
+    assert model.input_shapes is None
+
+    x = torch.zeros(1, 3, 224, 224)
+    y = "test"
+    model(x, y)
+    assert model.input_shapes is None
+    assert model.disable
