@@ -50,10 +50,13 @@ class ModelSignatureWrapper(nn.Module):
 
         return input_shapes
 
-    def _get_input_shape(self, inp: Sequence | torch.Tensor) -> list[Any] | tuple[int, ...]:
+    def _get_input_shape(self, inp: Sequence | torch.Tensor) -> list[Any] | tuple[Any, ...] | dict[str, Any]:
         """Recursive function to retrieve the input shapes."""
-        if isinstance(inp, Sequence):
+        if isinstance(inp, list):
             return [self._get_input_shape(i) for i in inp]
+
+        if isinstance(inp, tuple):
+            return tuple(self._get_input_shape(i) for i in inp)
 
         if isinstance(inp, torch.Tensor):
             return tuple(inp.shape[1:])
