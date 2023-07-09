@@ -9,6 +9,8 @@ except ImportError:
 from typing import List, Optional, TypeVar
 
 import torch
+from pytorch_lightning import Trainer
+from pytorch_lightning.loggers import MLFlowLogger
 from torch import nn
 
 NnModuleT = TypeVar("NnModuleT", bound=nn.Module)
@@ -41,3 +43,23 @@ def infer_signature_torch(model: NnModuleT, data: List[torch.Tensor]) -> Optiona
         signature_input = {f"input_{i}": x.cpu().numpy() for i, x in enumerate(data)}
 
     return infer_signature(signature_input, model_output)
+
+
+def get_mlflow_logger(trainer: Trainer) -> Optional[MLFlowLogger]:
+    """Safely get Mlflow logger from Trainer loggers.
+
+    Args:
+        trainer: Pytorch Lightning trainer.
+
+    Returns:
+        An mlflow logger if available, else None.
+    """
+    if isinstance(trainer.logger, MLFlowLogger):
+        return trainer.logger
+
+    if isinstance(trainer.logger, list):
+        for logger in trainer.logger:
+            if isinstance(logger, MLFlowLogger):
+                return logger
+
+    return None

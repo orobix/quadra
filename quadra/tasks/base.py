@@ -6,13 +6,14 @@ import torch
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Callback, LightningModule, Trainer
-from pytorch_lightning.loggers import Logger
+from pytorch_lightning.loggers import Logger, MLFlowLogger
 from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from torch.jit._script import RecursiveScriptModule
 from torch.nn import Module
 
 from quadra import get_version
+from quadra.callbacks.mlflow import validate_artifact_storage
 from quadra.datamodules.base import BaseDataModule
 from quadra.utils import utils
 from quadra.utils.export import import_deployment_model
@@ -124,11 +125,12 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         """Prepare the experiment."""
         super().prepare()
 
-        if "callbacks" in self.config:
-            self.callbacks = self.config.callbacks
-
+        # First setup loggers since some callbacks might need logger setup correctly.
         if "logger" in self.config:
             self.logger = self.config.logger
+
+        if "callbacks" in self.config:
+            self.callbacks = self.config.callbacks
 
         self.devices = self.config.trainer.devices
         self.trainer = self.config.trainer
@@ -202,6 +204,8 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             if "_target_" in lg_conf:
                 log.info("Instantiating logger <%s>", lg_conf["_target_"])
                 logger = hydra.utils.instantiate(lg_conf)
+                if isinstance(logger, MLFlowLogger):
+                    validate_artifact_storage(logger)
                 instantiated_loggers.append(logger)
 
         self._logger = instantiated_loggers

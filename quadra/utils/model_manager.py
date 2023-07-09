@@ -4,7 +4,7 @@ import getpass
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from quadra.utils.utils import get_logger
 
@@ -40,7 +40,7 @@ class AbstractModelManager(ABC):
         """Get the latest version of a model for all the possible stages or filtered by stage."""
 
     @abstractmethod
-    def transistion_model(self, model_name: str, version: int, stage: str, description: str | None = None) -> Any:
+    def transition_model(self, model_name: str, version: int, stage: str, description: str | None = None) -> Any:
         """Transition the model with the given version to a new stage."""
 
     @abstractmethod
@@ -55,8 +55,8 @@ class AbstractModelManager(ABC):
         model_name: str,
         description: str,
         tags: dict[str, Any] | None = None,
-        mode: str = "max",
-        model_path: str = "model",
+        mode: Literal["max", "min"] = "max",
+        model_path: str = "deployment_model",
     ) -> Any:
         """Register the best model from an experiment."""
 
@@ -123,7 +123,7 @@ class MlflowModelManager(AbstractModelManager):
 
         return model_version
 
-    def transistion_model(
+    def transition_model(
         self, model_name: str, version: int, stage: str, description: str | None = None
     ) -> ModelVersion | None:
         """Transition a model to a new stage.
@@ -203,8 +203,8 @@ class MlflowModelManager(AbstractModelManager):
         model_name: str,
         description: str | None = None,
         tags: dict[str, Any] | None = None,
-        mode: str = "max",
-        model_path: str = "model",
+        mode: Literal["max", "min"] = "max",
+        model_path: str = "deployment_model",
     ) -> ModelVersion | None:
         """Register the best model from an experiment.
 
