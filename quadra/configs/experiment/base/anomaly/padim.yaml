@@ -21,8 +21,6 @@ datamodule:
   category:
   phase: train
 
-print_config: false
-
 core:
   tag: "run"
   name: padim_${model.model.backbone}_${trainer.max_epochs}
