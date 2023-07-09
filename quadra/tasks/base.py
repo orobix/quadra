@@ -26,12 +26,16 @@ class Task(Generic[DataModuleT]):
 
     Args:
         config: The experiment configuration.
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
+
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
     """
 
-    def __init__(self, config: DictConfig, export_type: Optional[List[str]] = None):
+    def __init__(self, config: DictConfig, export_config: Optional[DictConfig] = None):
         self.config = config
-        self.export_type = export_type
+        self.export_config = export_config
         self.export_folder: str = "deployment_model"
         self._datamodule: DataModuleT
         self.metadata: Dict[str, Any]
@@ -84,7 +88,7 @@ class Task(Generic[DataModuleT]):
         self.prepare()
         self.train()
         self.test()
-        if self.export_type is not None and len(self.export_type) > 0:
+        if self.export_config is not None and len(self.export_config.types) > 0:
             self.export()
         self.generate_report()
         self.finalize()
@@ -98,7 +102,11 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         checkpoint_path: The path to the checkpoint to load the model from. Defaults to None.
         run_test: Whether to run the test after training. Defaults to False.
         report: Whether to generate a report. Defaults to False.
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
+
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
     """
 
     def __init__(
@@ -107,9 +115,9 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
         report: bool = False,
-        export_type: Optional[List[str]] = None,
+        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config, export_type=export_type)
+        super().__init__(config, export_config=export_config)
         self.config = config
         self.checkpoint_path = checkpoint_path
         self.run_test = run_test
@@ -278,7 +286,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         self.train()
         if self.run_test:
             self.test()
-        if self.export_type is not None and len(self.export_type) > 0:
+        if self.export_config is not None and len(self.export_config.types) > 0:
             self.export()
         if self.report:
             self.generate_report()

@@ -8,7 +8,7 @@ from sklearn.linear_model import LogisticRegression
 from torch import nn
 from torch.optim import Optimizer
 
-from quadra.models.base import ModelWrapper
+from quadra.models.base import ModelSignatureWrapper
 
 __all__ = ["BaseLightningModule", "SSLModule"]
 
@@ -30,7 +30,7 @@ class BaseLightningModule(pl.LightningModule):
         lr_scheduler_interval: Optional[str] = "epoch",
     ):
         super().__init__()
-        self.model = ModelWrapper(model)
+        self.model = ModelSignatureWrapper(model)
         self.optimizer = optimizer
         self.schedulers = lr_scheduler
         self.lr_scheduler_interval = lr_scheduler_interval

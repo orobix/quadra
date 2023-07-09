@@ -7,16 +7,17 @@ import torch
 from torch import nn
 
 
-class ModelWrapper(nn.Module):
-    """Model wrapper to retrieve input shape."""
+class ModelSignatureWrapper(nn.Module):
+    """Model wrapper used to retrieve input shape. It can be used as a decorator of nn.Module, the first call to the
+    forward method will retrieve the input shape and store it in the input_shapes attribute."""
 
     def __init__(self, model: nn.Module):
         super().__init__()
         self.instance = model
         self.input_shapes: Any = None
 
-        if isinstance(self.instance, ModelWrapper):
-            # Handle nested ModelWrapper
+        if isinstance(self.instance, ModelSignatureWrapper):
+            # Handle nested ModelSignatureWrapper
             self.input_shapes = self.instance.input_shapes
             self.instance = self.instance.instance
 
@@ -28,7 +29,8 @@ class ModelWrapper(nn.Module):
         return self.instance.forward(*args, **kwargs)
 
     def _get_input_shapes(self, *args: Any, **kwargs: Any) -> list[Any]:
-        """Retrieve the input shapes from the input."""
+        """Retrieve the input shapes from the input. Inputs will be in the same order as the forward method
+        signature."""
         input_shapes = []
 
         for arg in args:

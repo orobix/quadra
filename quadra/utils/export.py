@@ -7,7 +7,7 @@ from anomalib.models.cflow import CflowLightning
 from torch import nn
 from torch.jit._script import RecursiveScriptModule
 
-from quadra.models.base import ModelWrapper
+from quadra.models.base import ModelSignatureWrapper
 
 
 def safe_get_logger() -> Logger:
@@ -59,13 +59,15 @@ def export_torchscript_model(
     """
     log = safe_get_logger()
 
-    if isinstance(model, ModelWrapper):
-        input_shapes = model.input_shapes
+    if isinstance(model, ModelSignatureWrapper):
+        if input_shapes is None:
+            input_shapes = model.input_shapes
         model = model.instance
 
     if input_shapes is None:
-        # TODO: Improve logging message
-        log.warning("Input shape is None, can not trace model")
+        log.warning(
+            "Input shape is None, can not trace model! Please provide input_shapes in the task export configuration."
+        )
         return None
 
     if isinstance(model, CflowLightning):

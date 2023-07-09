@@ -21,7 +21,7 @@ from tqdm import tqdm
 
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.datamodules import AnomalyDataModule
-from quadra.modules.base import ModelWrapper
+from quadra.modules.base import ModelSignatureWrapper
 from quadra.tasks.base import LightningTask, Task
 from quadra.utils import utils
 from quadra.utils.classification import get_results
@@ -42,7 +42,11 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             Defaults to None.
         run_test: Whether to run the test after training. Defaults to False.
         report: Whether to report the results. Defaults to False.
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
+
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
     """
 
     def __init__(
@@ -52,14 +56,14 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         checkpoint_path: Optional[str] = None,
         run_test: bool = True,
         report: bool = True,
-        export_type: Optional[List[str]] = None,
+        export_config: Optional[DictConfig] = None,
     ):
         super().__init__(
             config=config,
             checkpoint_path=checkpoint_path,
             run_test=run_test,
             report=report,
-            export_type=export_type,
+            export_config=export_config,
         )
         self._module: AnomalyModule
         self.module_function = module_function
@@ -105,11 +109,11 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         """Prepare the task."""
         super().prepare()
         self.module = self.config.model
-        self.module.model = ModelWrapper(self.module.model)
+        self.module.model = ModelSignatureWrapper(self.module.model)
 
     def export(self) -> None:
         """Export model for production."""
-        if self.export_type is None or len(self.export_type) == 0:
+        if self.export_config is None or len(self.export_config.types) == 0:
             log.info("No export type specified skipping export")
             return
 
@@ -119,12 +123,11 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
         model = self.module.model
 
-        # TODO: Take it from the config
-        input_shapes = None
+        input_shapes = self.export_config.input_shapes
 
         half_precision = int(self.trainer.precision) == 16
 
-        for export_type in self.export_type:
+        for export_type in self.export_config.types:
             if export_type == "torchscript":
                 out = export_torchscript_model(
                     model=model,
