@@ -1,4 +1,5 @@
-<h1 align="center" style="margin-left: 20%; margin-right: 20%;">
+<h1></h1>
+<p align="center" style="margin-left: 20%; margin-right: 20%;">
    <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 -16.48 1679.2 450.4">
       <defs>
          <style>
@@ -35,7 +36,7 @@
       <path class="logo_q-color" d="M343.07,283.85,295.16,249A44.58,44.58,0,0,0,305,311.06L352.85,346A44.58,44.58,0,0,0,343.07,283.85Z"
          transform="translate(-112.52 0)" />
    </svg>
-</h1>
+</p>
 
 <p align="center">
   <a href="https://orobix.github.io/quadra/latest/index.html">Docs</a> •
