@@ -1,4 +1,42 @@
-<h1 align="center">Quadra</h1>
+
+<h1 align="center" style="margin-left: 20%; margin-right: 20%;">
+    <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 -16.48 1679.2 450.4">
+    <foreignObject width="100%" height="100%">
+            <style>
+                .logo_q-color {
+                    fill: #009485;
+                }
+                .cls-1,
+                .cls-2,
+                .cls-3 {
+                    isolation: isolate;
+                }
+                .cls-2,
+                .cls-3 {
+                    font-size: 406.97px;
+                    font-family: NeutraDisp-Bold, Neutra Display;
+                    font-weight: 700;
+                }
+                .cls-3 {
+                    letter-spacing: -0.04em;
+                }
+            </style>
+        </foreignObject>
+        <g class="cls-1"><text class="logo_q-color cls-2" transform="translate(0 345.92)">O</text>
+          <text class="logo_q-color cls-3" transform="translate(325.57 345.92)">U</text>
+          <text class="logo_q-color cls-2" transform="translate(588.47 345.92)">AD</text>
+          <text class="logo_q-color cls-2" transform="translate(1137.46 345.92)">R</text>
+          <text class="logo_q-color cls-2" transform="translate(1385.3 345.92)">A</text>
+        </g>
+        <path class="logo_q-color" d="M348,314.9,300.06,280a44.56,44.56,0,0,0,9.78,62.08L357.74,377A44.55,44.55,0,0,0,348,314.9Z"
+            transform="translate(-112.52 0)" />
+        <path class="logo_q-color" d="M345.51,299.37l-47.9-34.86a44.58,44.58,0,0,0,9.78,62.09l47.89,34.86A44.58,44.58,0,0,0,345.51,299.37Z"
+            transform="translate(-112.52 0)" />
+        <path class="logo_q-color" d="M343.07,283.85,295.16,249A44.58,44.58,0,0,0,305,311.06L352.85,346A44.58,44.58,0,0,0,343.07,283.85Z"
+            transform="translate(-112.52 0)" />
+      
+    </svg>
+</h1>
 
 <p align="center">
   <a href="https://orobix.github.io/quadra/latest/index.html">Docs</a> •
