@@ -787,14 +787,7 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
     @deployment_model.setter
     def deployment_model(self, model_path: str):
         """Set backbone and classifier."""
-        try:
-            self.backbone = OmegaConf.load(
-                os.path.join(Path(model_path).parent, "backbone_config.yaml")
-            )  # type: ignore[assignment]
-        except Exception as e:
-            raise RuntimeError(
-                "You need the backbone config file to load the model. Add 'pytorch' export format to the train task"
-            ) from e
+        self.backbone = model_path  # type: ignore[assignment]
         # Load classifier
         self.classifier = os.path.join(Path(model_path).parent, "classifier.joblib")
 
@@ -814,16 +807,27 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
         return self._backbone
 
     @backbone.setter
-    def backbone(self, backbone_config: DictConfig) -> None:
+    def backbone(self, model_path: str) -> None:
         """Load backbone."""
-        if backbone_config.metadata.get("checkpoint"):
-            log.info("Loading backbone from <%s>", backbone_config.metadata.checkpoint)
-            self._backbone = torch.load(backbone_config.metadata.checkpoint)
+        file_extension = os.path.splitext(os.path.basename(model_path))[1]
+        if file_extension == ".yaml":
+            log.info("Model path points to '.yaml' file")
+            backbone_config_path = os.path.join(Path(model_path).parent, "backbone_config.yaml")
+            log.info("Loading backbone from config")
+            backbone_config = OmegaConf.load(backbone_config_path)
+
+            if backbone_config.metadata.get("checkpoint"):
+                log.info("Loading backbone from <%s>", backbone_config.metadata.checkpoint)
+                self._backbone = torch.load(backbone_config.metadata.checkpoint)
+            else:
+                log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
+                self._backbone = hydra.utils.instantiate(backbone_config.model)
+            self._backbone.eval()
+            self._backbone = self._backbone.to(self.device)
         else:
-            log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
-            self._backbone = hydra.utils.instantiate(backbone_config.model)
-        self._backbone.eval()
-        self._backbone = self._backbone.to(self.device)
+            log.info("Importing trained model")
+            self._backbone, model_type = import_deployment_model(model_path=model_path, device=self.device)
+            log.info("Imported %s model", model_type)
 
     @property
     def trainer(self) -> SklearnClassificationTrainer:

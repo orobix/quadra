@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, cast
 import hydra
 import torch
 from joblib import dump, load
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from sklearn.base import ClassifierMixin
 
 from quadra.datamodules import PatchSklearnClassificationDataModule
@@ -14,7 +14,7 @@ from quadra.datasets.patch import PatchSklearnClassificationTrainDataset
 from quadra.tasks.base import Evaluation, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
-from quadra.utils.export import export_torchscript_model
+from quadra.utils.export import export_torchscript_model, import_deployment_model
 from quadra.utils.patch import RleEncoder, compute_patch_metrics, save_classification_result
 from quadra.utils.patch.dataset import PatchDatasetFileFormat
 
@@ -338,7 +338,7 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
     @deployment_model.setter
     def deployment_model(self, model_path: str):
         """Set backbone and classifier."""
-        self.backbone = self.config.backbone
+        self.backbone = model_path  # type: ignore[assignment]
         # Load classifier
         self.classifier = os.path.join(Path(model_path).parent, "classifier.joblib")
 
@@ -358,16 +358,27 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
         return self._backbone
 
     @backbone.setter
-    def backbone(self, backbone_config: DictConfig) -> None:
+    def backbone(self, model_path: str) -> None:
         """Load backbone."""
-        if backbone_config.metadata.get("checkpoint"):
-            log.info("Loading backbone from <%s>", backbone_config.metadata.checkpoint)
-            self._backbone = torch.load(backbone_config.metadata.checkpoint)
+        file_extension = os.path.splitext(os.path.basename(model_path))[1]
+        if file_extension == ".yaml":
+            log.info("Model path points to '.yaml' file")
+            backbone_config_path = os.path.join(Path(model_path).parent, "backbone_config.yaml")
+            log.info("Loading backbone from config")
+            backbone_config = OmegaConf.load(backbone_config_path)
+
+            if backbone_config.metadata.get("checkpoint"):
+                log.info("Loading backbone from <%s>", backbone_config.metadata.checkpoint)
+                self._backbone = torch.load(backbone_config.metadata.checkpoint)
+            else:
+                log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
+                self._backbone = hydra.utils.instantiate(backbone_config.model)
+            self._backbone.eval()
+            self._backbone = self._backbone.to(self.device)
         else:
-            log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
-            self._backbone = hydra.utils.instantiate(backbone_config.model)
-        self._backbone.eval()
-        self._backbone = self._backbone.to(self.device)
+            log.info("Importing trained model")
+            self._backbone, model_type = import_deployment_model(model_path=model_path, device=self.device)
+            log.info("Imported %s model", model_type)
 
     @property
     def trainer(self) -> SklearnClassificationTrainer:
