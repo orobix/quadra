@@ -111,10 +111,13 @@ task:
   lr_multiplier: 0.0
   gradcam: true
   run_test: True
-  export_type: [torchscript, pytorch]
   report: True
   output:
     example: True
+  export_config:
+    types: [pytorch, torchscript]
+    input_shapes: # Redefine the input shape if not automatically inferred
+
 
 core:
   tag: "run"
@@ -181,10 +184,13 @@ datamodule:
 task:
   gradcam: True # Enable gradcam computation during evaluation
   run_test: True # Perform test evaluation at the end of training
-  export_type: [torchscript, pytorch]
   report: True 
   output:
     example: True # Generate an example of concordants and discordants predictions for each class
+  export_config:
+    types: [pytorch, torchscript]
+    input_shapes: # Redefine the input shape if not automatically inferred
+
    
 model:
   num_classes: 3 # This is very important

@@ -14,8 +14,10 @@ backbone:
     freeze: true
 
 task:
-  export_type: [torchscript, pytorch]
-  
+  export_config:
+    types: [torchscript, pytorch]
+    input_shapes: null
+
 core:
   tag: "run"
   name: "sklearn-classification"

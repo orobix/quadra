@@ -24,7 +24,9 @@ model:
 task:
   lr_multiplier: 0.0
   run_test: True
-  export_type: [torchscript, pytorch]
+  export_config:
+    types: [torchscript, pytorch]
+    input_shapes:
   report: True
   gradcam: True
   output:

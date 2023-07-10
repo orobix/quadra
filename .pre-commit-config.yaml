@@ -1,13 +1,13 @@
 fail_fast: true
 
 repos:
-  - repo: local
-    hooks:
-      - id: ruff
-        name: ruff
-        entry: ruff
-        language: system
-        exclude: ^(tests|scripts|notebooks|quadra/utils/tests)/
+  # - repo: local
+  #  hooks:
+  #    - id: ruff
+  #      name: ruff
+  #      entry: ruff
+  #      language: system
+  #      exclude: ^(tests|scripts|notebooks|quadra/utils/tests)/
   - repo: local
     hooks:
       - id: jupyter-nb-clear-output

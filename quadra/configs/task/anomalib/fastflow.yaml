@@ -1,6 +1,9 @@
 _target_: quadra.tasks.anomaly.AnomalibDetection
 report: true
 run_test: true
-export_type: [torchscript]
 module_function:
   _target_: anomalib.models.fastflow.lightning_model.FastflowLightning
+export_config:
+  types: [torchscript]
+  input_shapes: # Redefine the input shape if not automatically inferred
+

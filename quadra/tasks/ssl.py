@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, List, Optional, Tuple, cast
+from typing import Any, List, Optional, Tuple, Union, cast
 
 import hydra
 import torch
@@ -13,6 +13,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from quadra.callbacks.scheduler import WarmupInit
+from quadra.models.base import ModelSignatureWrapper
 from quadra.tasks.base import LightningTask, Task
 from quadra.utils import utils
 from quadra.utils.export import export_torchscript_model, import_deployment_model
@@ -28,7 +29,11 @@ class SSL(LightningTask):
         checkpoint_path: The path to the checkpoint to load the model from Defaults to None
         report: Whether to create the report
         run_test: Whether to run final test
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
+
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
     """
 
     def __init__(
@@ -37,14 +42,14 @@ class SSL(LightningTask):
         run_test: bool = False,
         report: bool = False,
         checkpoint_path: Optional[str] = None,
-        export_type: Optional[List[str]] = None,
+        export_config: Optional[DictConfig] = None,
     ):
         super().__init__(
             config=config,
             checkpoint_path=checkpoint_path,
             run_test=run_test,
             report=report,
-            export_type=export_type,
+            export_config=export_config,
         )
         self._backbone: nn.Module
         self._optimizer: torch.optim.Optimizer
@@ -95,29 +100,33 @@ class SSL(LightningTask):
 
     def export(self) -> None:
         """Deploy a model ready for production."""
-        if self.export_type is None or len(self.export_type) == 0:
+        if self.export_config is None or len(self.export_config.types) == 0:
             log.info("No export type specified skipping export")
             return
 
-        if self.export_type is None:
-            return
-
-        input_width = self.config.transforms.get("input_width")
-        input_height = self.config.transforms.get("input_height")
         mean = self.config.transforms.mean
         std = self.config.transforms.std
-        half_precision = self.trainer.precision == 16
+        half_precision = int(self.trainer.precision) == 16
 
-        if "torchscript" in self.export_type:
-            export_torchscript_model(
-                model=cast(nn.Module, self.module.model),
-                input_shape=(1, 3, input_height, input_width),
-                half_precision=half_precision,
-                output_path=self.export_folder,
-            )
+        input_shapes = self.export_config.input_shapes
+
+        for export_type in self.export_config.types:
+            if export_type == "torchscript":
+                out = export_torchscript_model(
+                    model=cast(nn.Module, self.module.model),
+                    input_shapes=input_shapes,
+                    output_path=self.export_folder,
+                    half_precision=half_precision,
+                )
+
+                if out is None:
+                    log.warning("Skipping torchscript export since the model is not supported")
+                    continue
+
+                _, input_shapes = out
 
         model_json = {
-            "input_size": [3, input_width, input_height],
+            "input_size": input_shapes,
             "classes": None,
             "mean": mean,
             "std": std,
@@ -132,21 +141,25 @@ class Simsiam(SSL):
 
     Args:
         config: the main config
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
         checkpoint_path: if a checkpoint is specified, then it will return a trained model,
             with weights loaded from the checkpoint path specified.
             Defaults to None.
         run_test: Whether to run final test
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
+
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
     """
 
     def __init__(
         self,
         config: DictConfig,
-        export_type: Optional[List[str]] = None,
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
+        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config=config, export_type=export_type, checkpoint_path=checkpoint_path, run_test=run_test)
+        super().__init__(config=config, export_config=export_config, checkpoint_path=checkpoint_path, run_test=run_test)
         self.backbone: nn.Module
         self.projection_mlp: nn.Module
         self.prediction_mlp: nn.Module
@@ -203,21 +216,25 @@ class SimCLR(SSL):
 
     Args:
         config: the main config
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
         checkpoint_path: if a checkpoint is specified, then it will return a trained model,
             with weights loaded from the checkpoint path specified.
             Defaults to None.
         run_test: Whether to run final test
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
+
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
     """
 
     def __init__(
         self,
         config: DictConfig,
-        export_type: Optional[List[str]] = None,
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
+        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config=config, export_type=export_type, checkpoint_path=checkpoint_path, run_test=run_test)
+        super().__init__(config=config, export_config=export_config, checkpoint_path=checkpoint_path, run_test=run_test)
         self.backbone: nn.Module
         self.projection_mlp: nn.Module
 
@@ -258,6 +275,7 @@ class SimCLR(SSL):
                 lr_scheduler=self.scheduler,
             )
         self._module = module
+        self._module.model = ModelSignatureWrapper(self._module.model)
 
 
 class Barlow(SimCLR):
@@ -265,22 +283,25 @@ class Barlow(SimCLR):
 
     Args:
         config: the main config
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
         checkpoint_path: if a checkpoint is specified, then it will return a trained model,
             with weights loaded from the checkpoint path specified.
             Defaults to None.
         run_test: Whether to run final test
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
 
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
     """
 
     def __init__(
         self,
         config: DictConfig,
-        export_type: Optional[List[str]] = None,
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
+        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config=config, export_type=export_type, checkpoint_path=checkpoint_path, run_test=run_test)
+        super().__init__(config=config, export_config=export_config, checkpoint_path=checkpoint_path, run_test=run_test)
 
     def prepare(self) -> None:
         """Prepare the experiment."""
@@ -305,26 +326,29 @@ class BYOL(SSL):
 
     Args:
         config: the main config
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
         checkpoint_path: if a checkpoint is specified, then it will return a trained model,
             with weights loaded from the checkpoint path specified.
             Defaults to None.
         run_test: Whether to run final test
-        **kwargs: Keyword arguments
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
 
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
+        **kwargs: Keyword arguments
     """
 
     def __init__(
         self,
         config: DictConfig,
-        export_type: Optional[List[str]] = None,
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
+        export_config: Optional[DictConfig] = None,
         **kwargs: Any,
     ):
         super().__init__(
             config=config,
-            export_type=export_type,
+            export_config=export_config,
             checkpoint_path=checkpoint_path,
             run_test=run_test,
             **kwargs,
@@ -392,21 +416,25 @@ class DINO(SSL):
 
     Args:
         config: the main config
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
         checkpoint_path: if a checkpoint is specified, then it will return a trained model,
             with weights loaded from the checkpoint path specified.
             Defaults to None.
         run_test: Whether to run final test
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
+
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
     """
 
     def __init__(
         self,
         config: DictConfig,
-        export_type: Optional[List[str]] = None,
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
+        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config=config, export_type=export_type, checkpoint_path=checkpoint_path, run_test=run_test)
+        super().__init__(config=config, export_config=export_config, checkpoint_path=checkpoint_path, run_test=run_test)
         self.student_model: nn.Module
         self.teacher_model: nn.Module
         self.student_projection_mlp: nn.Module
@@ -501,7 +529,7 @@ class EmbeddingVisualization(Task):
         self.embedding_writer = SummaryWriter(self.embeddings_path)
         self.writer_step = 0  # for tensorboard
         self.embedding_image_size = embedding_image_size
-        self._deployment_model: RecursiveScriptModule
+        self._deployment_model: Union[RecursiveScriptModule, nn.Module]
         self.deployment_model_type: str
 
     @property

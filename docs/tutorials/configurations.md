@@ -175,10 +175,13 @@ model:
 task:
   lr_multiplier: 0.0
   run_test: True
-  export_type: [torchscript]
   report: True
   output:
     example: True
+  export_config:
+    types: [torchscript]
+    input_shapes: # Redefine the input shape if not automatically inferred
+
 
 core:
   tag: "run"

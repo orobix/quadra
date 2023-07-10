@@ -397,6 +397,7 @@ class SklearnClassificationDataModule(BaseDataModule):
         label_map: Dictionary of conversion btw folder name and label.
         train_split_file: Optional path to a csv file containing the train split samples.
         test_split_file: Optional path to a csv file containing the test split samples.
+        **kwargs: Additional arguments for BaseDataModule
     """
 
     def __init__(
@@ -422,6 +423,7 @@ class SklearnClassificationDataModule(BaseDataModule):
         test_split_file: Optional[str] = None,
         name: str = "sklearn_classification_datamodule",
         dataset: Type[ImageClassificationListDataset] = ImageClassificationListDataset,
+        **kwargs: Any,
     ):
         super().__init__(
             data_path=data_path,
@@ -432,6 +434,7 @@ class SklearnClassificationDataModule(BaseDataModule):
             train_transform=train_transform,
             val_transform=val_transform,
             test_transform=test_transform,
+            **kwargs,
         )
 
         self.class_to_idx = class_to_idx

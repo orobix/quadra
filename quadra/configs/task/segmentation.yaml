@@ -1,10 +1,12 @@
 _target_: quadra.tasks.Segmentation
 num_viz_samples: 10
 checkpoint_path: null
-export_type: [torchscript]
 run_test: true
 report: false
 evaluate:
   analysis: false
   control: false
   corruption: false
+export_config:
+  types: [torchscript]
+  input_shapes: # Redefine the input shape if not automatically inferred

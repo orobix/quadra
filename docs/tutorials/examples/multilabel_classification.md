@@ -136,10 +136,13 @@ model:
 
 task:
   run_test: True # Perform test evaluation at the end of training
-  export_type: [torchscript]
   report: False 
   output:
     example: False 
+  export_config:
+    types: [torchscript]
+    input_shapes: # Redefine the input shape if not automatically inferred
+
   
 logger:
   mlflow:
