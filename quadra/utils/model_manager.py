@@ -60,6 +60,10 @@ class AbstractModelManager(ABC):
     ) -> Any:
         """Register the best model from an experiment."""
 
+    @abstractmethod
+    def download_model(self, model_name: str, version: int, output_path: str) -> None:
+        """Download the model with the given version to the given output path."""
+
 
 class MlflowModelManager(AbstractModelManager):
     """Model manager for Mlflow."""
@@ -267,6 +271,21 @@ class MlflowModelManager(AbstractModelManager):
         )
 
         return model_version
+
+    def download_model(self, model_name: str, version: int, output_path: str) -> None:
+        """Download the model with the given version to the given output path.
+
+        Args:
+            model_name: The name of the model
+            version: The version of the model
+            output_path: The path to save the model to
+        """
+        artifact_uri = self.client.get_model_version_download_uri(model_name, version)
+        log.info("Downloading model %s version %s from %s to %s", model_name, version, artifact_uri, output_path)
+        if not os.path.exists(output_path):
+            log.info("Creating output path %s", output_path)
+            os.makedirs(output_path)
+        mlflow.artifacts.download_artifacts(artifact_uri=artifact_uri, dst_path=output_path)
 
     @staticmethod
     def _generate_description(description: str | None = None) -> str:
