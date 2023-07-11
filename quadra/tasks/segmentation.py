@@ -233,6 +233,9 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
     def prepare(self) -> None:
         """Prepare the evaluation."""
         super().prepare()
+        # TODO: Why we propagate mean and std only in Segmentation?
+        self.config.transforms.mean = self.model_data["mean"]
+        self.config.transforms.std = self.model_data["std"]
         self.datamodule = self.config.datamodule
         # prepare_data() must be explicitly called because there is no lightning training
         self.datamodule.prepare_data()
