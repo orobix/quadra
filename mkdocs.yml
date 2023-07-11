@@ -1,11 +1,14 @@
 site_name: Quadra
+site_url: https://orobix.github.io/quadra/
+site_description: Quadra
+repo_url: https://github.com/orobix/quadra
+repo_name: Orobix/quadra
 use_directory_urls: false
 nav:
-  - index.md
-  # defer to gen-files + literate-nav
+  - Home: index.md
+  - Getting Started: getting_started.md
   - Code Reference: reference/
   - Tutorials:
-      - Getting Started: tutorials/install.md
       - Datamodules: tutorials/datamodules.md
       - Tasks: tutorials/tasks.md
       - Configurations: tutorials/configurations.md
@@ -33,29 +36,32 @@ theme:
   name: "material"
   locale: en
   custom_dir: docs_overrides
-  logo: images/orobix_logo.svg
+  logo: images/quadra_logo.svg
+  icon:
+    repo: fontawesome/brands/github
   font:
     text: Roboto
     code: Roboto Mono
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: deep orange
-      accent: orange
+    - scheme: default
+      primary: teal
+      accent: light blue
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: deep orange
-      accent: orange
+
+    - scheme: slate
+      primary: teal
+      accent: light blue
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
+
   features:
     - content.code.annotate
     - content.code.copy
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.top
 
 plugins:
@@ -91,9 +97,6 @@ extra:
     default:
       - latest
   generator: false
-
-extra_css:
-  - css/mkdocstrings.css
 
 copyright: Copyright &copy; 2023 Orobix
 
@@ -134,6 +137,11 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
+
+extra_css:
+  - css/colors.css
+  - css/mkdocstrings.css
+  - css/landing.css
 
 extra_javascript:
   - javascripts/mathjax.js

@@ -1,4 +1,7 @@
-<h1 align="center">Quadra</h1>
+<h1></h1>
+<p align="center">
+  <img src="docs/images/quadra_text_logo.png" alt="Quadra Logo" width="100%">
+</p>
 
 <p align="center">
   <a href="https://orobix.github.io/quadra/latest/index.html">Docs</a> •
@@ -43,7 +46,7 @@ ______________________________________________________________________
 
 ## Quick Start Guide
 
-Currently we support installing from source since the library is not yet available on `PyPI`.
+Currently we support installing from source since the library is not yet available on `PyPI` and currently supported Python version is `3.9`.
 
 ```shell
 pip install git+https://github.com/orobix/quadra.git@v1.0.0
@@ -109,7 +112,8 @@ This command sets the `MLFLOW_TRACKING_URI` variable to `http://localhost:5000`.
 
 **Adding it to your environment file:**
 
-You can also add the `MLFLOW_TRACKING_URI` variable to your environment file (e.g., `.env`). Open the file in a text editor and add the following line:
+`Quadra` uses environment variables to store credentials and other sensitive information. Thanks to [`python-dotenv`](https://pypi.org/project/python-dotenv/) library, you can create a `.env` file in the main folder of your project and store the credentials there. During the runtime, the library will automatically load the environment variables from the `.env` file. You can also add the `MLFLOW_TRACKING_URI` variable to your environment file (e.g., `.env`). Open the file in a text editor and add the following line:
+
 ```
 MLFLOW_TRACKING_URI=http://localhost:5000
 ```

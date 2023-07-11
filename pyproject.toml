@@ -91,12 +91,13 @@ dev = [
 
 docs = [
     "mkdocs==1.4.*",
-    "mkdocs-material==9.0.*",
+    "mkdocs-material==9.1.*",
     "mkdocstrings-python==0.8.*",
     "mkdocs-gen-files==0.4.*",
     "mkdocs-literate-nav==0.6.*",
     "mkdocs-section-index==0.3.*",
     "mike==1.1.*",
+    "cairosvg==2.7.0"
 ]
 
 [tool.setuptools]
