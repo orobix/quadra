@@ -1,0 +1,3 @@
+_target_: quadra.tasks.SegmentationAnalysisEvaluation
+device: cuda:0
+model_path: ???

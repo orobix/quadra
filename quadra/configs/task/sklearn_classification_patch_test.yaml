@@ -5,4 +5,4 @@ output:
   report: true
   example: true
   reconstruction_method: major_voting
-experiment_path:
+model_path: ???

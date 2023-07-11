@@ -265,14 +265,8 @@ The default experiment config is found under `configs/experiment/base/classifica
 defaults:
   - override /transforms: default_resize
   - override /task: sklearn_classification_patch_test
-  - override /backbone: dino_vitb8
   - override /datamodule: base/sklearn_classification_patch
   - override /trainer: sklearn_classification
-
-backbone:
-  model:
-    pretrained: true
-    freeze: true
 
 core:
   tag: "run"
@@ -307,11 +301,11 @@ task:
     report: true
     example: true
     reconstruction_method: major_voting
-  experiment_path: path_to_training_experiment
+  model_path: ???
 ```
 
 This will test the model trained in the given experiment on the given dataset. The experiment results will be saved under the `classification_patch_test` folder.
-Patch reconstruction will be performed using the `major_voting` method (can be this or `priority`). The `experiment_path` parameter is required to specify the path to the training experiment. In this case is not necessary to specify `class_to_idx` and `class_to_skip_training` as they will be loaded from the training experiment.
+Patch reconstruction will be performed using the `major_voting` method (can be this or `priority`). The `model_path` parameter is required to specify the path to the trained model. It could either be a '.pt'/'.pth' or a backbone_config '.yaml' file. In this case is not necessary to specify `class_to_idx` and `class_to_skip_training` as they will be loaded from the training experiment.
 
 ### Run
 
