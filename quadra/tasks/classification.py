@@ -731,12 +731,13 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
     """
 
     def __init__(
-        self,
+        self,  # pylint: disable=W0613
         config: DictConfig,
         output: DictConfig,
         model_path: str,
         device: str,
         gradcam: bool = False,
+        **kwargs: Any,
     ):
         super().__init__(config=config, model_path=model_path, device=device)
         self.gradcam = gradcam
