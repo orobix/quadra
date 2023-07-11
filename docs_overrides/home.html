@@ -93,6 +93,10 @@
         background-repeat: no-repeat;
     }
 
+    .lp-rolling-text-mask span {
+        transform: translateY(0px);
+    }
+
     .lp-rolling-text-mask span[data-show] {
         transform: translateY(-100%);
         transition: 0.5s transform ease-in-out;
@@ -164,7 +168,7 @@
         </div>
     </h1>
     <p class="text-base lp-hero-explain sm:text-sm ">
-        Quadra simplifies handling many deep learning experiments by skipping boilerplate code.
+        Quadra simplifies handling many deep learning experiments by skipping boilerplate configurations.
     </p>
 
     <div class="md-hero__inner lp-hero_button-container md-typeset">
@@ -221,10 +225,6 @@
 
 {% endblock %}
 
-
-<!-- Application footer -->
-{% block footer %}
-{% endblock %}
 
 <!-- Scripts -->
 {% block scripts %}
