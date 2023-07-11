@@ -43,7 +43,7 @@ graph LR;
 - **[`Segmentation Task`][quadra.tasks.Segmentation]:** It has the same functionality as the lightning task but it will also generate segmentation reports on demand.
 - **[`Classification Task`][quadra.tasks.Classification]:** This task is designed to train from scratch or finetune a classification model using the `pytorch-lightning` library.
 - **[`SklearnClassification Task`][quadra.tasks.classification.SklearnClassification]:** This task is designed to train an `sklearn` classifier on top of a torch feature extractor.
-- **['PatchSklearnClassification'][quadra.tasks.classification.PatchSklearnClassification]:** This task is designed to train an `sklearn` patch classifier on top of a torch feature extractor.
+- **[`PatchSklearnClassification Task`][quadra.tasks.classification.PatchSklearnClassification]:** This task is designed to train an `sklearn` patch classifier on top of a torch feature extractor.
 - **[`Anomalib Detection Task`][quadra.tasks.AnomalibDetection]:** This task is designed to train an anomaly detection model using the `anomalib` library.
 - **[`SSL (Self Supervised Learning) Task`][quadra.tasks.SSL]:** This task is designed to train a torch module with a given SSL algorithm.
 
