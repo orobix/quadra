@@ -60,7 +60,6 @@ class SegmentationDataModule(BaseDataModule):
         num_data_class: Optional[int] = None,
         exclude_good: bool = False,
     ):
-
         super().__init__(
             data_path=data_path,
             name=name,
@@ -302,6 +301,7 @@ class SegmentationDataModule(BaseDataModule):
         """
         if not self.train_dataset_available:
             raise ValueError("Train dataset is not initialized")
+
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
@@ -323,8 +323,9 @@ class SegmentationDataModule(BaseDataModule):
         """
         if not self.val_dataset_available:
             raise ValueError("Validation dataset is not initialized")
+
         return DataLoader(
-            self.train_dataset,
+            self.val_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
@@ -413,7 +414,6 @@ class SegmentationMulticlassDataModule(BaseDataModule):
         num_data_train: Optional[int] = None,
         one_hot_encoding: bool = False,
     ):
-
         super().__init__(
             data_path=data_path,
             name=name,
@@ -654,6 +654,7 @@ class SegmentationMulticlassDataModule(BaseDataModule):
         """
         if not self.train_dataset_available:
             raise ValueError("Train dataset is not initialized")
+
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
@@ -675,8 +676,9 @@ class SegmentationMulticlassDataModule(BaseDataModule):
         """
         if not self.val_dataset_available:
             raise ValueError("Validation dataset is not initialized")
+
         return DataLoader(
-            self.train_dataset,
+            self.val_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
