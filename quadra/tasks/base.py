@@ -352,11 +352,11 @@ class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
             )
             self.config.transforms.input_width = self.model_data["input_size"][0]
 
-        self.deployment_model = self.model_path  # type: ignore[assignment]
-
         if self.model_data["input_size"][1] != self.config.transforms.input_height:
             log.warning(
                 f"Input height of the model ({self.model_data['input_size'][1]}) is different from the one specified "
                 + f"in the config ({self.config.transforms.input_height}). Fixing the config."
             )
             self.config.transforms.input_height = self.model_data["input_size"][1]
+
+        self.deployment_model = self.model_path  # type: ignore[assignment]
