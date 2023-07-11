@@ -1,6 +1,6 @@
 <h1></h1>
 <p align="center">
-  <img src="docs/images/quadra_text_logo.svg" alt="Quadra Logo" width="60%">
+  <img src="docs/images/quadra_text_logo.png" alt="Quadra Logo" width="100%">
 </p>
 
 <p align="center">

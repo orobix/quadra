@@ -8,6 +8,15 @@
     [data-md-color-scheme="default"] {
         --md-primary-bg-color: : #000;
         --md-default-fg-color: #000;
+        --quadra-logo-single: #000;
+    }
+
+    [data-md-color-scheme="slate"] {
+        --quadra-logo-single: #FFF;
+    }
+
+    .q-logo-single {
+        fill: var(--quadra-logo-single);
     }
 
     /* Application header should be static for the landing page */
@@ -31,10 +40,6 @@
     .md-content {
         display: none;
     }
-
-    /* .md-header__option {
-        display: none;
-    } */
 
     /* Force header title visibility */
     .md-header__title--active .md-header__topic {
@@ -137,7 +142,7 @@
     .lp-quadra-container {
         justify-content: center;
         height: 100vh;
-        height: 100dvh;
+        height: 100vh;
 
     }
 </style>
@@ -158,7 +163,7 @@
             <span>Modular tasks.</span>
         </div>
     </h1>
-    <p class="text-base lp-hero-explain sm:text-sm">
+    <p class="text-base lp-hero-explain sm:text-sm ">
         Quadra simplifies handling many deep learning experiments by skipping boilerplate code.
     </p>
 
@@ -174,6 +179,24 @@
 
 </div>
 
+
+<script>
+    const ImgToSvg = async (img) => {
+        const s = document.createElement('div');
+        s.innerHTML = await (await fetch(img.src)).text();
+        // remove style tag from innerhtml
+        s.innerHTML = s.innerHTML.replace(/<style([\s\S]*?)<\/style>/gi, '');
+        s.firstChild.classList = img.classList;
+        img.replaceWith(s.firstChild);
+    };
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        const images = document.querySelectorAll('img[alt="logo"]');
+        for (const img of images) {
+            await ImgToSvg(img);
+        }
+    });
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/tw-elements/dist/js/tw-elements.umd.min.js"></script>
 
@@ -191,7 +214,6 @@
 
         show.removeAttribute('data-show');
         show.setAttribute('data-up', '');
-
         next.setAttribute('data-show', '');
     }, 2000);
 

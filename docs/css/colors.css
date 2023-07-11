@@ -1,5 +1,5 @@
 :root {
-  --rolling-text-offset: 0.2em;
+  --rolling-text-offset: 0.125em;
   --quadra-blue: #0ecffe;
   --quadra-blue-dark: #0699dd;
   --quadra-green: #18e198;
@@ -9,4 +9,5 @@
   --quadra-purple-dark: #633e9c;
   --quadra-orange: #fa7671;
   --quadra-orange-dark: #f45f7f;
+  --quadra-logo-single: #FFFFFF;
 }
