@@ -6,12 +6,14 @@ import torch
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Callback, LightningModule, Trainer
-from pytorch_lightning.loggers import Logger
+from pytorch_lightning.loggers import Logger, MLFlowLogger
 from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from torch.jit._script import RecursiveScriptModule
+from torch.nn import Module
 
 from quadra import get_version
+from quadra.callbacks.mlflow import validate_artifact_storage
 from quadra.datamodules.base import BaseDataModule
 from quadra.utils import utils
 from quadra.utils.export import import_deployment_model
@@ -31,6 +33,7 @@ class Task(Generic[DataModuleT]):
     def __init__(self, config: DictConfig, export_type: Optional[List[str]] = None):
         self.config = config
         self.export_type = export_type
+        self.export_folder: str = "deployment_model"
         self._datamodule: DataModuleT
         self.metadata: Dict[str, Any]
         self.save_config()
@@ -122,11 +125,13 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         """Prepare the experiment."""
         super().prepare()
 
+        # First setup loggers since some callbacks might need logger setup correctly.
+        if "logger" in self.config:
+            self.logger = self.config.logger
+
         if "callbacks" in self.config:
             self.callbacks = self.config.callbacks
 
-        if "logger" in self.config:
-            self.logger = self.config.logger
         self.devices = self.config.trainer.devices
         self.trainer = self.config.trainer
 
@@ -199,6 +204,8 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             if "_target_" in lg_conf:
                 log.info("Instantiating logger <%s>", lg_conf["_target_"])
                 logger = hydra.utils.instantiate(lg_conf)
+                if isinstance(logger, MLFlowLogger):
+                    validate_artifact_storage(logger)
                 instantiated_loggers.append(logger)
 
         self._logger = instantiated_loggers
@@ -233,6 +240,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             model=self.module,
             trainer=self.trainer,
         )
+
         self.trainer.fit(model=self.module, datamodule=self.datamodule)
 
     def test(self) -> Any:
@@ -245,11 +253,12 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         super().finalize()
         utils.finish(
             config=self.config,
-            model=self.module,
+            module=self.module,
             datamodule=self.datamodule,
             trainer=self.trainer,
             callbacks=self.callbacks,
             logger=self.logger,
+            export_folder=self.export_folder,
         )
 
         if not self.config.trainer.get("fast_dev_run"):
@@ -314,19 +323,19 @@ class Evaluation(Task):
         self.model_path = model_path
         self.device = utils.get_device()
         self.report_folder = report_folder
-        self._deployment_model: RecursiveScriptModule
+        self._deployment_model: Union[RecursiveScriptModule, Module]
         self.deployment_model_type: str
         if self.report_folder is None:
             log.warning("Report folder is not provided, using default report folder")
             self.report_folder = "report"
 
     @property
-    def deployment_model(self) -> RecursiveScriptModule:
+    def deployment_model(self) -> Union[RecursiveScriptModule, Module]:
         """RecursiveScriptModule: The deployment model."""
         return self._deployment_model
 
     @deployment_model.setter
-    def deployment_model(self, model: RecursiveScriptModule) -> None:
+    def deployment_model(self, model: Union[RecursiveScriptModule, Module]) -> None:
         """RecursiveScriptModule: The deployment model."""
         self._deployment_model = model
 

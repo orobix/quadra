@@ -1,4 +1,5 @@
 import os
+from logging import Logger
 from typing import Optional, Tuple, Union, cast
 
 import torch
@@ -6,9 +7,13 @@ from anomalib.models.cflow import CflowLightning
 from torch import nn
 from torch.jit._script import RecursiveScriptModule
 
-from quadra.utils.utils import get_logger
 
-log = get_logger(__name__)
+def safe_get_logger() -> Logger:
+    """Safe get logger method to avoid circular imports."""
+    # TODO: Is there a better way to do this?
+    from quadra.utils.utils import get_logger  # pylint: disable=[import-outside-toplevel]
+
+    return get_logger(__name__)
 
 
 def export_torchscript_model(
@@ -31,6 +36,8 @@ def export_torchscript_model(
         If the model is exported successfully, the path to the model is returned.
 
     """
+    log = safe_get_logger()
+
     model.eval()
     if isinstance(model, CflowLightning):
         log.warning("Exporting cflow model with torchscript is not supported yet.")
@@ -71,6 +78,8 @@ def export_pytorch_model(model: nn.Module, output_path: str, model_name: str = "
         If the model is exported successfully, the path to the model is returned.
 
     """
+    log = safe_get_logger()
+
     os.makedirs(output_path, exist_ok=True)
     model.eval()
     model.cpu()
@@ -96,6 +105,8 @@ def import_deployment_model(
     Returns:
         A tuple containing the model and the model type
     """
+    log = safe_get_logger()
+
     file_extension = os.path.splitext(os.path.basename(model_path))[1]
     if file_extension == ".pt":
         model = cast(RecursiveScriptModule, torch.jit.load(model_path))

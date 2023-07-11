@@ -92,6 +92,7 @@ class PatchSklearnClassificationDataModule(BaseDataModule):
                 exclude_filter=self.exclude_filter,
                 class_to_skip=self.class_to_skip_training,
             )
+            train_samples = [os.path.join(self.train_folder, sample) for sample in train_samples]
             train_df = pd.DataFrame({"samples": train_samples, "targets": train_labels})
             train_df["split"] = "train"
             split_df_list.append(train_df)

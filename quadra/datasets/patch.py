@@ -91,7 +91,7 @@ class PatchSklearnClassificationTrainDataset(Dataset):
     def __getitem__(self, idx) -> Tuple[np.ndarray, np.ndarray]:
         path, y = self.samples[idx]
 
-        h5_file = h5py.File(os.path.join(self.data_path, "train", path))
+        h5_file = h5py.File(path)
         x = cv2.imread(os.path.join(self.data_path, h5_file["img_path"][()].decode("utf-8")))
 
         weights = h5_file["triangles_weights"][()]

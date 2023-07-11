@@ -1062,6 +1062,7 @@ class ClassificationEvaluation(Task[ClassificationDataModuleT]):
                             zoom_factors = tuple(np.array(new_shape) / np.array(orig_shape))
                             grayscale_cam = ndimage.zoom(grayscale_cam_low_res, zoom_factors, order=1)
                             grayscale_cams_list.append(torch.from_numpy(grayscale_cam))
+
         grayscale_cams: Optional[torch.Tensor] = None
         if self.gradcam:
             grayscale_cams = torch.cat(grayscale_cams_list, dim=0)

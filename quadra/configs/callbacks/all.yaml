@@ -11,7 +11,7 @@ model_checkpoint:
 
 upload_code_as_artifact:
   _target_: quadra.callbacks.mlflow.UploadCodeAsArtifact
-  source_dir: ${work_dir}/src/
+  source_dir: ${work_dir}/quadra/
 
 upload_ckpts_as_artifact:
   _target_: quadra.callbacks.mlflow.UploadCheckpointsAsArtifact

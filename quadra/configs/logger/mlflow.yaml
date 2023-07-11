@@ -9,3 +9,4 @@ mlflow:
   prefix: ""
   artifact_location: null
   run_id: null
+  log_model: false

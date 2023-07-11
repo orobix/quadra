@@ -139,15 +139,22 @@ def test_classification_patch_datamodule(classification_patch_dataset: classific
         info = PatchDatasetInfo(**json.load(f))
 
     # train samples are named like imagename_class.h5
-    train_samples_df = datamodule.data[datamodule.data["split"] == "train"]["samples"].tolist()
-    datamodule_train_samples = set(["_".join(s.split("_")[0:-1]) for s in train_samples_df])
+    train_samples_df = datamodule.train_data["samples"].tolist()
+    datamodule_train_samples = set(
+        [os.path.splitext(os.path.basename("_".join(s.split("_")[0:-1])))[0] for s in train_samples_df]
+    )
     # val samples are named like imagename_patchnumber.xyz
-    val_samples_df = datamodule.data[datamodule.data["split"] == "val"]["samples"].tolist()
-    datamodule_val_samples = set(["_".join(os.path.basename(s).split("_")[0:-1]) for s in val_samples_df])
+    val_samples_df = datamodule.val_data["samples"].tolist()
+    datamodule_val_samples = set(
+        [os.path.splitext("_".join(os.path.basename(s).split("_")[0:-1]))[0] for s in val_samples_df]
+    )
     # test samples are named like imagename_patchnumber.xyz and may contain #DISCARD# in the name
-    test_samples_df = datamodule.data[datamodule.data["split"] == "test"]["samples"].tolist()
+    test_samples_df = datamodule.test_data["samples"].tolist()
     datamodule_test_samples = set(
-        ["_".join(os.path.basename(s).replace("#DISCARD#", "").split("_")[0:-1]) for s in test_samples_df]
+        [
+            os.path.splitext("_".join(os.path.basename(s).replace("#DISCARD#", "").split("_")[0:-1]))[0]
+            for s in test_samples_df
+        ]
     )
 
     train_filenames = set([os.path.splitext(os.path.basename(s.image_path))[0] for s in info.train_files])
