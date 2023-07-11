@@ -84,27 +84,24 @@
         display: block;
         box-sizing: border-box;
         position: absolute;
-        top: 1.2em;
+        top: 0;
+        transform: translateY(1.25em);
         padding-bottom: var(--rolling-text-offset);
-        background-size: 100% 100%;
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
         background-repeat: no-repeat;
-    }
-
-    .lp-rolling-text-mask span {
-        transform: translateY(0px);
+        white-space: nowrap;
     }
 
     .lp-rolling-text-mask span[data-show] {
-        transform: translateY(-100%);
-        transition: 0.5s transform ease-in-out;
+        transform: translateY(0);
+        transition: transform 0.8s ease-in-out;
     }
 
     .lp-rolling-text-mask span[data-up] {
-        transform: translateY(-200%);
-        transition: 0.5s transform ease-in-out;
+        transform: translateY(-1.25em);
+        transition: transform 1s ease-in-out;
     }
 
     .lp-rolling-text-mask span:nth-child(1) {
