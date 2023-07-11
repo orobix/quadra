@@ -190,14 +190,8 @@ The default experiment config is found under `configs/experiment/base/classifica
 defaults:
   - override /transforms: default_resize
   - override /task: sklearn_classification_test
-  - override /backbone: dino_vitb8
   - override /trainer: sklearn_classification
   - override /datamodule: base/sklearn_classification
-
-backbone:
-  model:
-    pretrained: true
-    freeze: true
 
 core:
   tag: run
@@ -215,7 +209,6 @@ An actual configuration file based on the above could be this one (suppose it's 
 # @package _global_
 defaults:
   - base/classification/sklearn_classification_test
-  - override /backbone: resnet18
   - _self_
 
 core:
@@ -232,10 +225,11 @@ task:
     folder: classification_test_experiment
     report: true
     example: true
-  experiment_path:
+  model_path: ???
 ```
 
 This will test the model trained in the given experiment on the given dataset. The experiment results will be saved under the `classification_test_experiment` folder. If gradcam is set to True, original and gradcam results will be saved during the generate_report().
+Model_path must point to a model file. It could either be a '.pt'/'.pth' or a backbone_config '.yaml' file.
 
 ### Run
 
