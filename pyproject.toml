@@ -117,7 +117,7 @@ repository = "https://github.com/orobix/quadra"
 [tool.bumpver]
 current_version = "1.0.0"
 version_pattern = "MAJOR.MINOR.PATCH"
-commit_message  = "Bump version {old_version} -> {new_version}"
+commit_message  = "build: Bump version {old_version} -> {new_version}"
 commit          = true
 tag             = true
 push            = false
