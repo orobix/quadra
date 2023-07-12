@@ -327,7 +327,7 @@ class SegmentationDataModule(BaseDataModule):
         return DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
-            shuffle=True,
+            shuffle=False,
             num_workers=self.num_workers,
             drop_last=False,
             pin_memory=True,
@@ -680,7 +680,7 @@ class SegmentationMulticlassDataModule(BaseDataModule):
         return DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
-            shuffle=True,
+            shuffle=False,
             num_workers=self.num_workers,
             drop_last=False,
             pin_memory=True,
