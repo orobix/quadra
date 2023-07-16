@@ -4,7 +4,7 @@ import getpass
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from quadra.utils.utils import get_logger
 
@@ -40,7 +40,7 @@ class AbstractModelManager(ABC):
         """Get the latest version of a model for all the possible stages or filtered by stage."""
 
     @abstractmethod
-    def transistion_model(self, model_name: str, version: int, stage: str, description: str | None = None) -> Any:
+    def transition_model(self, model_name: str, version: int, stage: str, description: str | None = None) -> Any:
         """Transition the model with the given version to a new stage."""
 
     @abstractmethod
@@ -55,10 +55,14 @@ class AbstractModelManager(ABC):
         model_name: str,
         description: str,
         tags: dict[str, Any] | None = None,
-        mode: str = "max",
-        model_path: str = "model",
+        mode: Literal["max", "min"] = "max",
+        model_path: str = "deployment_model",
     ) -> Any:
         """Register the best model from an experiment."""
+
+    @abstractmethod
+    def download_model(self, model_name: str, version: int, output_path: str) -> None:
+        """Download the model with the given version to the given output path."""
 
 
 class MlflowModelManager(AbstractModelManager):
@@ -123,7 +127,7 @@ class MlflowModelManager(AbstractModelManager):
 
         return model_version
 
-    def transistion_model(
+    def transition_model(
         self, model_name: str, version: int, stage: str, description: str | None = None
     ) -> ModelVersion | None:
         """Transition a model to a new stage.
@@ -203,8 +207,8 @@ class MlflowModelManager(AbstractModelManager):
         model_name: str,
         description: str | None = None,
         tags: dict[str, Any] | None = None,
-        mode: str = "max",
-        model_path: str = "model",
+        mode: Literal["max", "min"] = "max",
+        model_path: str = "deployment_model",
     ) -> ModelVersion | None:
         """Register the best model from an experiment.
 
@@ -267,6 +271,21 @@ class MlflowModelManager(AbstractModelManager):
         )
 
         return model_version
+
+    def download_model(self, model_name: str, version: int, output_path: str) -> None:
+        """Download the model with the given version to the given output path.
+
+        Args:
+            model_name: The name of the model
+            version: The version of the model
+            output_path: The path to save the model to
+        """
+        artifact_uri = self.client.get_model_version_download_uri(model_name, version)
+        log.info("Downloading model %s version %s from %s to %s", model_name, version, artifact_uri, output_path)
+        if not os.path.exists(output_path):
+            log.info("Creating output path %s", output_path)
+            os.makedirs(output_path)
+        mlflow.artifacts.download_artifacts(artifact_uri=artifact_uri, dst_path=output_path)
 
     @staticmethod
     def _generate_description(description: str | None = None) -> str:

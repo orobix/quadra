@@ -11,6 +11,8 @@ except ImportError:
 from typing import Any, Sequence, TypeVar
 
 import torch
+from pytorch_lightning import Trainer
+from pytorch_lightning.loggers import MLFlowLogger
 from torch import nn
 
 NnModuleT = TypeVar("NnModuleT", bound=nn.Module)
@@ -75,3 +77,23 @@ def infer_signature_input_torch(input_tensor: Any) -> Any:
         raise ValueError(f"Unable to infer signature for model output type {type(input_tensor)}")
 
     return signature
+
+
+def get_mlflow_logger(trainer: Trainer) -> MLFlowLogger | None:
+    """Safely get Mlflow logger from Trainer loggers.
+
+    Args:
+        trainer: Pytorch Lightning trainer.
+
+    Returns:
+        An mlflow logger if available, else None.
+    """
+    if isinstance(trainer.logger, MLFlowLogger):
+        return trainer.logger
+
+    if isinstance(trainer.logger, list):
+        for logger in trainer.logger:
+            if isinstance(logger, MLFlowLogger):
+                return logger
+
+    return None

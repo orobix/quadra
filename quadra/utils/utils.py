@@ -26,7 +26,7 @@ from pytorch_lightning.utilities import rank_zero_only
 
 import quadra
 import quadra.utils.export as quadra_export
-from quadra.callbacks.mlflow import check_file_server_dependencies, check_minio_credentials, get_mlflow_logger
+from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.utils.mlflow import infer_signature_torch_model
 
 
@@ -76,13 +76,6 @@ def extras(config: DictConfig) -> None:
             config.datamodule.pin_memory = False
         if config.datamodule.get("num_workers"):
             config.datamodule.num_workers = 0
-
-    if config.core.get("upload_artifacts"):
-        if config.logger.get("mlflow") is not None and config.logger.mlflow.get("_target_") is not None:
-            if "http" in config.logger.mlflow.get("tracking_uri"):
-                log.info("Checking mlfow settings for artifact upload since <config.core.upload_artifacts=True>")
-                check_file_server_dependencies()
-                check_minio_credentials()
 
 
 @rank_zero_only
