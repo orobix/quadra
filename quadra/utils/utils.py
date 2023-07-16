@@ -27,7 +27,7 @@ from pytorch_lightning.utilities import rank_zero_only
 import quadra
 import quadra.utils.export as quadra_export
 from quadra.callbacks.mlflow import check_file_server_dependencies, check_minio_credentials, get_mlflow_logger
-from quadra.utils.mlflow import infer_signature_torch
+from quadra.utils.mlflow import infer_signature_torch_model
 
 
 def get_logger(name=__name__) -> logging.Logger:
@@ -283,7 +283,7 @@ def finish(
                             input_size = [input_size]
 
                         inputs = cast(List[Any], quadra_export.generate_torch_inputs(input_size, device="cpu"))
-                        signature = infer_signature_torch(model, inputs)
+                        signature = infer_signature_torch_model(model, inputs)
 
                         with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
                             mlflow.pytorch.log_model(

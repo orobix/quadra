@@ -1,44 +1,13 @@
 from __future__ import annotations
 
-from typing import Any
-
 import torch
-from torch import nn
 
 from quadra.models.base import ModelSignatureWrapper
 from quadra.utils.export import generate_torch_inputs
+from quadra.utils.tests.models import DoubleInputModel, SingleInputModel, UnsupportedInputModel
 
 
-class SingleInputModel(nn.Module):
-    """Model taking a single input."""
-
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, x: Any):
-        return x
-
-
-class DoubleInputModel(nn.Module):
-    """Model taking two inputs."""
-
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, x: Any, y: Any):
-        return x, y
-
-
-class UnsupportedInputModel(nn.Module):
-    """Model taking an unsupported input."""
-
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, x: torch.Tensor, y: str):
-        return x
-
-
+@torch.inference_mode()
 def test_simple_model():
     """Test the input shape retrieval for a simple model."""
     model = ModelSignatureWrapper(SingleInputModel())
@@ -52,6 +21,7 @@ def test_simple_model():
     model(*inputs)
 
 
+@torch.inference_mode()
 def test_double_input_model():
     """Test the input shape retrieval for a model with multiple inputs."""
     model = ModelSignatureWrapper(DoubleInputModel())
@@ -74,6 +44,7 @@ def test_double_input_model():
     model(*inputs)
 
 
+@torch.inference_mode()
 def test_dict_input_model():
     """Test the input shape retrieval for a model with a dict input."""
     model = ModelSignatureWrapper(SingleInputModel())
@@ -90,6 +61,7 @@ def test_dict_input_model():
     model(*inputs)
 
 
+@torch.inference_mode()
 def test_tuple_input_model():
     """Test the input shape retrieval for a model with a tuple input."""
     model = ModelSignatureWrapper(SingleInputModel())
@@ -109,6 +81,7 @@ def test_tuple_input_model():
     model(*inputs)
 
 
+@torch.inference_mode()
 def test_list_of_tensors_input_model():
     """Test the input shape retrieval for a model with a list of tensors input."""
     model = ModelSignatureWrapper(SingleInputModel())
@@ -128,6 +101,7 @@ def test_list_of_tensors_input_model():
     model(*inputs)
 
 
+@torch.inference_mode()
 def test_list_of_dicts_input_model():
     """Test the input shape retrieval for a model with a list of dicts input."""
     model = ModelSignatureWrapper(SingleInputModel())
@@ -147,6 +121,7 @@ def test_list_of_dicts_input_model():
     model(*inputs)
 
 
+@torch.inference_mode()
 def test_tuple_of_dicts_input_model():
     """Test the input shape retrieval for a model with a tuple of dicts input."""
     model = ModelSignatureWrapper(SingleInputModel())
@@ -166,6 +141,7 @@ def test_tuple_of_dicts_input_model():
     model(*inputs)
 
 
+@torch.inference_mode()
 def test_unsupported_input_model():
     """Test the input shape retrieval for a model with an unsupported input."""
     model = ModelSignatureWrapper(UnsupportedInputModel())
