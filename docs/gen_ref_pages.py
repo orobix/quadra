@@ -80,7 +80,7 @@ with open(Path("README.md"), "r") as read_fd:
     readme = read_fd.read()
     readme = readme.replace("# Quadra: Deep Learning Experiment Orchestration Library", "# Home")
     readme = readme.replace("docs/", "")
-    with mkdocs_gen_files.open("index.md", "w") as nav_file:  # (2)
+    with mkdocs_gen_files.open("getting_started.md", "w") as nav_file:  # (2)
         nav_file.write(readme)
 
 with open("CHANGELOG.md", "r") as change_fd:
