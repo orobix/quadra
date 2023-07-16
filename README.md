@@ -49,7 +49,7 @@ ______________________________________________________________________
 Currently we support installing from source since the library is not yet available on `PyPI` and currently supported Python version is `3.9`.
 
 ```shell
-pip install git+https://github.com/orobix/quadra.git@v1.0.0
+pip install git+https://github.com/orobix/quadra.git
 ```
 
 If you don't have virtual environment ready, Let's set up our environment for using the `quadra` library. We have two parts in this guide: Common setup and Environment-specific setup.
@@ -88,7 +88,7 @@ source myenv/bin/activate
 
 3. **Install the `quadra` package**:
   ```shell
-  pip install git+https://github.com/orobix/quadra.git@v1.0.0
+  pip install git+https://github.com/orobix/quadra.git
   ```
 
 4. **Run from CLI**:
