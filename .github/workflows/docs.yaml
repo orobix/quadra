@@ -30,5 +30,4 @@ jobs:
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           VERSION="test"
-          ALIAS=test
-          mike deploy --push --update-aliases $ALIAS $VERSION
+          mike deploy --push $VERSION
