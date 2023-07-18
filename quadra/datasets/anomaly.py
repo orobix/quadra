@@ -11,7 +11,7 @@ from pandas import DataFrame
 from torch import Tensor
 from torch.utils.data import Dataset
 
-from quadra.datamodules.base import IMAGE_EXTENSIONS
+from quadra.utils.utils import IMAGE_EXTENSIONS
 
 
 def create_validation_set_from_test_set(samples: DataFrame, seed: int = 0) -> DataFrame:

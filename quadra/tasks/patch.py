@@ -1,19 +1,20 @@
 import json
 import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional, cast
 
 import hydra
 import torch
 from joblib import dump, load
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from sklearn.base import ClassifierMixin
 
 from quadra.datamodules import PatchSklearnClassificationDataModule
 from quadra.datasets.patch import PatchSklearnClassificationTrainDataset
-from quadra.tasks.base import Task
+from quadra.tasks.base import Evaluation, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
-from quadra.utils.export import export_torchscript_model
+from quadra.utils.export import export_torchscript_model, import_deployment_model
 from quadra.utils.patch import RleEncoder, compute_patch_metrics, save_classification_result
 from quadra.utils.patch.dataset import PatchDatasetFileFormat
 
@@ -108,6 +109,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
     def train(self) -> None:
         """Train the model."""
         log.info("Starting training...!")
+        # prepare_data() must be explicitly called if the task does not include a lightining training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="fit")
         class_to_keep = None
@@ -264,13 +266,13 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         self.finalize()
 
 
-class PatchSklearnTestClassification(Task[PatchSklearnClassificationDataModule]):
+class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataModule]):
     """Perform a test of an already trained classification model.
 
     Args:
         config: The experiment configuration
         output: where to save resultss
-        experiment_path: path to training experiment generated from SklearnClassification task.
+        model_path: path to trained model from PatchSklearnClassification task.
         device: the device where to run the model (cuda or cpu). Defaults to 'cpu'.
     """
 
@@ -278,64 +280,51 @@ class PatchSklearnTestClassification(Task[PatchSklearnClassificationDataModule])
         self,
         config: DictConfig,
         output: DictConfig,
-        experiment_path: str,
+        model_path: str,
         device: str = "cpu",
     ):
-        super().__init__(config=config)
-        self._device = device
+        super().__init__(config=config, model_path=model_path, device=device)
         self.output = output
-        self.experiment_path = experiment_path
         self._backbone: torch.nn.Module
         self._classifier: ClassifierMixin
         self.class_to_idx: Dict[str, int]
         self.idx_to_class: Dict[int, str]
-        self.runtime_info_file = "model.json"
         self.metadata: Dict[str, Any] = {
             "test_confusion_matrix": None,
             "test_accuracy": None,
             "test_results": None,
             "test_labels": None,
         }
-        self.model_info: Any
         self.class_to_skip: List[str] = []
         self.reconstruction_results: Dict[str, Any]
         self.return_polygon: bool = True
 
     def prepare(self) -> None:
         """Prepare the experiment."""
-        # Read the information of the already trained model
-        with open(os.path.join(self.experiment_path, "deployment_model", self.runtime_info_file), "r") as f:
-            self.model_info = json.load(f)
+        super().prepare()
 
         idx_to_class = {}
         class_to_idx = {}
-        for k, v in self.model_info["classes"].items():
+        for k, v in self.model_data["classes"].items():
             idx_to_class[int(k)] = v
             class_to_idx[v] = int(k)
 
         self.idx_to_class = idx_to_class
         self.class_to_idx = class_to_idx
-
         self.config.datamodule.class_to_idx = class_to_idx
 
-        # Setup datamodule
         self.datamodule = self.config.datamodule
-
-        self.backbone = self.config.backbone
-
-        # Load classifier
-        self.classifier = os.path.join(self.experiment_path, "deployment_model", "classifier.joblib")
-
         # Configure trainer
         self.trainer = self.config.trainer
 
     def test(self) -> None:
         """Run the test."""
+        # prepare_data() must be explicitly called because there is no lightning training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
         test_dataloader = self.datamodule.test_dataloader()
 
-        self.class_to_skip = self.model_info["class_to_skip"] if hasattr(self.model_info, "class_to_skip") else None
+        self.class_to_skip = self.model_data["class_to_skip"] if hasattr(self.model_data, "class_to_skip") else None
         class_to_keep = None
 
         if self.class_to_skip is not None:
@@ -356,6 +345,18 @@ class PatchSklearnTestClassification(Task[PatchSklearnClassificationDataModule])
         ]
 
     @property
+    def deployment_model(self):
+        """Deployment model."""
+        return None
+
+    @deployment_model.setter
+    def deployment_model(self, model_path: str):
+        """Set backbone and classifier."""
+        self.backbone = model_path  # type: ignore[assignment]
+        # Load classifier
+        self.classifier = os.path.join(Path(model_path).parent, "classifier.joblib")
+
+    @property
     def classifier(self) -> ClassifierMixin:
         """Classifier: The classifier."""
         return self._classifier
@@ -371,16 +372,27 @@ class PatchSklearnTestClassification(Task[PatchSklearnClassificationDataModule])
         return self._backbone
 
     @backbone.setter
-    def backbone(self, backbone_config: DictConfig) -> None:
+    def backbone(self, model_path: str) -> None:
         """Load backbone."""
-        if backbone_config.metadata.get("checkpoint"):
-            log.info("Loading backbone from <%s>", backbone_config.metadata.checkpoint)
-            self._backbone = torch.load(backbone_config.metadata.checkpoint)
+        file_extension = os.path.splitext(os.path.basename(model_path))[1]
+        if file_extension == ".yaml":
+            log.info("Model path points to '.yaml' file")
+            backbone_config_path = os.path.join(Path(model_path).parent, "backbone_config.yaml")
+            log.info("Loading backbone from config")
+            backbone_config = OmegaConf.load(backbone_config_path)
+
+            if backbone_config.metadata.get("checkpoint"):
+                log.info("Loading backbone from <%s>", backbone_config.metadata.checkpoint)
+                self._backbone = torch.load(backbone_config.metadata.checkpoint)
+            else:
+                log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
+                self._backbone = hydra.utils.instantiate(backbone_config.model)
+            self._backbone.eval()
+            self._backbone = self._backbone.to(self.device)
         else:
-            log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
-            self._backbone = hydra.utils.instantiate(backbone_config.model)
-        self._backbone.eval()
-        self._backbone = self._backbone.to(self.device)
+            log.info("Importing trained model")
+            self._backbone, model_type = import_deployment_model(model_path=model_path, device=self.device)
+            log.info("Imported %s model", model_type)
 
     @property
     def trainer(self) -> SklearnClassificationTrainer:
@@ -468,7 +480,3 @@ class PatchSklearnTestClassification(Task[PatchSklearnClassificationDataModule])
         if self.output.report:
             self.generate_report()
         self.finalize()
-
-    @property
-    def device(self) -> str:
-        return self._device

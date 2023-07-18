@@ -1,4 +1,6 @@
+import json
 import os
+from pathlib import Path
 from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 
 import hydra
@@ -9,6 +11,7 @@ from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.loggers import Logger, MLFlowLogger
 from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
+from torch import nn
 from torch.jit._script import RecursiveScriptModule
 from torch.nn import Module
 
@@ -307,46 +310,74 @@ class PlaceholderTask(Task):
         log.info("If you are reading this, it means that library is installed correctly!")
 
 
-class Evaluation(Task):
+class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
     """Base Evaluation Task with deployment models.
 
     Args:
         config: The experiment configuration
         model_path: The model path.
-        report_folder: The report folder. Defaults to None.
+        device: Device to use for evaluation. If None, the device is automatically determined.
 
-    Raises:
-        ValueError: If the experiment path is not provided
     """
 
     def __init__(
         self,
         config: DictConfig,
         model_path: str,
-        report_folder: Optional[str] = None,
+        device: Optional[str] = None,
     ):
         super().__init__(config=config)
+
+        if device is None:
+            self.device = utils.get_device()
+        else:
+            self.device = device
+
         self.config = config
-        self.metadata = {"report_files": []}
+        self.model_data: Dict[str, Any]
         self.model_path = model_path
-        self.device = utils.get_device()
-        self.report_folder = report_folder
         self._deployment_model: Union[RecursiveScriptModule, Module]
         self.deployment_model_type: str
-        if self.report_folder is None:
-            log.warning("Report folder is not provided, using default report folder")
-            self.report_folder = "report"
+        self.model_info_filename = "model.json"
+        self.report_path = ""
+        self.metadata = {"report_files": []}
 
     @property
-    def deployment_model(self) -> Union[RecursiveScriptModule, Module]:
-        """RecursiveScriptModule: The deployment model."""
+    def deployment_model(self) -> Union[RecursiveScriptModule, nn.Module]:
+        """Deployment model."""
         return self._deployment_model
 
     @deployment_model.setter
-    def deployment_model(self, model: Union[RecursiveScriptModule, Module]) -> None:
-        """RecursiveScriptModule: The deployment model."""
-        self._deployment_model = model
+    def deployment_model(self, model_path: str):
+        """Set the deployment model."""
+        self._deployment_model, self.deployment_model_type = import_deployment_model(model_path, self.device)
 
     def prepare(self) -> None:
         """Prepare the evaluation."""
-        self.deployment_model, self.deployment_model_type = import_deployment_model(self.model_path, self.device)
+        with open(os.path.join(Path(self.model_path).parent, self.model_info_filename)) as f:
+            self.model_data = json.load(f)
+
+        if not isinstance(self.model_data, dict):
+            raise ValueError("Model info file is not a valid json")
+
+        for input_size in self.model_data["input_size"]:
+            if len(input_size) != 3:
+                continue
+
+            # Adjust the transform for 2D models (CxHxW)
+            # We assume that each input size has the same height and width
+            if input_size[1] != self.config.transforms.input_height:
+                log.warning(
+                    f"Input height of the model ({input_size[1]}) is different from the one specified "
+                    + f"in the config ({self.config.transforms.input_height}). Fixing the config."
+                )
+                self.config.transforms.input_height = input_size[1]
+
+            if input_size[2] != self.config.transforms.input_width:
+                log.warning(
+                    f"Input width of the model ({input_size[2]}) is different from the one specified "
+                    + f"in the config ({self.config.transforms.input_width}). Fixing the config."
+                )
+                self.config.transforms.input_width = input_size[2]
+
+        self.deployment_model = self.model_path  # type: ignore[assignment]

@@ -29,6 +29,8 @@ import quadra.utils.export as quadra_export
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.utils.mlflow import infer_signature_torch_model
 
+IMAGE_EXTENSIONS: List[str] = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pbm", ".pgm", ".ppm", ".pxm", ".pnm"]
+
 
 def get_logger(name=__name__) -> logging.Logger:
     """Initializes multi-GPU-friendly python logger."""

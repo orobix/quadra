@@ -209,7 +209,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
                     for task in eval_tasks:
                         for file in task.metadata["report_files"]:
                             mflow_logger.experiment.log_artifact(
-                                run_id=mflow_logger.run_id, local_path=file, artifact_path=task.report_folder
+                                run_id=mflow_logger.run_id, local_path=file, artifact_path=task.report_path
                             )
 
                 if tensorboard_logger is not None and self.config.core.get("upload_artifacts"):
@@ -232,13 +232,13 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
                                 utils.upload_file_tensorboard(file, tensorboard_logger)
 
 
-class SegmentationEvaluation(Evaluation):
+class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
     """Segmentation Evaluation Task with deployment models.
 
     Args:
         config: The experiment configuration
         model_path: The experiment path.
-        report_folder: The report folder. Defaults to None.
+        device: Device to use for evaluation. If None, the device is automatically determined.
 
     Raises:
         ValueError: If the model path is not provided
@@ -248,17 +248,26 @@ class SegmentationEvaluation(Evaluation):
         self,
         config: DictConfig,
         model_path: str,
-        report_folder: Optional[str] = None,
+        device: Optional[str] = "cpu",
     ):
-        super().__init__(config=config, model_path=model_path, report_folder=report_folder)
+        super().__init__(config=config, model_path=model_path, device=device)
         self.config = config
-        self.metadata = {"report_files": []}
-
-        # TODO: It's not possible to specify the device from outside!!
-        self.device = utils.get_device(config.trainer.accelerator != "cpu")
 
     def save_config(self) -> None:
         """Skip saving the config."""
+
+    def prepare(self) -> None:
+        """Prepare the evaluation."""
+        super().prepare()
+        # TODO: Why we propagate mean and std only in Segmentation?
+        self.config.transforms.mean = self.model_data["mean"]
+        self.config.transforms.std = self.model_data["std"]
+        # Setup datamodule
+        idx_to_class = self.model_data["classes"]  # dict {index: class}
+        self.config.datamodule.idx_to_class = idx_to_class
+        self.datamodule = self.config.datamodule
+        # prepare_data() must be explicitly called because there is no lightning training
+        self.datamodule.prepare_data()
 
     @torch.no_grad()
     def inference(
@@ -295,17 +304,17 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
     Args:
         config: The experiment configuration
         model_path: The model path.
-        report_folder: The report folder. Defaults to "analysis_report".
+        device: Device to use for evaluation. If None, the device is automatically determined.
     """
 
-    def __init__(self, config: DictConfig, model_path: str, report_folder: str = "analysis_report"):
-        super().__init__(config=config, model_path=model_path, report_folder=report_folder)
+    def __init__(
+        self,
+        config: DictConfig,
+        model_path: str,
+        device: Optional[str] = "cpu",
+    ):
+        super().__init__(config=config, model_path=model_path, device=device)
         self.test_output: Dict[str, Any] = {}
-
-    def prepare(self) -> None:
-        """Prepare the experiment."""
-        super().prepare()
-        self.datamodule = self.config.datamodule
 
     def train(self) -> None:
         """Skip training."""

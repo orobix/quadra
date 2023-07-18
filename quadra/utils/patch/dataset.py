@@ -1267,7 +1267,8 @@ def load_train_file(
     exclude_filter: Optional[List[str]] = None,
     class_to_skip: Optional[list] = None,
 ) -> Tuple[List[str], List[str]]:
-    """Load a train file and return a list of samples and a list of targets.
+    """Load a train file and return a list of samples and a list of targets. It is expected that train files will be in
+        the same location as the train_file_path.
 
     Args:
         train_file_path: Training file location
@@ -1303,6 +1304,9 @@ def load_train_file(
 
     samples = [samples[i] for i in valid_samples_indices]
     targets = [targets[i] for i in valid_samples_indices]
+
+    train_folder = os.path.dirname(train_file_path)
+    samples = [os.path.join(train_folder, x) for x in samples]
 
     return samples, targets
 
