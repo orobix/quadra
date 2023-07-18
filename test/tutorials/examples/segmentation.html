@@ -2908,7 +2908,7 @@
 <h2 id="training">Training<a class="headerlink" href="#training" title="Permanent link">&para;</a></h2>
 <p>This example will demonstrate how to create a custom experiment starting from default settings.</p>
 <h3 id="dataset">Dataset<a class="headerlink" href="#dataset" title="Permanent link">&para;</a></h3>
-<p>Let's start with the dataset we are going to use. Since we are using base segmentation datamodule, we must arrange our images and masks in a folder structure that follows the segmentation datamodule guideline defined in the <a href="/tutorials/datamodules.html#segmentation">segmentation datamodule documentation</a>.
+<p>Let's start with the dataset we are going to use. Since we are using base segmentation datamodule, we must arrange our images and masks in a folder structure that follows the segmentation datamodule guideline defined in the <a href="../datamodules.html#segmentation">segmentation datamodule documentation</a>.
 Imagine that we have a dataset with the following structure:</p>
 <div class="highlight"><pre><span></span><code>dataset/
 ├── images
@@ -3074,8 +3074,8 @@ We will do it in the experiment configuration file.</p>
 <p class="admonition-title">Warning</p>
 <p>When defining the <code>idx_to_class</code> dictionary, the keys should be the class index and the values should be the class name. The class index starts from 1.</p>
 </div>
-<p>In the final configuration experiment we have specified the path to the dataset, batch size, split files, gpu device, experiment name and toggled some evaluation options.</p>
-<p>By default data will be logged to mlflow if it is <a href="/tutorials/install.html#mlflow-credentials">configured properly</a>. If mlflow is not available it's possible to configure a simple csv logger by adding an override to the file above:</p>
+<p>In the final configuration experiment we have specified the path to the dataset, batch size, split files, GPU device, experiment name and toggled some evaluation options.</p>
+<p>By default data will be logged to <code>Mlflow</code>. If <code>Mlflow</code> is not available it's possible to configure a simple csv logger by adding an override to the file above:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># @package _global_</span>
 <span class="nt">defaults</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">base/segmentation/smp_multiclass</span><span class="w">  </span><span class="c1"># use smp file as default</span>
