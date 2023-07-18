@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - dev
-      - feature/documentation_actions
 
 jobs:
   build-and-deploy:
@@ -29,11 +28,9 @@ jobs:
         id: determine_version
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            VERSION="v$(python3 -c "from quadra import get_version; print(get_version())")"
+            VERSION="v$(python -c "import quadra; print(quadra.__version__)")"
           elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
             VERSION="dev"
-          else
-            VERSION="test"
           fi
           echo "::set-output name=version::$VERSION"
 
