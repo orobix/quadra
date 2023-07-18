@@ -3,8 +3,8 @@ name: Build and Deploy Documentation
 on:
   push:
     branches:
-      # - main
-      # - dev
+      - main
+      - dev
       - feature/documentation_actions
 
 jobs:
@@ -25,10 +25,26 @@ jobs:
           python -m pip install -U pip
           python -m pip install -e ".[docs]" --no-cache-dir
 
+      - name: Determine Version
+        id: determine_version
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            VERSION="v$(python -c "import quadra; print(quadra.__version__)")"
+          elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            VERSION="dev"
+          else
+            VERSION="test"
+          fi
+          echo "::set-output name=version::$VERSION"
+
       - name: Build Documentation
         run: |
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git fetch origin gh-pages --depth=1
-          VERSION="test"
-          mike deploy --push $VERSION
+          VERSION="${{ steps.determine_version.outputs.version }}"
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            mike deploy --push --update-aliases $VERSION latest
+          else
+            mike deploy --push $VERSION
+          fi
