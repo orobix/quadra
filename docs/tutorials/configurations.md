@@ -327,7 +327,7 @@ Each scheduler file defines how we initialize the learning rate schedulers with 
 
 ### Task
 
-The tasks are the building blocks containing the actual training and evaluation logic. They are discussed in more details in the [tasks](../tutorials/tasks) section.
+The tasks are the building blocks containing the actual training and evaluation logic. They are discussed in more details in the [tasks](../tutorials/tasks.md) section.
 
 ### Trainer
 
