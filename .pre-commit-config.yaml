@@ -5,8 +5,9 @@ repos:
     hooks:
       - id: ruff
         name: ruff
+        files: \.py$
         entry: ruff
-        language: system
+        language: python
         exclude: ^(tests|scripts|notebooks|quadra/utils/tests)/
   - repo: local
     hooks:

@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Type
+from typing import Any, Optional, Type
 
 import albumentations
 import cv2
@@ -44,6 +44,7 @@ class OxfordPetSegmentationDataModule(SegmentationDataModule):
         train_transform: Optional[albumentations.Compose] = None,
         test_transform: Optional[albumentations.Compose] = None,
         val_transform: Optional[albumentations.Compose] = None,
+        **kwargs: Any,
     ):
         super().__init__(
             data_path=data_path,
@@ -57,6 +58,7 @@ class OxfordPetSegmentationDataModule(SegmentationDataModule):
             val_transform=val_transform,
             batch_size=batch_size,
             num_workers=num_workers,
+            **kwargs,
         )
 
     _RESOURCES = (

@@ -160,7 +160,7 @@ The output folder should contain the following entries:
 checkpoints  config_resolved.yaml  config_tree.txt  data  deployment_model  main.log
 ```
 
-The `checkpoints` folder contains the saved `pytorch` lightning checkpoints. The `data` folder contains a joblib version of the datamodule containing all parameters and dataset spits. The `deployment_model` folder contains the model ready for production in the format specified in the task `export_type` parameter (default `torchscript`). 
+The `checkpoints` folder contains the saved `pytorch` lightning checkpoints. The `data` folder contains a joblib version of the datamodule containing all parameters and dataset spits. The `deployment_model` folder contains the model ready for production in the format specified in the task `export_config.types` parameter (default `torchscript`). 
 
 ### Run (Advanced) - Changing transformations
 

@@ -50,4 +50,4 @@ graph LR;
 Most of these tasks have an associated evaluation task used for inference.
 ## Adding new tasks
 
-If your require the `pytorch-lightning` library, you can add a new task by extending the [`LightningTask`][quadra.base.LightningTask] class. Otherwise, you can simply start implementing a new task by extending the `Task` class.
+If you require the `pytorch-lightning` library, you can add a new task by extending the [`LightningTask`][quadra.tasks.base.LightningTask] class. Otherwise, you can simply start implementing a new task by extending the `Task` class.

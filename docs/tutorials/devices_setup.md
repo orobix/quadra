@@ -36,13 +36,15 @@ For Sklearn based tasks there's generally a `device` field in the configuration 
 ```yaml
 _target_: quadra.tasks.SklearnClassification
 device: "cuda:0"
-export_type: [torchscript]
 output:
   folder: "classification_experiment"
   save_backbone: false
   report: true
   example: true
   test_full_data: true
+export_config:
+  types: [torchscript]
+  input_shapes: # Redefine the input shape if not automatically inferred
 ```
 
 You can change the device to `cpu` or a different cuda device depending on your needs.

@@ -1,16 +1,18 @@
 """Common utility functions.
 Some of them are mostly based on https://github.com/ashleve/lightning-hydra-template.
 """
+import glob
 import json
 import logging
 import os
 import subprocess
 import sys
 import warnings
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, cast
 
 import cv2
 import dotenv
+import mlflow
 import numpy as np
 import pytorch_lightning as pl
 import rich.syntax
@@ -23,7 +25,11 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities import rank_zero_only
 
 import quadra
-from quadra.callbacks.mlflow import check_file_server_dependencies, check_minio_credentials, get_mlflow_logger
+import quadra.utils.export as quadra_export
+from quadra.callbacks.mlflow import get_mlflow_logger
+from quadra.utils.mlflow import infer_signature_torch_model
+
+IMAGE_EXTENSIONS: List[str] = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pbm", ".pgm", ".ppm", ".pxm", ".pnm"]
 
 
 def get_logger(name=__name__) -> logging.Logger:
@@ -72,13 +78,6 @@ def extras(config: DictConfig) -> None:
             config.datamodule.pin_memory = False
         if config.datamodule.get("num_workers"):
             config.datamodule.num_workers = 0
-
-    if config.core.get("upload_artifacts"):
-        if config.logger.get("mlflow") is not None and config.logger.mlflow.get("_target_") is not None:
-            if "http" in config.logger.mlflow.get("tracking_uri"):
-                log.info("Checking mlfow settings for artifact upload since <config.core.upload_artifacts=True>")
-                check_file_server_dependencies()
-                check_minio_credentials()
 
 
 @rank_zero_only
@@ -222,44 +221,78 @@ def upload_file_tensorboard(file_path: str, tensorboard_logger: TensorBoardLogge
 
 def finish(
     config: DictConfig,
-    model: pl.LightningModule,
+    module: pl.LightningModule,
     datamodule: pl.LightningDataModule,
     trainer: pl.Trainer,
     callbacks: List[pl.Callback],
     logger: List[pl.loggers.Logger],
+    export_folder: str,
 ) -> None:
     """Upload config files to MLFlow server.
 
     Args:
         config: Configuration composed by Hydra.
-        model: LightningModule.
+        module: LightningModule.
         datamodule: LightningDataModule.
         trainer: LightningTrainer.
         callbacks: List of LightningCallbacks.
         logger: List of LightningLoggers.
+        export_folder: Folder where the deployment models are exported.
     """
     # pylint: disable=unused-argument
-    if len(logger) > 0 and config.core.get("upload_artifacts"):
-        mflow_logger = get_mlflow_logger(trainer=trainer)
-        tensorboard_logger = get_tensorboard_logger(trainer=trainer)
 
-        if mflow_logger is not None:
+    if len(logger) > 0 and config.core.get("upload_artifacts"):
+        mlflow_logger = get_mlflow_logger(trainer=trainer)
+        tensorboard_logger = get_tensorboard_logger(trainer=trainer)
+        file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt", "data/dataset.csv"]
+
+        if mlflow_logger is not None:
             config_paths = []
-            file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt"]
+
             for f in file_names:
                 if os.path.isfile(os.path.join(os.getcwd(), f)):
                     config_paths.append(os.path.join(os.getcwd(), f))
+
             for path in config_paths:
-                mflow_logger.experiment.log_artifact(
-                    run_id=mflow_logger.run_id, local_path=path, artifact_path="metadata"
+                mlflow_logger.experiment.log_artifact(
+                    run_id=mlflow_logger.run_id, local_path=path, artifact_path="metadata"
                 )
+
+            deployed_models = glob.glob(os.path.join(export_folder, "*"))
+            model_json: Optional[Dict[str, Any]] = None
+
+            if os.path.exists(os.path.join(export_folder, "model.json")):
+                with open(os.path.join(export_folder, "model.json"), "r") as json_file:
+                    model_json = json.load(json_file)
+
+            if model_json is not None:
+                for model_path in deployed_models:
+                    if model_path.endswith(".pt"):
+                        model, _ = quadra_export.import_deployment_model(model_path, device="cpu")
+
+                        input_size = model_json["input_size"]
+
+                        # Not a huge fan of this check
+                        if not isinstance(input_size[0], list):
+                            # Input size is not a list of lists
+                            input_size = [input_size]
+
+                        inputs = cast(List[Any], quadra_export.generate_torch_inputs(input_size, device="cpu"))
+                        signature = infer_signature_torch_model(model, inputs)
+
+                        with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
+                            mlflow.pytorch.log_model(
+                                model,
+                                artifact_path=model_path,
+                                signature=signature,
+                            )
 
         if tensorboard_logger is not None:
             config_paths = []
-            file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt"]
             for f in file_names:
                 if os.path.isfile(os.path.join(os.getcwd(), f)):
                     config_paths.append(os.path.join(os.getcwd(), f))
+
             for path in config_paths:
                 upload_file_tensorboard(file_path=path, tensorboard_logger=tensorboard_logger)
 

@@ -12,7 +12,7 @@ from skmultilearn.model_selection import iterative_train_test_split
 from timm.data.parsers.parser_image_folder import find_images_and_targets
 from torch.utils.data import DataLoader
 
-from quadra.datamodules.base import IMAGE_EXTENSIONS, BaseDataModule
+from quadra.datamodules.base import BaseDataModule
 from quadra.datasets import ImageClassificationListDataset
 from quadra.datasets.classification import MultilabelClassificationDataset
 from quadra.utils import utils
@@ -135,7 +135,7 @@ class ClassificationDataModule(BaseDataModule):
     ) -> Tuple[List[Tuple[str, int]], Dict[str, int]]:
         """Collects the samples from item folders."""
         images_and_targets, class_to_idx = find_images_and_targets(
-            folder=root_folder, types=IMAGE_EXTENSIONS, class_to_idx=class_to_idx
+            folder=root_folder, types=utils.IMAGE_EXTENSIONS, class_to_idx=class_to_idx
         )
         return images_and_targets, class_to_idx
 
@@ -397,6 +397,7 @@ class SklearnClassificationDataModule(BaseDataModule):
         label_map: Dictionary of conversion btw folder name and label.
         train_split_file: Optional path to a csv file containing the train split samples.
         test_split_file: Optional path to a csv file containing the test split samples.
+        **kwargs: Additional arguments for BaseDataModule
     """
 
     def __init__(
@@ -422,6 +423,7 @@ class SklearnClassificationDataModule(BaseDataModule):
         test_split_file: Optional[str] = None,
         name: str = "sklearn_classification_datamodule",
         dataset: Type[ImageClassificationListDataset] = ImageClassificationListDataset,
+        **kwargs: Any,
     ):
         super().__init__(
             data_path=data_path,
@@ -432,6 +434,7 @@ class SklearnClassificationDataModule(BaseDataModule):
             train_transform=train_transform,
             val_transform=val_transform,
             test_transform=test_transform,
+            **kwargs,
         )
 
         self.class_to_idx = class_to_idx

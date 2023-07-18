@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.datamodules import SegmentationDataModule, SegmentationMulticlassDataModule
+from quadra.models.base import ModelSignatureWrapper
 from quadra.modules.base import SegmentationModel
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
@@ -34,7 +35,11 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         run_test: If True, run test after training. Defaults to False.
         evaluate: Dict with evaluation parameters. Defaults to None.
         report: If True, create report after training. Defaults to False.
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
+
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
     """
 
     def __init__(
@@ -45,29 +50,34 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         run_test: bool = False,
         evaluate: Optional[DictConfig] = None,
         report: bool = False,
-        export_type: Optional[List[str]] = None,
+        export_config: Optional[DictConfig] = None,
     ):
         super().__init__(
             config=config,
             checkpoint_path=checkpoint_path,
             run_test=run_test,
             report=report,
-            export_type=export_type,
+            export_config=export_config,
         )
         self.evaluate = evaluate
         self.num_viz_samples = num_viz_samples
         self.export_folder: str = "deployment_model"
         self.exported_model_path: Optional[str] = None
         if self.evaluate and any(self.evaluate.values()):
-            if self.export_type is None or len(self.export_type) == 0 or "torchscript" not in self.export_type:
+            if (
+                self.export_config is None
+                or len(self.export_config.types) == 0
+                or "torchscript" not in self.export_config.types
+            ):
                 log.info(
                     "Evaluation is enabled, but training does not export a deployment model. Automatically export the "
                     "model as torchscript."
                 )
-                if self.export_type is None:
-                    self.export_type = ["torchscript"]
+                if self.export_config is None:
+                    self.export_config = DictConfig({"types": ["torchscript"]})
                 else:
-                    self.export_type.append("torchscript")
+                    self.export_config.types.append("torchscript")
+
             if not self.report:
                 log.info("Evaluation is enabled, but reporting is disabled. Enabling reporting automatically.")
                 self.report = True
@@ -91,6 +101,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
                 module_config.model.num_classes = len(self.datamodule.idx_to_class) + 1
 
         model = hydra.utils.instantiate(module_config.model)
+        model = ModelSignatureWrapper(model)
         log.info("Instantiating optimizer <%s>", self.config.optimizer["_target_"])
         param_list = []
         for param in model.parameters():
@@ -113,9 +124,6 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
     def export(self) -> None:
         """Generate a deployment model for the task."""
         log.info("Exporting model ready for deployment")
-        input_width = self.config.transforms.get("input_width")
-        input_height = self.config.transforms.get("input_height")
-
         # Get best model!
         if self.trainer.checkpoint_callback is None:
             raise ValueError("No checkpoint callback found in the trainer")
@@ -136,19 +144,37 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         else:
             log.info("idx_to_class is present")
             classes = self.config.datamodule.idx_to_class
-        if self.export_type is None:
+
+        if self.export_config is None:
             raise ValueError(
                 "No export type specified. This should not happen, please check if you have set "
                 "the export_type or assign it to a default value."
             )
-        for export_type in self.export_type:
+
+        input_shapes = self.export_config.input_shapes
+
+        half_precision = self.trainer.precision == 16
+
+        for export_type in self.export_config.types:
             if export_type == "torchscript":
-                self.exported_model_path = export_torchscript_model(
-                    module.model, (1, 3, input_height, input_width), self.export_folder, half_precision=False
+                out = export_torchscript_model(
+                    model=module.model,
+                    input_shapes=input_shapes,
+                    output_path=self.export_folder,
+                    half_precision=half_precision,
                 )
 
+                if out is None:
+                    log.warning("Skipping torchscript export since the model is not supported")
+                    continue
+
+                self.exported_model_path, input_shapes = out
+
+        if input_shapes is None:
+            log.warning("Not able to export the model in any format")
+
         model_json = {
-            "input_size": [input_width, input_height, 3],
+            "input_size": input_shapes,
             "classes": classes,
             "mean": self.config.transforms.mean,
             "std": self.config.transforms.std,
@@ -237,8 +263,9 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
         self.config.transforms.mean = self.model_data["mean"]
         self.config.transforms.std = self.model_data["std"]
         # Setup datamodule
-        idx_to_class = self.model_data["classes"]  # dict {index: class}
-        self.config.datamodule.idx_to_class = idx_to_class
+        if hasattr(self.config.datamodule, "idx_to_class"):
+            idx_to_class = self.model_data["classes"]  # dict {index: class}
+            self.config.datamodule.idx_to_class = idx_to_class
         self.datamodule = self.config.datamodule
         # prepare_data() must be explicitly called because there is no lightning training
         self.datamodule.prepare_data()

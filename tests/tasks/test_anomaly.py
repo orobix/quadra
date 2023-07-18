@@ -77,7 +77,6 @@ def test_padim_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_datas
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
-        "task.export_type=[torchscript]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -105,7 +104,6 @@ def test_patchcore_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_d
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
-        "task.export_type=[torchscript]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -131,7 +129,7 @@ def test_cflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_datas
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
-        "task.export_type=null",
+        "task.export_config=null",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -157,7 +155,6 @@ def test_csflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_data
         "experiment=base/anomaly/csflow",
         f"datamodule.data_path={data_path}",
         f"model.dataset.task={task}",
-        "task.export_type=[torchscript]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -185,7 +182,6 @@ def test_fastflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_da
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
-        "task.export_type=[torchscript]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -212,7 +208,6 @@ def test_draem_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_datas
         "experiment=base/anomaly/draem",
         f"datamodule.data_path={data_path}",
         f"model.dataset.task={task}",
-        "task.export_type=[torchscript]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
