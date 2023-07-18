@@ -1,0 +1,18 @@
+# @package _global_
+
+defaults:
+  - override /datamodule: base/segmentation_multiclass
+  - override /transforms: default_resize
+  - override /task: segmentation_evaluation
+
+core:
+  tag: "run"
+  name: "quadra_default"
+  upload_artifacts: True
+
+task:
+  model_path: ???
+
+datamodule:
+  num_workers: 8
+  batch_size: 32
