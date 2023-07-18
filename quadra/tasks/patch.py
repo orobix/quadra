@@ -11,6 +11,7 @@ from sklearn.base import ClassifierMixin
 
 from quadra.datamodules import PatchSklearnClassificationDataModule
 from quadra.datasets.patch import PatchSklearnClassificationTrainDataset
+from quadra.models.base import ModelSignatureWrapper
 from quadra.tasks.base import Evaluation, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
@@ -28,7 +29,11 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         config: The experiment configuration
         device: The device to use
         output: Dictionary defining which kind of outputs to generate. Defaults to None.
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
+
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
     """
 
     def __init__(
@@ -36,9 +41,9 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         config: DictConfig,
         output: DictConfig,
         device: str,
-        export_type: Optional[List[str]] = None,
+        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config=config, export_type=export_type)
+        super().__init__(config=config, export_config=export_config)
         self.device: str = device
         self.output: DictConfig = output
         self.return_polygon: bool = True
@@ -79,6 +84,8 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         else:
             log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
             self._backbone = hydra.utils.instantiate(backbone_config.model)
+
+        self._backbone = ModelSignatureWrapper(self._backbone)
         self._backbone.eval()
         self._backbone = self._backbone.to(self.device)
 
@@ -200,17 +207,28 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
 
     def export(self) -> None:
         """Generate deployment model for the task."""
-        if self.export_type is None or len(self.export_type) == 0:
+        if self.export_config is None or len(self.export_config.types) == 0:
             log.info("No export type specified skipping export")
             return
-        input_width = self.config.transforms.get("input_width")
-        input_height = self.config.transforms.get("input_height")
 
-        for export_type in self.export_type:
+        os.makedirs(self.export_folder, exist_ok=True)
+
+        input_shapes = self.export_config.input_shapes
+
+        for export_type in self.export_config.types:
             if export_type == "torchscript":
-                export_torchscript_model(
-                    self.backbone, (1, 3, input_height, input_width), self.export_folder, half_precision=False
+                out = export_torchscript_model(
+                    model=self.backbone,
+                    input_shapes=input_shapes,
+                    output_path=self.export_folder,
+                    half_precision=False,
                 )
+
+                if out is None:
+                    log.warning("Skipping torchscript export since the model is not supported")
+                    continue
+
+                _, input_shapes = out
 
         dump(self.model, os.path.join(self.export_folder, "classifier.joblib"))
 
@@ -225,7 +243,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
 
         model_json = {
-            "input_size": [input_width, input_height, 3],
+            "input_size": input_shapes,
             "classes": idx_to_class,
             "mean": self.config.transforms.mean,
             "std": self.config.transforms.std,
@@ -247,7 +265,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         self.train()
         if self.output.report:
             self.generate_report()
-        if self.export_type is not None and len(self.export_type) > 0:
+        if self.export_config is not None and len(self.export_config.types) > 0:
             self.export()
         self.finalize()
 

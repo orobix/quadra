@@ -8,7 +8,7 @@ import os
 import subprocess
 import sys
 import warnings
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, cast
 
 import cv2
 import dotenv
@@ -27,7 +27,7 @@ from pytorch_lightning.utilities import rank_zero_only
 import quadra
 import quadra.utils.export as quadra_export
 from quadra.callbacks.mlflow import get_mlflow_logger
-from quadra.utils.mlflow import infer_signature_torch
+from quadra.utils.mlflow import infer_signature_torch_model
 
 IMAGE_EXTENSIONS: List[str] = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pbm", ".pgm", ".ppm", ".pxm", ".pnm"]
 
@@ -277,9 +277,8 @@ def finish(
                             # Input size is not a list of lists
                             input_size = [input_size]
 
-                        # WxHxC -> 1xCxHxW
-                        inputs = [torch.randn(1, *np.array(size)[[2, 1, 0]]) for size in input_size]
-                        signature = infer_signature_torch(model, inputs)
+                        inputs = cast(List[Any], quadra_export.generate_torch_inputs(input_size, device="cpu"))
+                        signature = infer_signature_torch_model(model, inputs)
 
                         with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
                             mlflow.pytorch.log_model(

@@ -2,7 +2,7 @@
 import glob
 import os
 import random
-from typing import Dict, List, Optional, Tuple, Type
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 import albumentations
 import cv2
@@ -59,6 +59,7 @@ class SegmentationDataModule(BaseDataModule):
         val_split_file: Optional[str] = None,
         num_data_class: Optional[int] = None,
         exclude_good: bool = False,
+        **kwargs: Any,
     ):
         super().__init__(
             data_path=data_path,
@@ -69,6 +70,7 @@ class SegmentationDataModule(BaseDataModule):
             train_transform=train_transform,
             val_transform=val_transform,
             test_transform=test_transform,
+            **kwargs,
         )
         self.test_size = test_size
         self.val_size = val_size
@@ -413,6 +415,7 @@ class SegmentationMulticlassDataModule(BaseDataModule):
         exclude_good: bool = False,
         num_data_train: Optional[int] = None,
         one_hot_encoding: bool = False,
+        **kwargs: Any,
     ):
         super().__init__(
             data_path=data_path,
@@ -423,6 +426,7 @@ class SegmentationMulticlassDataModule(BaseDataModule):
             train_transform=train_transform,
             val_transform=val_transform,
             test_transform=test_transform,
+            **kwargs,
         )
         self.test_size = test_size
         self.val_size = val_size

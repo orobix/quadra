@@ -222,11 +222,14 @@ task:
   device: cuda:2
   output:
     folder: classification_patch_experiment
-    export_type: [torchscript]
     save_backbone: false
     report: true
     example: true
     reconstruction_method: major_voting
+  export_config:
+    types: [torchscript]
+    input_shapes: # Redefine the input shape if not automatically inferred
+
 ```
 
 This will train a resnet18 model on the given dataset, using 256 as batch size and skipping the background class during training.

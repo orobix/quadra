@@ -167,11 +167,14 @@ backbone:
     classes: 4 # The total number of classes (background + foreground)
 
 task:
-  export_type: [torchscript] # Export model to torchscript for inference
   run_test: true # run test after training is completed
   report: false # allows to generate reports
   evaluate: # custom evaluation toggles
     analysis: false # Perform in depth analysis
+  export_config:
+    types: [torchscript]
+    input_shapes: # Redefine the input shape if not automatically inferred
+
     
 datamodule:
   data_path: /path/to/the/dataset # change the path to the dataset
