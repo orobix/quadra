@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 
 - Fix gradcam not working properly with non rectangular images.
 - Fix logistic regression wrapper not working properly with 2 classes for torch classification.
+- Fix wrong typings in NetworkBuilder's init method.
 - Fix broken links in documentation.
 - Fix minor documentations issues.
 
