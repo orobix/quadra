@@ -9,7 +9,7 @@ In this guide, we'll cover the steps you should take to ensure your code meets t
 
 ## Setting up the Environment
 
-Before contributing to the repository, you'll need to set up your development environment. Please check the [Getting Started Guide](/getting_started.html) for instructions on how to set up your environment.
+Before contributing to the repository, you'll need to set up your development environment. Please check the [Getting Started Guide](../getting_started.md) for instructions on how to set up your environment.
 
 After setting up your environment you can install `Quadra` Library in different ways:
 

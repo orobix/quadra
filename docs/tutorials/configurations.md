@@ -79,7 +79,7 @@ For example we can set the seed, decide for a run name, or set the log level.
 
 ### Datamodule
 
-Datamodule setting files are used to configure the datamodule which manages the datasets and dataloaders used in experiment. For a detailed explanatation on how to implement `DataModule` classes, please refer to the [datamodule documentation](/tutorials/datamodules.html).
+Datamodule setting files are used to configure the datamodule which manages the datasets and dataloaders used in experiment. For a detailed explanation on how to implement `DataModule` classes, please refer to the [datamodule documentation](../tutorials/datamodules.md).
 
 Here is the structure of the folder:
 
@@ -327,7 +327,7 @@ Each scheduler file defines how we initialize the learning rate schedulers with 
 
 ### Task
 
-The tasks are the building blocks containing the actual training and evaluation logic. They are discussed in more details in the [tasks](/tutorials/tasks.html) section.
+The tasks are the building blocks containing the actual training and evaluation logic. They are discussed in more details in the [tasks](../tutorials/tasks) section.
 
 ### Trainer
 
