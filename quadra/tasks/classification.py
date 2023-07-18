@@ -276,8 +276,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             gradcam=False,
         )
 
-        # TODO: Take from config
-        input_shapes = None
+        input_shapes = self.export_config.input_shapes
 
         # TODO: This breaks with bf16 precision!!!
         half_precision = int(self.trainer.precision) == 16

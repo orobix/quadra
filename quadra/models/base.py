@@ -9,7 +9,8 @@ from torch import nn
 
 class ModelSignatureWrapper(nn.Module):
     """Model wrapper used to retrieve input shape. It can be used as a decorator of nn.Module, the first call to the
-    forward method will retrieve the input shape and store it in the input_shapes attribute."""
+    forward method will retrieve the input shape and store it in the input_shapes attribute.
+    """
 
     def __init__(self, model: nn.Module):
         super().__init__()
@@ -43,9 +44,14 @@ class ModelSignatureWrapper(nn.Module):
 
         return self.instance.forward(*args, **kwargs)
 
+    def to(self, *args, **kwargs):
+        """Handle calls to to method returning the underlying model."""
+        return ModelSignatureWrapper(self.instance.to(*args, **kwargs))
+
     def _get_input_shapes(self, *args: Any, **kwargs: Any) -> list[Any]:
         """Retrieve the input shapes from the input. Inputs will be in the same order as the forward method
-        signature."""
+        signature.
+        """
         input_shapes = []
 
         for arg in args:
@@ -94,7 +100,7 @@ class ModelSignatureWrapper(nn.Module):
             setattr(self.instance, name, value)
 
     def __getattribute__(self, __name: str) -> Any:
-        if __name in ["instance", "input_shapes", "__dict__", "forward", "_get_input_shapes", "_get_input_shape"]:
+        if __name in ["instance", "input_shapes", "__dict__", "forward", "_get_input_shapes", "_get_input_shape", "to"]:
             return super().__getattribute__(__name)
 
         return getattr(self.instance, __name)

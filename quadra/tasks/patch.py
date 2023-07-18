@@ -11,6 +11,7 @@ from sklearn.base import ClassifierMixin
 
 from quadra.datamodules import PatchSklearnClassificationDataModule
 from quadra.datasets.patch import PatchSklearnClassificationTrainDataset
+from quadra.models.base import ModelSignatureWrapper
 from quadra.tasks.base import Evaluation, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
@@ -83,6 +84,8 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         else:
             log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
             self._backbone = hydra.utils.instantiate(backbone_config.model)
+
+        self._backbone = ModelSignatureWrapper(self._backbone)
         self._backbone.eval()
         self._backbone = self._backbone.to(self.device)
 
@@ -208,8 +211,9 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
             log.info("No export type specified skipping export")
             return
 
-        # TODO: Take from config
-        input_shapes = None
+        os.makedirs(self.export_folder, exist_ok=True)
+
+        input_shapes = self.export_config.input_shapes
 
         for export_type in self.export_config.types:
             if export_type == "torchscript":

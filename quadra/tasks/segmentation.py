@@ -263,8 +263,9 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
         self.config.transforms.mean = self.model_data["mean"]
         self.config.transforms.std = self.model_data["std"]
         # Setup datamodule
-        idx_to_class = self.model_data["classes"]  # dict {index: class}
-        self.config.datamodule.idx_to_class = idx_to_class
+        if hasattr(self.config.datamodule, "idx_to_class"):
+            idx_to_class = self.model_data["classes"]  # dict {index: class}
+            self.config.datamodule.idx_to_class = idx_to_class
         self.datamodule = self.config.datamodule
         # prepare_data() must be explicitly called because there is no lightning training
         self.datamodule.prepare_data()
