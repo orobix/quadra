@@ -3,14 +3,8 @@
 defaults:
   - override /transforms: default_resize
   - override /task: sklearn_classification_test
-  - override /backbone: dino_vitb8
   - override /trainer: sklearn_classification
   - override /datamodule: base/sklearn_classification
-
-backbone:
-  model:
-    pretrained: true
-    freeze: true
 
 core:
   tag: run
@@ -23,8 +17,8 @@ task:
     folder: classification_experiment
     report: true
     example: true
-  experiment_path: ???
-  
+  model_path: ???
+
 datamodule:
   num_workers: 8
   batch_size: 32

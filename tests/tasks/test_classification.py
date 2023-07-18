@@ -50,10 +50,11 @@ def test_inference_sklearn_classification(tmp_path: Path, base_classification_da
 
     execute_quadra_experiment(overrides=train_overrides, experiment_path=train_path)
 
+    trained_model_path = os.path.join(train_path, "deployment_model/model.pt")
     inference_overrides = [
         "experiment=base/classification/sklearn_classification_test",
         f"datamodule.data_path={data_path}",
-        f"task.experiment_path={train_path}",
+        f"task.model_path={trained_model_path}",
         "backbone=resnet18",
         "task.device=cpu",
         "task.gradcam=true",
@@ -108,10 +109,11 @@ def test_inference_patches(tmp_path: Path, base_patch_classification_dataset: ba
     ] + BASE_EXPERIMENT_OVERRIDES
     execute_quadra_experiment(overrides=train_overrides, experiment_path=train_experiment_path)
 
+    trained_model_path = os.path.join(train_experiment_path, "deployment_model/model.pt")
     test_overrides = [
         "experiment=base/classification/sklearn_classification_patch_test",
         f"datamodule.data_path={data_path}",
-        f"task.experiment_path={train_experiment_path}",
+        f"task.model_path={trained_model_path}",
         f"backbone={backbone}",
         "task.device=cpu",
     ] + BASE_EXPERIMENT_OVERRIDES
