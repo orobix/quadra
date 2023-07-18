@@ -10,7 +10,7 @@ This example will demonstrate how to create custom experiments starting from def
 
 Let's start with the dataset that we are going to use. Since we are using the base anomaly datamodule, images
 and masks must be arranged in a folder structure that follows the anomaly datamodule guidelines defined in the 
-[anomaly datamodule documentation](/tutorials/datamodules.html#anomaly-detection). 
+[anomaly datamodule documentation](../../tutorials/datamodules.md#anomaly-detection). 
 For this example, we will use the `mnist` dataset (using 9 as good and all the other number as anomalies), the dataset will be automatically downloaded by the generic experiment described next.
 
 ```tree

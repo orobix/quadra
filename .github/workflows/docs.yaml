@@ -1,0 +1,47 @@
+name: Build and Deploy Documentation
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install -U pip
+          python -m pip install -e ".[docs]" --no-cache-dir
+
+      - name: Determine Version
+        id: determine_version
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            VERSION="v$(python -c "import quadra; print(quadra.__version__)")"
+          elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            VERSION="dev"
+          fi
+          echo "::set-output name=version::$VERSION"
+
+      - name: Build Documentation
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git fetch origin gh-pages --depth=1
+          VERSION="${{ steps.determine_version.outputs.version }}"
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            mike deploy --push --update-aliases $VERSION latest
+          else
+            mike deploy --push $VERSION
+          fi

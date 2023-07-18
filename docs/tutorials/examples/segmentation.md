@@ -7,7 +7,7 @@ In this page, we will show you how to run a segmentation experiment (either bina
 This example will demonstrate how to create a custom experiment starting from default settings.
 ### Dataset
 
-Let's start with the dataset we are going to use. Since we are using base segmentation datamodule, we must arrange our images and masks in a folder structure that follows the segmentation datamodule guideline defined in the [segmentation datamodule documentation](/tutorials/datamodules.html#segmentation).
+Let's start with the dataset we are going to use. Since we are using base segmentation datamodule, we must arrange our images and masks in a folder structure that follows the segmentation datamodule guideline defined in the [segmentation datamodule documentation](../../tutorials/datamodules.md#segmentation).
 Imagine that we have a dataset with the following structure:
 
 ```tree
@@ -200,9 +200,9 @@ core:
     When defining the `idx_to_class` dictionary, the keys should be the class index and the values should be the class name. The class index starts from 1.
 
 
-In the final configuration experiment we have specified the path to the dataset, batch size, split files, gpu device, experiment name and toggled some evaluation options.
+In the final configuration experiment we have specified the path to the dataset, batch size, split files, GPU device, experiment name and toggled some evaluation options.
 
-By default data will be logged to mlflow if it is [configured properly](/tutorials/install.html#mlflow-credentials). If mlflow is not available it's possible to configure a simple csv logger by adding an override to the file above:
+By default data will be logged to `Mlflow`. If `Mlflow` is not available it's possible to configure a simple csv logger by adding an override to the file above:
   
 ```yaml
 # @package _global_
