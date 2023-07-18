@@ -30,4 +30,4 @@ jobs:
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           VERSION="test"
-          python -m mike deploy --push $VERSION
+          mike deploy --push $VERSION
