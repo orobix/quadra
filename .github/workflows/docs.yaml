@@ -29,7 +29,7 @@ jobs:
         id: determine_version
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            VERSION="v$(python -c "import quadra; print(quadra.__version__)")"
+            VERSION="v$(python3 -c "from quadra import get_version; print(get_version())")"
           elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
             VERSION="dev"
           else
