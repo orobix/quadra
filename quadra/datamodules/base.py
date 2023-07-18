@@ -12,7 +12,6 @@ from pytorch_lightning import LightningDataModule
 from quadra.utils import utils
 
 log = utils.get_logger(__name__)
-IMAGE_EXTENSIONS: List[str] = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pbm", ".pgm", ".ppm", ".pxm", ".pnm"]
 TrainDataset = Union[torch.utils.data.Dataset, Sequence[torch.utils.data.Dataset]]
 ValDataset = Union[torch.utils.data.Dataset, Sequence[torch.utils.data.Dataset]]
 TestDataset = torch.utils.data.Dataset

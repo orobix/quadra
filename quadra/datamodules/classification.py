@@ -12,7 +12,7 @@ from skmultilearn.model_selection import iterative_train_test_split
 from timm.data.parsers.parser_image_folder import find_images_and_targets
 from torch.utils.data import DataLoader
 
-from quadra.datamodules.base import IMAGE_EXTENSIONS, BaseDataModule
+from quadra.datamodules.base import BaseDataModule
 from quadra.datasets import ImageClassificationListDataset
 from quadra.datasets.classification import MultilabelClassificationDataset
 from quadra.utils import utils
@@ -135,7 +135,7 @@ class ClassificationDataModule(BaseDataModule):
     ) -> Tuple[List[Tuple[str, int]], Dict[str, int]]:
         """Collects the samples from item folders."""
         images_and_targets, class_to_idx = find_images_and_targets(
-            folder=root_folder, types=IMAGE_EXTENSIONS, class_to_idx=class_to_idx
+            folder=root_folder, types=utils.IMAGE_EXTENSIONS, class_to_idx=class_to_idx
         )
         return images_and_targets, class_to_idx
 
