@@ -222,7 +222,7 @@ quadra experiment=custom/<config_name> logger=csv
 
 It will run the experiment using the configuration file you have just created and it will apply the default parameters from the classification configuration file. Furthermore, it will log the metrics to a csv file. You can add or customize the parameters in the configuration file to fit your needs.
 
-For more information about advanced usage, please check [tutorials](https://orobix.github.io/quadra/tutorials/configurations.html) and [task specific examples](https://orobix.github.io/quadra/tutorials/examples/classification.html).
+For more information about advanced usage, please check [tutorials](https://orobix.github.io/quadra/latest/tutorials/configurations.html) and [task specific examples](https://orobix.github.io/quadra/latest/tutorials/examples/classification.html).
 
 ## Development
 
