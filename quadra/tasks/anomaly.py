@@ -24,7 +24,7 @@ from quadra.modules.base import ModelSignatureWrapper
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
 from quadra.utils.classification import get_results
-from quadra.utils.export import export_torchscript_model
+from quadra.utils.export import export_onnx_model, export_torchscript_model
 
 log = utils.get_logger(__name__)
 
@@ -137,6 +137,24 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
                 if out is None:
                     log.warning("Skipping torchscript export since the model is not supported")
+                    continue
+
+                _, input_shapes = out
+            elif export_type == "onnx":
+                if not hasattr(self.export_config, "onnx"):
+                    log.warning("No onnx configuration found, skipping onnx export")
+                    continue
+
+                out = export_onnx_model(
+                    model=model,
+                    output_path=self.export_folder,
+                    onnx_config=self.export_config.onnx,
+                    input_shapes=input_shapes,
+                    half_precision=half_precision,
+                )
+
+                if out is None:
+                    log.warning("Skipping onnx export since the model is not supported")
                     continue
 
                 _, input_shapes = out

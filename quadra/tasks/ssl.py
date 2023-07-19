@@ -16,7 +16,7 @@ from quadra.callbacks.scheduler import WarmupInit
 from quadra.models.base import ModelSignatureWrapper
 from quadra.tasks.base import LightningTask, Task
 from quadra.utils import utils
-from quadra.utils.export import export_torchscript_model, import_deployment_model
+from quadra.utils.export import export_onnx_model, export_torchscript_model, import_deployment_model
 
 log = utils.get_logger(__name__)
 
@@ -121,6 +121,24 @@ class SSL(LightningTask):
 
                 if out is None:
                     log.warning("Skipping torchscript export since the model is not supported")
+                    continue
+
+                _, input_shapes = out
+            elif export_type == "onnx":
+                if not hasattr(self.export_config, "onnx"):
+                    log.warning("No onnx configuration found, skipping onnx export")
+                    continue
+
+                out = export_onnx_model(
+                    model=cast(nn.Module, self.module.model),
+                    output_path=self.export_folder,
+                    onnx_config=self.export_config.onnx,
+                    input_shapes=input_shapes,
+                    half_precision=False,
+                )
+
+                if out is None:
+                    log.warning("Skipping onnx export since the model is not supported")
                     continue
 
                 _, input_shapes = out

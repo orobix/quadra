@@ -314,13 +314,19 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                     log.warning("No onnx configuration found, skipping onnx export")
                     continue
 
-                export_onnx_model(
+                out = export_onnx_model(
                     model=module.model,
                     output_path=self.export_folder,
                     onnx_config=self.export_config.onnx,
                     input_shapes=input_shapes,
                     half_precision=half_precision,
                 )
+
+                if out is None:
+                    log.warning("Skipping onnx export since the model is not supported")
+                    continue
+
+                _, input_shapes = out
             else:
                 log.warning("Export type: %s not implemented", export_type)
 
