@@ -36,7 +36,12 @@ from quadra.tasks.base import Evaluation, LightningTask, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
 from quadra.utils.classification import get_results, save_classification_result
-from quadra.utils.export import export_pytorch_model, export_torchscript_model, import_deployment_model
+from quadra.utils.export import (
+    export_onnx_model,
+    export_pytorch_model,
+    export_torchscript_model,
+    import_deployment_model,
+)
 from quadra.utils.models import get_feature, is_vision_transformer
 from quadra.utils.vit_explainability import VitAttentionGradRollout
 
@@ -253,6 +258,8 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             log.info("No export type specified skipping export")
             return
 
+        os.makedirs(self.export_folder, exist_ok=True)
+
         if self.datamodule.class_to_idx is None:
             log.warning(
                 "No `class_to_idx` found in the datamodule, class information will not be saved in the model.json"
@@ -302,6 +309,18 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                 )
                 with open(os.path.join(self.export_folder, "model_config.yaml"), "w") as f:
                     OmegaConf.save(self.config.model, f, resolve=True)
+            elif export_type == "onnx":
+                if not hasattr(self.export_config, "onnx"):
+                    log.warning("No onnx configuration found, skipping onnx export")
+                    continue
+
+                export_onnx_model(
+                    model=module.model,
+                    output_path=self.export_folder,
+                    onnx_config=self.export_config.onnx,
+                    input_shapes=input_shapes,
+                    half_precision=half_precision,
+                )
             else:
                 log.warning("Export type: %s not implemented", export_type)
 
