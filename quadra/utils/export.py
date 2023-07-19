@@ -61,11 +61,12 @@ def extract_torch_model_inputs(
     half_precision: bool = False,
     batch_size: int = 1,
 ) -> Optional[Tuple[Union[List[Any], Tuple[Any, ...], torch.Tensor], List[Any]]]:
-    """Extract the input shapes from a model and generate a list of torch tensors with the given device and dtype.
+    """Extract the input shapes for the given model and generate a list of torch tensors with the
+    given device and dtype.
 
     Args:
-        model: PyTorch model to be exported
-        input_shapes: Inputs shape for tracing
+        model: Module or ModelSignatureWrapper
+        input_shapes: Inputs shapes
         half_precision: If True, the model will be exported with half precision
         batch_size: Batch size for the input shapes
     """
@@ -81,13 +82,10 @@ def extract_torch_model_inputs(
         return None
 
     if half_precision:
-        model.to("cuda:0")
-        model = model.half()
         inp = generate_torch_inputs(
             input_shapes=input_shapes, device="cuda:0", half_precision=True, dtype=torch.float16, batch_size=batch_size
         )
     else:
-        model.cpu()
         inp = generate_torch_inputs(
             input_shapes=input_shapes, device="cpu", half_precision=False, dtype=torch.float32, batch_size=batch_size
         )
@@ -121,6 +119,11 @@ def export_torchscript_model(
         return None
 
     model.eval()
+    if half_precision:
+        model.to("cuda:0")
+        model = model.half()
+    else:
+        model.cpu()
 
     model_inputs = extract_torch_model_inputs(model, input_shapes, half_precision)
     if model_inputs is None:
@@ -159,6 +162,18 @@ def export_onnx_model(
         half_precision: If True, the model will be exported with half precision
         model_name: Name of the exported model
     """
+    if not ONNX_AVAILABLE:
+        log.warning("ONNX is not installed, can not export model in this format.")
+        log.warning("Please install ONNX capabilities for quadra with: pip install .[onnx]")
+        return None
+
+    model.eval()
+    if half_precision:
+        model.to("cuda:0")
+        model = model.half()
+    else:
+        model.cpu()
+
     batch_size = 1 if onnx_config.fixed_batch_size is None else onnx_config.fixed_batch_size
 
     model_inputs = extract_torch_model_inputs(
