@@ -1,4 +1,6 @@
+import json
 import os
+from pathlib import Path
 from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 
 import hydra
@@ -6,12 +8,15 @@ import torch
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Callback, LightningModule, Trainer
-from pytorch_lightning.loggers import Logger
+from pytorch_lightning.loggers import Logger, MLFlowLogger
 from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
+from torch import nn
 from torch.jit._script import RecursiveScriptModule
+from torch.nn import Module
 
 from quadra import get_version
+from quadra.callbacks.mlflow import validate_artifact_storage
 from quadra.datamodules.base import BaseDataModule
 from quadra.utils import utils
 from quadra.utils.export import import_deployment_model
@@ -24,13 +29,18 @@ class Task(Generic[DataModuleT]):
     """Base Experiment Task.
 
     Args:
-        config: The experiment configuration
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
+        config: The experiment configuration.
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
+
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
     """
 
-    def __init__(self, config: DictConfig, export_type: Optional[List[str]] = None):
+    def __init__(self, config: DictConfig, export_config: Optional[DictConfig] = None):
         self.config = config
-        self.export_type = export_type
+        self.export_config = export_config
+        self.export_folder: str = "deployment_model"
         self._datamodule: DataModuleT
         self.metadata: Dict[str, Any]
         self.save_config()
@@ -82,7 +92,7 @@ class Task(Generic[DataModuleT]):
         self.prepare()
         self.train()
         self.test()
-        if self.export_type is not None and len(self.export_type) > 0:
+        if self.export_config is not None and len(self.export_config.types) > 0:
             self.export()
         self.generate_report()
         self.finalize()
@@ -96,7 +106,11 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         checkpoint_path: The path to the checkpoint to load the model from. Defaults to None.
         run_test: Whether to run the test after training. Defaults to False.
         report: Whether to generate a report. Defaults to False.
-        export_type: List of export method for the model, e.g. [torchscript]. Defaults to None.
+        export_config: Dictionary containing the export configuration, it should contain the following keys:
+
+            - `types`: List of types to export.
+            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
+                arguments.
     """
 
     def __init__(
@@ -105,9 +119,9 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
         report: bool = False,
-        export_type: Optional[List[str]] = None,
+        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config, export_type=export_type)
+        super().__init__(config, export_config=export_config)
         self.config = config
         self.checkpoint_path = checkpoint_path
         self.run_test = run_test
@@ -122,11 +136,13 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         """Prepare the experiment."""
         super().prepare()
 
+        # First setup loggers since some callbacks might need logger setup correctly.
+        if "logger" in self.config:
+            self.logger = self.config.logger
+
         if "callbacks" in self.config:
             self.callbacks = self.config.callbacks
 
-        if "logger" in self.config:
-            self.logger = self.config.logger
         self.devices = self.config.trainer.devices
         self.trainer = self.config.trainer
 
@@ -199,6 +215,8 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             if "_target_" in lg_conf:
                 log.info("Instantiating logger <%s>", lg_conf["_target_"])
                 logger = hydra.utils.instantiate(lg_conf)
+                if isinstance(logger, MLFlowLogger):
+                    validate_artifact_storage(logger)
                 instantiated_loggers.append(logger)
 
         self._logger = instantiated_loggers
@@ -233,6 +251,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             model=self.module,
             trainer=self.trainer,
         )
+
         self.trainer.fit(model=self.module, datamodule=self.datamodule)
 
     def test(self) -> Any:
@@ -245,11 +264,12 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         super().finalize()
         utils.finish(
             config=self.config,
-            model=self.module,
+            module=self.module,
             datamodule=self.datamodule,
             trainer=self.trainer,
             callbacks=self.callbacks,
             logger=self.logger,
+            export_folder=self.export_folder,
         )
 
         if not self.config.trainer.get("fast_dev_run"):
@@ -273,7 +293,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         self.train()
         if self.run_test:
             self.test()
-        if self.export_type is not None and len(self.export_type) > 0:
+        if self.export_config is not None and len(self.export_config.types) > 0:
             self.export()
         if self.report:
             self.generate_report()
@@ -290,46 +310,74 @@ class PlaceholderTask(Task):
         log.info("If you are reading this, it means that library is installed correctly!")
 
 
-class Evaluation(Task):
+class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
     """Base Evaluation Task with deployment models.
 
     Args:
         config: The experiment configuration
         model_path: The model path.
-        report_folder: The report folder. Defaults to None.
+        device: Device to use for evaluation. If None, the device is automatically determined.
 
-    Raises:
-        ValueError: If the experiment path is not provided
     """
 
     def __init__(
         self,
         config: DictConfig,
         model_path: str,
-        report_folder: Optional[str] = None,
+        device: Optional[str] = None,
     ):
         super().__init__(config=config)
+
+        if device is None:
+            self.device = utils.get_device()
+        else:
+            self.device = device
+
         self.config = config
-        self.metadata = {"report_files": []}
+        self.model_data: Dict[str, Any]
         self.model_path = model_path
-        self.device = utils.get_device()
-        self.report_folder = report_folder
-        self._deployment_model: RecursiveScriptModule
+        self._deployment_model: Union[RecursiveScriptModule, Module]
         self.deployment_model_type: str
-        if self.report_folder is None:
-            log.warning("Report folder is not provided, using default report folder")
-            self.report_folder = "report"
+        self.model_info_filename = "model.json"
+        self.report_path = ""
+        self.metadata = {"report_files": []}
 
     @property
-    def deployment_model(self) -> RecursiveScriptModule:
-        """RecursiveScriptModule: The deployment model."""
+    def deployment_model(self) -> Union[RecursiveScriptModule, nn.Module]:
+        """Deployment model."""
         return self._deployment_model
 
     @deployment_model.setter
-    def deployment_model(self, model: RecursiveScriptModule) -> None:
-        """RecursiveScriptModule: The deployment model."""
-        self._deployment_model = model
+    def deployment_model(self, model_path: str):
+        """Set the deployment model."""
+        self._deployment_model, self.deployment_model_type = import_deployment_model(model_path, self.device)
 
     def prepare(self) -> None:
         """Prepare the evaluation."""
-        self.deployment_model, self.deployment_model_type = import_deployment_model(self.model_path, self.device)
+        with open(os.path.join(Path(self.model_path).parent, self.model_info_filename)) as f:
+            self.model_data = json.load(f)
+
+        if not isinstance(self.model_data, dict):
+            raise ValueError("Model info file is not a valid json")
+
+        for input_size in self.model_data["input_size"]:
+            if len(input_size) != 3:
+                continue
+
+            # Adjust the transform for 2D models (CxHxW)
+            # We assume that each input size has the same height and width
+            if input_size[1] != self.config.transforms.input_height:
+                log.warning(
+                    f"Input height of the model ({input_size[1]}) is different from the one specified "
+                    + f"in the config ({self.config.transforms.input_height}). Fixing the config."
+                )
+                self.config.transforms.input_height = input_size[1]
+
+            if input_size[2] != self.config.transforms.input_width:
+                log.warning(
+                    f"Input width of the model ({input_size[2]}) is different from the one specified "
+                    + f"in the config ({self.config.transforms.input_width}). Fixing the config."
+                )
+                self.config.transforms.input_width = input_size[2]
+
+        self.deployment_model = self.model_path  # type: ignore[assignment]

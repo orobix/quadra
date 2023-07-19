@@ -1,4 +1,5 @@
 # pylint: disable=redefined-outer-name
+import os
 import shutil
 from pathlib import Path
 
@@ -17,7 +18,6 @@ BASE_EXPERIMENT_OVERRIDES = [
     "+trainer.limit_val_batches=1",
     "+trainer.limit_test_batches=1",
     "logger=csv",
-    "task.evaluate.analysis=false",
 ]
 
 
@@ -27,14 +27,29 @@ def test_smp_binary(
 ):
     data_path, _, _ = base_binary_segmentation_dataset
 
+    train_path = tmp_path / "train"
+    test_path = tmp_path / "test"
+    train_path.mkdir()
+    test_path.mkdir()
+
     overrides = [
         "experiment=base/segmentation/smp",
         f"datamodule.data_path={data_path}",
         f"task.report={generate_report}",
+        "task.evaluate.analysis=false",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
-    execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
+    execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
+
+    trained_model_path = os.path.join(train_path, "deployment_model/model.pt")
+    inference_overrides = [
+        "experiment=base/segmentation/smp_evaluation",
+        f"datamodule.data_path={data_path}",
+        f"task.model_path={trained_model_path}",
+        "task.device=cpu",
+    ] + BASE_EXPERIMENT_OVERRIDES
+    execute_quadra_experiment(overrides=inference_overrides, experiment_path=test_path)
 
     shutil.rmtree(tmp_path)
 
@@ -42,6 +57,11 @@ def test_smp_binary(
 def test_smp_multiclass(tmp_path: Path, base_multiclass_segmentation_dataset: base_multiclass_segmentation_dataset):
     data_path, _, class_to_idx = base_multiclass_segmentation_dataset
     idx_to_class = {v: k for k, v in class_to_idx.items()}
+
+    train_path = tmp_path / "train"
+    test_path = tmp_path / "test"
+    train_path.mkdir()
+    test_path.mkdir()
 
     idx_to_class_parameter = str(idx_to_class).replace(
         "'", ""
@@ -51,10 +71,21 @@ def test_smp_multiclass(tmp_path: Path, base_multiclass_segmentation_dataset: ba
         "experiment=base/segmentation/smp_multiclass",
         f"datamodule.data_path={data_path}",
         f"datamodule.idx_to_class={idx_to_class_parameter}",
+        "task.evaluate.analysis=false",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
-    execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
+    execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
+
+    trained_model_path = os.path.join(train_path, "deployment_model/model.pt")
+    inference_overrides = [
+        "experiment=base/segmentation/smp_multiclass_evaluation",
+        f"datamodule.data_path={data_path}",
+        f"task.model_path={trained_model_path}",
+        f"datamodule.idx_to_class={idx_to_class_parameter}",
+        "task.device=cpu",
+    ] + BASE_EXPERIMENT_OVERRIDES
+    execute_quadra_experiment(overrides=inference_overrides, experiment_path=test_path)
 
     shutil.rmtree(tmp_path)
 
@@ -73,6 +104,7 @@ def test_smp_multiclass_with_binary_dataset(
         "experiment=base/segmentation/smp_multiclass",
         f"datamodule.data_path={data_path}",
         f"datamodule.idx_to_class={idx_to_class_parameter}",
+        "task.evaluate.analysis=false",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 

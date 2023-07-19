@@ -33,6 +33,14 @@ nav:
   # ...
 ```
 
+## Developing Landing Page
+
+
+Landing page extends the `home.html` from `mkdocs-material` theme. It uses `tailwindcss` for styling. The developer has to run the following command to update the `tailwindcss` styles.
+
+```bash
+npx tailwindcss -i ./docs/template/landing.css -o ./docs/css/landing.css --watch
+```
 
 ## Features
 

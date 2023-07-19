@@ -9,6 +9,8 @@ from pytorch_lightning.loggers import MLFlowLogger
 from pytorch_lightning.utilities import rank_zero_only
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 
+from quadra.utils.mlflow import get_mlflow_logger
+
 
 def check_minio_credentials() -> None:
     """Check minio credentials for aws based storage such as minio.
@@ -41,38 +43,28 @@ def check_file_server_dependencies() -> None:
         ) from e
 
 
-def set_minio_credentials(access_key_id: str, secret_access_key: str) -> None:
-    """Setting minio credential as environment variables.
+def validate_artifact_storage(logger: MLFlowLogger):
+    """Validate artifact storage.
 
     Args:
-        access_key_id: string id
-        secret_access_key: string key.
+        logger: Mlflow logger from pytorch lightning.
 
-    Returns:
-        None
     """
-    os.environ["AWS_ACCESS_KEY_ID"] = access_key_id
-    os.environ["AWS_SECRET_ACCESS_KEY"] = secret_access_key
+    from quadra.utils.utils import get_logger  # pylint: disable=[import-outside-toplevel]
 
+    log = get_logger(__name__)
 
-def get_mlflow_logger(trainer: Trainer) -> Optional[MLFlowLogger]:
-    """Safely get Mlflow logger from Trainer loggers.
-
-    Args:
-        trainer: Pytorch Lightning trainer.
-
-    Returns:
-        An mlflow logger if available, else None.
-    """
-    if isinstance(trainer.logger, MLFlowLogger):
-        return trainer.logger
-
-    if isinstance(trainer.logger, list):
-        for logger in trainer.logger:
-            if isinstance(logger, MLFlowLogger):
-                return logger
-
-    return None
+    client = logger.experiment
+    # TODO: we have to access the internal api to get the artifact uri, however there could be a better way
+    artifact_uri = client._tracking_client._get_artifact_repo(  # pylint: disable=protected-access
+        logger.run_id
+    ).artifact_uri
+    if artifact_uri.startswith("s3://"):
+        check_minio_credentials()
+        check_file_server_dependencies()
+        log.info("Mlflow artifact storage is AWS/S3 basedand credentials and dependencies are satisfied.")
+    else:
+        log.info("Mlflow artifact storage uri is %s. Validation checks are not implemented.", artifact_uri)
 
 
 class UploadCodeAsArtifact(Callback):
@@ -88,7 +80,6 @@ class UploadCodeAsArtifact(Callback):
 
     def __init__(self, source_dir: str):
         self.source_dir = source_dir
-        check_file_server_dependencies()
 
     @rank_zero_only
     def on_test_end(self, trainer: Trainer, pl_module: LightningModule):
@@ -220,7 +211,6 @@ class UploadCheckpointsAsArtifact(Callback):
         self.ckpt_ext = ckpt_ext
         self.delete_after_upload = delete_after_upload
         self.upload = upload
-        check_file_server_dependencies()
 
     @rank_zero_only
     def on_test_end(self, trainer: Trainer, pl_module: LightningModule):

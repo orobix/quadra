@@ -100,6 +100,12 @@ backbone:
     pretrained: true
     freeze: true
 
+task:
+  export_config:
+    types: [pytorch, torchscript]
+    input_shapes: # Redefine the input shape if not automatically inferred
+
+
 core:
   tag: "run"
   name: "sklearn-classification"
@@ -112,6 +118,7 @@ datamodule:
 ```
 
 By default the experiment will use dino_vitb8 as backbone, resizing the images to 224x224 and training a logistic regression classifier. Setting the `n_splits` parameter to 1 will use a standard 70/30 train/validation split (given the parameters specified in the base datamodule) instead of cross validation.
+It will also export the model in two formats, "torchscript" and "pytorch".
 
 An actual configuration file based on the above could be this one (suppose it's saved under `configs/experiment/custom_experiment/sklearn_classification.yaml`):
 ```yaml
@@ -139,16 +146,19 @@ datamodule:
 
 task:
   device: cuda:0
-  export_type: [torchscript]
   output:
     folder: classification_experiment
     save_backbone: true
     report: true
     example: true
     test_full_data: true
+  export_config:
+    types: [pytorch, torchscript]
+    input_shapes: # Redefine the input shape if not automatically inferred
+
 ```
 
-This will train a logistic regression classifier using a resnet18 backbone, resizing the images to 224x224 and using a 5-fold cross validation. The `class_to_idx` parameter is used to map the class names to indexes, the indexes will be used to train the classifier. The `output` parameter is used to specify the output folder and the type of output to save. The `export_type` parameter can be used to export the model in different formats, at the moment only `torchscript` is supported.
+This will train a logistic regression classifier using a resnet18 backbone, resizing the images to 224x224 and using a 5-fold cross validation. The `class_to_idx` parameter is used to map the class names to indexes, the indexes will be used to train the classifier. The `output` parameter is used to specify the output folder and the type of output to save. The `export_config.types` parameter can be used to export the model in different formats, at the moment `torchscript` and `pytorch` are supported.
 Since `save_backbone` is set to true, the backbone (in torchscript format) will be saved along with the classifier. `test_full_data` is used to specify if a final test should be performed on all the data (after training on the training and validation datasets).
 
 ### Run
@@ -186,14 +196,8 @@ The default experiment config is found under `configs/experiment/base/classifica
 defaults:
   - override /transforms: default_resize
   - override /task: sklearn_classification_test
-  - override /backbone: dino_vitb8
   - override /trainer: sklearn_classification
   - override /datamodule: base/sklearn_classification
-
-backbone:
-  model:
-    pretrained: true
-    freeze: true
 
 core:
   tag: run
@@ -211,7 +215,6 @@ An actual configuration file based on the above could be this one (suppose it's 
 # @package _global_
 defaults:
   - base/classification/sklearn_classification_test
-  - override /backbone: resnet18
   - _self_
 
 core:
@@ -223,14 +226,16 @@ datamodule:
 
 task:
   device: cuda:0
+  gradcam: true
   output:
     folder: classification_test_experiment
     report: true
     example: true
-  experiment_path:
+  model_path: ???
 ```
 
-This will test the model trained in the given experiment on the given dataset. The experiment results will be saved under the `classification_test_experiment` folder.
+This will test the model trained in the given experiment on the given dataset. The experiment results will be saved under the `classification_test_experiment` folder. If gradcam is set to True, original and gradcam results will be saved during the generate_report().
+Model_path must point to a model file. It could either be a '.pt'/'.pth' or a backbone_config '.yaml' file.
 
 ### Run
 
