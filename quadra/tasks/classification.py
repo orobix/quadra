@@ -13,7 +13,7 @@ import pandas as pd
 import timm
 import torch
 from joblib import dump, load
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, ListConfig, OmegaConf
 from pytorch_grad_cam import GradCAM
 from scipy import ndimage
 from sklearn.base import ClassifierMixin
@@ -31,6 +31,7 @@ from quadra.datamodules import (
 from quadra.datasets.classification import ImageClassificationListDataset
 from quadra.models.base import ModelSignatureWrapper
 from quadra.models.classification import BaseNetworkBuilder
+from quadra.models.evaluation import BaseEvaluationModel, TorchEvaluationModel
 from quadra.modules.classification import ClassificationModule
 from quadra.tasks.base import Evaluation, LightningTask, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
@@ -797,7 +798,7 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
         super().__init__(config=config, model_path=model_path, device=device)
         self.gradcam = gradcam
         self.output = output
-        self._backbone: nn.Module
+        self._backbone: BaseEvaluationModel
         self._classifier: ClassifierMixin
         self.class_to_idx: Dict[str, int]
         self.idx_to_class: Dict[int, str]
@@ -858,7 +859,7 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
         self._classifier = load(classifier_path)
 
     @property
-    def backbone(self) -> nn.Module:
+    def backbone(self) -> BaseEvaluationModel:
         """Backbone: The backbone."""
         return self._backbone
 
@@ -874,16 +875,17 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
 
             if backbone_config.metadata.get("checkpoint"):
                 log.info("Loading backbone from <%s>", backbone_config.metadata.checkpoint)
-                self._backbone = torch.load(backbone_config.metadata.checkpoint)
+                backbone = torch.load(backbone_config.metadata.checkpoint)
             else:
                 log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
-                self._backbone = hydra.utils.instantiate(backbone_config.model)
-            self._backbone.eval()
-            self._backbone = self._backbone.to(self.device)
+                backbone = hydra.utils.instantiate(backbone_config.model)
+            backbone.eval()
+            backbone = backbone.to(self.device)
+            self._backbone = TorchEvaluationModel(backbone)
         else:
             log.info("Importing trained model")
-            self._backbone, model_type = import_deployment_model(model_path=model_path, device=self.device)
-            log.info("Imported %s model", model_type)
+            self._backbone = import_deployment_model(model_path=model_path, device=self.device)
+            log.info("Imported %s model", self._backbone.__class__.__name__)
 
     @property
     def trainer(self) -> SklearnClassificationTrainer:
@@ -972,59 +974,53 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         self.gradcam = gradcam
         self.cam: GradCAM
 
-    @property
-    def model(self) -> nn.Module:
-        return self._model
-
-    @model.setter
-    def model(self, model_config: DictConfig) -> None:
-        self.pre_classifier = model_config  # type: ignore[assignment]
-        self.classifier = model_config  # type: ignore[assignment]
+    def get_torch_model(self, model_config: DictConfig) -> nn.Module:
+        """Instantiate the torch model from the config."""
+        pre_classifier = self.get_pre_classifier(model_config)
+        classifier = self.get_classifier(model_config)
         log.info("Instantiating backbone <%s>", model_config.model["_target_"])
-        self._model: nn.Module = hydra.utils.instantiate(
-            model_config.model, classifier=self.classifier, pre_classifier=self.pre_classifier, _convert_="partial"
+
+        return hydra.utils.instantiate(
+            model_config.model, classifier=classifier, pre_classifier=pre_classifier, _convert_="partial"
         )
 
-    @property
-    def pre_classifier(self) -> nn.Module:
-        return self._pre_classifier
-
-    @pre_classifier.setter
-    def pre_classifier(self, model_config: DictConfig) -> None:
+    def get_pre_classifier(self, model_config: DictConfig) -> nn.Module:
+        """Instantiate the pre-classifier from the config."""
         if "pre_classifier" in model_config and model_config.pre_classifier is not None:
             log.info("Instantiating pre_classifier <%s>", model_config.pre_classifier["_target_"])
-            self._pre_classifier = hydra.utils.instantiate(model_config.pre_classifier, _convert_="partial")
+            pre_classifier = hydra.utils.instantiate(model_config.pre_classifier, _convert_="partial")
         else:
             log.info("No pre-classifier found in config: instantiate a torch.nn.Identity instead")
-            self._pre_classifier = nn.Identity()
+            pre_classifier = nn.Identity()
 
-    @property
-    def classifier(self) -> nn.Module:
-        return self._classifier
+        return pre_classifier
 
-    @classifier.setter
-    def classifier(self, model_config: DictConfig) -> None:
+    def get_classifier(self, model_config: DictConfig) -> nn.Module:
+        """Instantiate the classifier from the config."""
         if "classifier" in model_config:
             log.info("Instantiating classifier <%s>", model_config.classifier["_target_"])
-            self._classifier = hydra.utils.instantiate(model_config.classifier, _convert_="partial")
-        else:
-            raise ValueError("A `classifier` definition must be specified in the config")
+            return hydra.utils.instantiate(model_config.classifier, _convert_="partial")
+
+        raise ValueError("A `classifier` definition must be specified in the config")
 
     @property
-    def deployment_model(self):
+    def deployment_model(self) -> BaseEvaluationModel:
         """Deployment model."""
         return self._deployment_model
 
     @deployment_model.setter
     def deployment_model(self, model_path: str):
         """Set the deployment model."""
+        model_architecture = None
+
         if os.path.splitext(os.path.basename(model_path))[1] == ".pth":
             model_config = OmegaConf.load(os.path.join(Path(self.model_path).parent, "model_config.yaml"))
-            self.model = model_config  # type: ignore[assignment]
-        self._deployment_model, self.deployment_model_type = import_deployment_model(
-            model_path, self.device, self.model
-        )
-        if self.gradcam and self.deployment_model_type != "torch":
+            if isinstance(model_config, ListConfig):
+                raise ValueError("Invalid model config, it should be a DictConfig")
+
+            model_architecture = self.get_torch_model(model_config)
+        self._deployment_model = import_deployment_model(model_path, self.device, model_architecture)
+        if self.gradcam and not isinstance(self.deployment_model, TorchEvaluationModel):
             log.warning("To compute gradcams you need to provide the path to an exported .pth state_dict file")
             self.gradcam = False
 
@@ -1036,19 +1032,26 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
 
     def prepare_gradcam(self) -> None:
         """Initializing gradcam for the predictions."""
-        if isinstance(self.deployment_model.features_extractor, timm.models.resnet.ResNet):
+        if not hasattr(self.deployment_model.model, "features_extractor"):
+            log.warning("Gradcam not implemented for this backbone, it will not be computed")
+            self.gradcam = False
+            return
+
+        if isinstance(self.deployment_model.model.features_extractor, timm.models.resnet.ResNet):
             target_layers = [
-                cast(BaseNetworkBuilder, self.deployment_model).features_extractor.layer4[-1]  # type: ignore[index]
+                cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[
+                    -1
+                ]  # type: ignore[index]
             ]
             self.cam = GradCAM(
                 model=self.deployment_model,
                 target_layers=target_layers,
                 use_cuda=(self.device != "cpu"),
             )
-            for p in self.deployment_model.features_extractor.layer4[-1].parameters():
+            for p in self.deployment_model.model.features_extractor.layer4[-1].parameters():
                 p.requires_grad = True
-        elif is_vision_transformer(cast(BaseNetworkBuilder, self.deployment_model).features_extractor):
-            self.grad_rollout = VitAttentionGradRollout(self.deployment_model)
+        elif is_vision_transformer(cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor):
+            self.grad_rollout = VitAttentionGradRollout(cast(nn.Module, self.deployment_model.model))
         else:
             log.warning("Gradcam not implemented for this backbone, it will not be computed")
             self.gradcam = False
@@ -1072,19 +1075,27 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             for batch_item in tqdm(test_dataloader):
                 im, target = batch_item
                 im = im.to(self.device).detach()
-                outputs = self.deployment_model(im).detach()
+
+                if self.gradcam:
+                    # When gradcam is used we need to remove gradients
+                    outputs = self.deployment_model(im).detach()
+                else:
+                    outputs = self.deployment_model(im)
+
                 probs = torch.softmax(outputs, dim=1)
                 preds = torch.max(probs, dim=1).indices
 
                 predicted_classes.append(preds.tolist())
                 image_labels.extend(target.tolist())
-                if self.gradcam:
+                if self.gradcam and hasattr(self.deployment_model.model, "features_extractor"):
                     with torch.inference_mode(False):
                         im = im.clone()
-                        if isinstance(self.deployment_model.features_extractor, timm.models.resnet.ResNet):
+                        if isinstance(self.deployment_model.model.features_extractor, timm.models.resnet.ResNet):
                             grayscale_cam = self.cam(input_tensor=im, targets=None)
                             grayscale_cams_list.append(torch.from_numpy(grayscale_cam))
-                        elif is_vision_transformer(cast(BaseNetworkBuilder, self.deployment_model).features_extractor):
+                        elif is_vision_transformer(
+                            cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor
+                        ):
                             grayscale_cam_low_res = self.grad_rollout(input_tensor=im, targets_list=preds.tolist())
                             orig_shape = grayscale_cam_low_res.shape
                             new_shape = (orig_shape[0], im.shape[2], im.shape[3])

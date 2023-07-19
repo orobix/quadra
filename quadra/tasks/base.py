@@ -11,13 +11,11 @@ from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.loggers import Logger, MLFlowLogger
 from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
-from torch import nn
-from torch.jit._script import RecursiveScriptModule
-from torch.nn import Module
 
 from quadra import get_version
 from quadra.callbacks.mlflow import validate_artifact_storage
 from quadra.datamodules.base import BaseDataModule
+from quadra.models.evaluation import BaseEvaluationModel
 from quadra.utils import utils
 from quadra.utils.export import import_deployment_model
 
@@ -336,21 +334,21 @@ class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
         self.config = config
         self.model_data: Dict[str, Any]
         self.model_path = model_path
-        self._deployment_model: Union[RecursiveScriptModule, Module]
+        self._deployment_model: BaseEvaluationModel
         self.deployment_model_type: str
         self.model_info_filename = "model.json"
         self.report_path = ""
         self.metadata = {"report_files": []}
 
     @property
-    def deployment_model(self) -> Union[RecursiveScriptModule, nn.Module]:
+    def deployment_model(self) -> BaseEvaluationModel:
         """Deployment model."""
         return self._deployment_model
 
     @deployment_model.setter
     def deployment_model(self, model_path: str):
         """Set the deployment model."""
-        self._deployment_model, self.deployment_model_type = import_deployment_model(model_path, self.device)
+        self._deployment_model = import_deployment_model(model_path, self.device)
 
     def prepare(self) -> None:
         """Prepare the evaluation."""

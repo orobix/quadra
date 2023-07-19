@@ -1,13 +1,18 @@
 import os
-from typing import Any, List, Optional, Sequence, Tuple, Union, cast
+from typing import Any, List, Optional, Sequence, Tuple, TypeVar, Union
 
 import torch
 from anomalib.models.cflow import CflowLightning
 from omegaconf import DictConfig
 from torch import nn
-from torch.jit._script import RecursiveScriptModule
 
 from quadra.models.base import ModelSignatureWrapper
+from quadra.models.evaluation import (
+    BaseEvaluationModel,
+    ONNXEvaluationModel,
+    TorchEvaluationModel,
+    TorchscriptEvaluationModel,
+)
 from quadra.utils.logger import get_logger
 
 try:
@@ -19,6 +24,8 @@ except ImportError:
     ONNX_AVAILABLE = False
 
 log = get_logger(__name__)
+
+BaseDeploymentModelT = TypeVar("BaseDeploymentModelT", bound=BaseEvaluationModel)
 
 
 def generate_torch_inputs(
@@ -280,10 +287,7 @@ def export_pytorch_model(model: nn.Module, output_path: str, model_name: str = "
     return os.path.join(os.getcwd(), model_path)
 
 
-# TODO: Update signature when new models are added
-def import_deployment_model(
-    model_path: str, device: str, model: Optional[nn.Module] = None
-) -> Tuple[Union[RecursiveScriptModule, nn.Module], str]:
+def import_deployment_model(model_path: str, device: str, model: Optional[nn.Module] = None) -> BaseEvaluationModel:
     """Try to import a model for deployment, currently only supports torchscript .pt files and
     state dictionaries .pth files.
 
@@ -296,20 +300,20 @@ def import_deployment_model(
         A tuple containing the model and the model type
     """
     file_extension = os.path.splitext(os.path.basename(model_path))[1]
-    if file_extension == ".pt":
-        model = cast(RecursiveScriptModule, torch.jit.load(model_path))
-        model.eval()
-        model.to(device)
+    deployment_model: Optional[BaseEvaluationModel] = None
 
-        return model, "torchscript"
+    if file_extension == ".pt":
+        deployment_model = TorchscriptEvaluationModel()
     if file_extension == ".pth":
         if model is None:
             raise ValueError("Model is not defined, can not load state_dict!")
 
-        model.load_state_dict(torch.load(model_path))
-        model.eval()
-        model.to(device)
+        deployment_model = TorchEvaluationModel(model=model)
+    if file_extension == ".onnx":
+        deployment_model = ONNXEvaluationModel()
 
-        return model, "torch"
+    if deployment_model is not None:
+        deployment_model.load_from_disk(model_path=model_path, device=device)
+        return deployment_model
 
     raise ValueError(f"Unable to load model with extension {file_extension}, valid extensions are: ['.pt', 'pth']")
