@@ -5,7 +5,7 @@
 
 <p align="center">
   <a href="https://orobix.github.io/quadra/latest/index.html">Docs</a> •
-  <a href="https://orobix.github.io/quadra/latest/tutorials/install.html">Tutorials</a> •
+  <a href="https://orobix.github.io/quadra/latest/tutorials/datamodules.html">Tutorials</a> •
   <a href="https://orobix.github.io/quadra/latest/tutorials/configurations.html">Configurations</a>
 </p>
 

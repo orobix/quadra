@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.1.1]
+
+#### Fixed
+
+- Fix deprecated link for tutorials in `README.md` file.
+
 ### [1.1.0]
 
 #### Added
