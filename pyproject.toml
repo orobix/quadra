@@ -101,6 +101,12 @@ docs = [
     "cairosvg==2.7.0"
 ]
 
+onnx = [
+  "onnx==1.14.0",
+  "onnxsim==0.4.28",
+  "onnxruntime-gpu==1.15.0",
+]
+
 [tool.setuptools]
 include-package-data = true
 
