@@ -69,7 +69,7 @@ manager.register_best_model(experiment_name="cats_vs_dogs",
 
 <p align="center">
     <figure>
-        <img src="/images/model_manager/registered_model.png" title="Registered Model">
+        <img src="../images/model_manager/registered_model.png" title="Registered Model">
         <figcaption>Registered Model</figcaption>
     </figure>
 </p>
@@ -88,7 +88,7 @@ manager.transition_model(model_name="cvsd_model",
 
 <p align="center">
     <figure>
-        <img src="/images/model_manager/stage_model.png" title="Staged Model">
+        <img src="../images/model_manager/stage_model.png" title="Staged Model">
         <figcaption>Staged Model</figcaption>
     </figure>
 </p>
@@ -111,7 +111,7 @@ With this new model, we have improved `val_loss_epoch` metric compared to the pr
 
 <p align="center">
     <figure>
-        <img src="/images/model_manager/model_compare.png" title="Comparison of Runs">
+        <img src="../images/model_manager/model_compare.png" title="Comparison of Runs">
         <figcaption>Comparison of Runs</figcaption>
     </figure>
 </p>
@@ -140,8 +140,8 @@ manager.transition_model(model_name="cvsd_model",
 
     <p align="center">
         <figure>
-            <img src="/images/model_manager/model_description.png" title="Model Transition History">
-            <figcaption>Model Transition Historys</figcaption>
+            <img src="../images/model_manager/model_description.png" title="Model Transition History">
+            <figcaption>Model Transition History</figcaption>
         </figure>
     </p>
 
