@@ -422,6 +422,8 @@ def save_classification_result(
     # Save csv
     results.to_csv(os.path.join(output_folder, "test_results.csv"), index_label="index")
     if grayscale_cams is None:
+        log.info("Plotting only original examples, set gradcam = true in config file to also plot gradcam examples")
+
         save_gradcams = False
     else:
         log.info("Plotting original and gradcam examples")
@@ -501,7 +503,7 @@ def save_classification_result(
             )
 
     else:
-        log.info("Not generating discordant/concordant examples. Check task:output:example in config file")
+        log.info("Not generating discordant/concordant examples. Check task.output.example in config file")
 
 
 def get_results(

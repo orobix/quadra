@@ -3,3 +3,4 @@ device: cuda:0
 output:
   example: true
 model_path: ???
+report: true

@@ -11,6 +11,8 @@ from pandas import DataFrame
 from torch import Tensor
 from torch.utils.data import Dataset
 
+from quadra.utils.utils import IMAGE_EXTENSIONS
+
 
 def create_validation_set_from_test_set(samples: DataFrame, seed: int = 0) -> DataFrame:
     """Craete Validation Set from Test Set.
@@ -130,11 +132,11 @@ def make_anomaly_dataset(
     Returns:
         An output dataframe containing samples for the requested split (ie., train or test)
     """
-    ext = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif"]
-    samples_list = []
-
-    for e in ext:
-        samples_list.extend([(str(path),) + filename.parts[-3:] for filename in path.glob(f"**/*{e}")])
+    samples_list = [
+        (str(path),) + filename.parts[-3:]
+        for filename in path.glob("**/*")
+        if filename.is_file() and os.path.splitext(filename)[-1].lower() in IMAGE_EXTENSIONS
+    ]
 
     if len(samples_list) == 0:
         raise RuntimeError(f"Found 0 images in {path}")

@@ -8,6 +8,8 @@ from sklearn.linear_model import LogisticRegression
 from torch import nn
 from torch.optim import Optimizer
 
+from quadra.models.base import ModelSignatureWrapper
+
 __all__ = ["BaseLightningModule", "SSLModule"]
 
 
@@ -28,7 +30,7 @@ class BaseLightningModule(pl.LightningModule):
         lr_scheduler_interval: Optional[str] = "epoch",
     ):
         super().__init__()
-        self.model = model
+        self.model = ModelSignatureWrapper(model)
         self.optimizer = optimizer
         self.schedulers = lr_scheduler
         self.lr_scheduler_interval = lr_scheduler_interval
@@ -90,7 +92,6 @@ class SSLModule(BaseLightningModule):
         lr_scheduler: Optional[object] = None,
         lr_scheduler_interval: Optional[str] = "epoch",
     ):
-
         super().__init__(model, optimizer, lr_scheduler, lr_scheduler_interval)
         self.criterion = criterion
         self.classifier_train_loader: Optional[torch.utils.data.DataLoader]
@@ -176,7 +177,6 @@ class SegmentationModel(BaseLightningModule):
         optimizer: Optional[Optimizer] = None,
         lr_scheduler: Optional[object] = None,
     ):
-
         super().__init__(model, optimizer, lr_scheduler)
         self.loss_fun = loss_fun
 

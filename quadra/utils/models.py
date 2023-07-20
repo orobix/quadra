@@ -1,14 +1,21 @@
 import math
 import warnings
-from typing import Callable, List, Tuple, Type, Union, cast
+from typing import Callable, List, Optional, Tuple, Type, Union, cast
 
 import numpy as np
+import timm
 import torch
 import torch.nn.functional as F
 import tqdm
+from pytorch_grad_cam import GradCAM
+from scipy import ndimage
+from sklearn.linear_model._base import ClassifierMixin
 from timm.models.layers import DropPath
 from timm.models.vision_transformer import Mlp
 from torch import nn
+
+from quadra.utils import utils
+from quadra.utils.vit_explainability import VitAttentionGradRollout
 
 
 def net_hat(input_size: int, output_size: int) -> torch.nn.Sequential:
@@ -70,8 +77,13 @@ def init_weights(m):
 
 
 def get_feature(
-    feature_extractor: torch.nn.Module, dl: torch.utils.data.DataLoader, iteration_over_training: int = 1
-) -> Tuple[np.ndarray, np.ndarray]:
+    feature_extractor: torch.nn.Module,
+    dl: torch.utils.data.DataLoader,
+    iteration_over_training: int = 1,
+    gradcam: bool = False,
+    classifier: Optional[ClassifierMixin] = None,
+    input_shape: Optional[Tuple[int, int, int]] = None,
+) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
     """Given a dataloader and a PyTorch model, extract features with the model and return features and labels.
 
     Args:
@@ -79,35 +91,96 @@ def get_feature(
         feature_extractor: Pretrained PyTorch backbone
         iteration_over_training: Extract feature iteration_over_training times for each image
             (best if used with augmentation)
+        gradcam: Whether to compute gradcams. Notice that it will slow the function
+        classifier: Scikit-learn classifier
+        input_shape: [H,W,C], backbone input shape, needed by classifier's pytorch wrapper
 
     Returns:
         Tuple containing:
             features: Model features
             labels: input_labels
+            grayscale_cams: Gradcam output maps, None if gradcam arg is False
     """
     feature_extractor.eval()
 
+    # Setup gradcam
+    if gradcam:
+        if isinstance(feature_extractor.features_extractor, timm.models.resnet.ResNet):
+            target_layers = [feature_extractor.features_extractor.layer4[-1]]
+            cam = GradCAM(
+                model=feature_extractor,
+                target_layers=target_layers,
+                use_cuda=torch.cuda.is_available(),
+            )
+            for p in feature_extractor.features_extractor.layer4[-1].parameters():
+                p.requires_grad = True
+        elif is_vision_transformer(feature_extractor.features_extractor):  # type: ignore[arg-type]
+            grad_rollout = VitAttentionGradRollout(
+                feature_extractor.features_extractor,  # type: ignore[arg-type]
+                classifier=classifier,
+                example_input=None if input_shape is None else torch.randn(1, *input_shape),
+            )
+        else:
+            log = utils.get_logger(__name__)
+            log.warning("Gradcam not implemented for this backbone, it will not be computed")
+            gradcam = False
+
     # Extract features from data
-    with torch.no_grad():
-        for iteration in range(iteration_over_training):
-            for i, b in enumerate(tqdm.tqdm(dl)):
-                x1, y1 = b
-                # Move input to the correct device
-                x1 = x1.to(next(feature_extractor.parameters()).device)
-                y_hat = cast(Union[List[torch.Tensor], Tuple[torch.Tensor], torch.Tensor], feature_extractor(x1))
-                if isinstance(y_hat, (list, tuple)):
-                    y_hat = y_hat[0].cpu()
-                else:
-                    y_hat = y_hat.cpu()
 
-                if i == 0 and iteration == 0:
-                    features = torch.cat([y_hat], dim=0)
-                    labels = np.concatenate([y1])
+    for iteration in range(iteration_over_training):
+        for i, b in enumerate(tqdm.tqdm(dl)):
+            x1, y1 = b
+            # Move input to the correct device
+            x1 = x1.to(next(feature_extractor.parameters()).device)
+            if gradcam:
+                y_hat = cast(
+                    Union[List[torch.Tensor], Tuple[torch.Tensor], torch.Tensor], feature_extractor(x1).detach()
+                )
+                if is_vision_transformer(feature_extractor.features_extractor):  # type: ignore[arg-type]
+                    grayscale_cam_low_res = grad_rollout(
+                        input_tensor=x1, targets_list=y1
+                    )  # TODO: We are using labels (y1) but it would be better to use preds
+                    orig_shape = grayscale_cam_low_res.shape
+                    new_shape = (orig_shape[0], x1.shape[2], x1.shape[3])
+                    zoom_factors = tuple(np.array(new_shape) / np.array(orig_shape))
+                    grayscale_cam = ndimage.zoom(grayscale_cam_low_res, zoom_factors, order=1)
                 else:
-                    features = torch.cat([features, y_hat], dim=0)
-                    labels = np.concatenate([labels, y1], axis=0)
+                    grayscale_cam = cam(input_tensor=x1, targets=None)
+                feature_extractor.zero_grad(set_to_none=True)
+                torch.cuda.empty_cache()
 
-    return features.numpy(), labels
+            else:
+                with torch.no_grad():
+                    y_hat = cast(Union[List[torch.Tensor], Tuple[torch.Tensor], torch.Tensor], feature_extractor(x1))
+                grayscale_cams = None
+
+            if isinstance(y_hat, (list, tuple)):
+                y_hat = y_hat[0].cpu()
+            else:
+                y_hat = y_hat.cpu()
+
+            if i == 0 and iteration == 0:
+                features = torch.cat([y_hat], dim=0)
+                labels = np.concatenate([y1])
+                if gradcam:
+                    grayscale_cams = grayscale_cam
+            else:
+                features = torch.cat([features, y_hat], dim=0)
+                labels = np.concatenate([labels, y1], axis=0)
+                if gradcam:
+                    grayscale_cams = np.concatenate([grayscale_cams, grayscale_cam], axis=0)
+
+    return features.detach().numpy(), labels, grayscale_cams
+
+
+def is_vision_transformer(model: torch.nn.Module) -> bool:
+    """Verify if pytorch module is a Vision Transformer.
+    This check is primarily needed for gradcam computation in classification tasks.
+
+    Args:
+        model: Model
+    """
+    return type(model).__name__ == "VisionTransformer"
 
 
 def _no_grad_trunc_normal_(tensor: torch.Tensor, mean: float, std: float, a: float, b: float):
@@ -274,7 +347,6 @@ class PositionalEncoding1D(torch.nn.Module):
     """
 
     def __init__(self, d_model: int, temperature: float = 10000.0, dropout: float = 0.0, max_len: int = 5000):
-
         super().__init__()
         self.dropout: Union[torch.nn.Dropout, torch.nn.Identity]
         if dropout > 0:
@@ -334,7 +406,6 @@ class LSABlock(torch.nn.Module):
         mask_diagonal: bool = True,
         learnable_temperature: bool = True,
     ):
-
         super().__init__()
         self.norm1 = norm_layer(dim)
         self.attn = LocalSelfAttention(

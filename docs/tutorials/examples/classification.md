@@ -68,6 +68,16 @@ We give a small description for each tweakable parameter inside the base datamod
 - `label_map`: You can map classes to other ones in order to group more sub-classes into one macro-class.
 - `class_to_idx`: Map classes to indexes, if you need to ensure that one specific mapping is respected (otherwise a ordered class_to_idx is built)
 
+If you want to choose which files to put in training/val/test sets, provide the split files' paths in the respective fields in the datamodule config (train_split_file, val_split_file, test_split_file). You can leave val_split_file empty and the training set will be automatically split in train/val.
+
+The content of the files must be formatted in the same way for `train.txt`/`val.txt`/`test.txt`:
+
+```txt
+images/abc.xyz,class_1,class_2
+images/abc_2.xyz,class_3
+```
+
+The first column is the path to the image, while the other columns are the labels associated with that image. The labels must be separated by a comma.
 
 ### Experiment
 
@@ -94,17 +104,20 @@ print_config: true
 
 model:
   num_classes: ???
-  gradcam: true
   module:
     lr_scheduler_interval: "epoch"
 
 task:
   lr_multiplier: 0.0
+  gradcam: true
   run_test: True
-  export_type: [torchscript]
   report: True
   output:
     example: True
+  export_config:
+    types: [pytorch, torchscript]
+    input_shapes: # Redefine the input shape if not automatically inferred
+
 
 core:
   tag: "run"
@@ -169,23 +182,30 @@ datamodule:
     class_3: 2
 
 task:
+  gradcam: True # Enable gradcam computation during evaluation
   run_test: True # Perform test evaluation at the end of training
-  export_type: [torchscript]
   report: True 
   output:
     example: True # Generate an example of concordants and discordants predictions for each class
+  export_config:
+    types: [pytorch, torchscript]
+    input_shapes: # Redefine the input shape if not automatically inferred
+
    
 model:
   num_classes: 3 # This is very important
   module:
     lr_scheduler_interval: "epoch"
-    gradcam: True # Enable gradcam computation during evaluation
     
 backbone:
   model:
     pretrained: True
     freeze: False
-  freeze_parameters_name: # Here we could specify a list of layer names to freeze
+  freeze_parameters_name:
+    - conv1
+    - bn1
+    - layer1
+    - layer2
 
 core:
   tag: "run"
@@ -258,8 +278,14 @@ core:
   upload_artifacts: true
   name: classification_evalutation_base
 
+logger:
+  mlflow:
+    experiment_name: name_of_the_experiment
+    run_name: ${core.name}
+
 task:
   _target_: quadra.tasks.ClassificationEvaluation
+  gradcam: true
   output:
     example: true
   model_path: ???
@@ -283,9 +309,6 @@ datamodule:
     class_2: 1
     class_3: 2
 
-model:
-  num_classes: 3
-
 core:
   tag: "run"
   upload_artifacts: true
@@ -294,7 +317,7 @@ core:
 task:
   output:
       example: true
-  model_path: path/to/deployment_model
+  model_path: path/to/model.pth
 ```
 
 Notice that we must provide the path to a deployment model file that will be used to perform inferences. In this case class_to_idx is mandatory (we can not infer it from a test-set). We suggest to be careful to set the same class_to_idx that has been used to train the model.

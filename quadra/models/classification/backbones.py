@@ -1,3 +1,5 @@
+from typing import Any
+
 import timm
 import torch
 from torch import nn
@@ -31,7 +33,7 @@ class TorchHubNetworkBuilder(BaseNetworkBuilder):
         freeze: bool = True,
         hyperspherical: bool = False,
         flatten_features: bool = True,
-        **torch_hub_kwargs: str
+        **torch_hub_kwargs: Any,
     ):
         self.pretrained = pretrained
         features_extractor = torch.hub.load(
@@ -70,7 +72,7 @@ class TorchVisionNetworkBuilder(BaseNetworkBuilder):
         freeze: bool = True,
         hyperspherical: bool = False,
         flatten_features: bool = True,
-        **torchvision_kwargs: str
+        **torchvision_kwargs: Any,
     ):
         self.pretrained = pretrained
         model_function = models.__dict__[model_name]
@@ -110,7 +112,7 @@ class TimmNetworkBuilder(BaseNetworkBuilder):
         freeze: bool = True,
         hyperspherical: bool = False,
         flatten_features: bool = True,
-        **timm_kwargs: str
+        **timm_kwargs: Any,
     ):
         self.pretrained = pretrained
         features_extractor = timm.create_model(model_name, pretrained=self.pretrained, num_classes=0, **timm_kwargs)

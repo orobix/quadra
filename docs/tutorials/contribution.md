@@ -9,7 +9,15 @@ In this guide, we'll cover the steps you should take to ensure your code meets t
 
 ## Setting up the Environment
 
-Before contributing to the repository, you'll need to set up your development environment. Please check the [installation guide](/tutorials/install.html) for instructions on how to set up your environment.
+Before contributing to the repository, you'll need to set up your development environment. Please check the [Getting Started Guide](../getting_started.md) for instructions on how to set up your environment.
+
+After setting up your environment you can install `Quadra` Library in different ways:
+
+!!!info
+
+    - `pip install -e .[dev]` (for development) 
+    - `pip install -e .[docs]` (for documentation)
+    - `pip install -e .[test]` (for testing)
 
 ## Pre-commit Hooks
 

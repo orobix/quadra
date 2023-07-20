@@ -32,6 +32,7 @@ graph LR;
     L-->SG(Segmentation);
     L-->CL(Classification);
     T-->SCL(SklearnClassification);
+    T-->PSCL(PatchSklearnClassification);
     L-->SSL(SSL);
     L-->AD(AnomalibDetection)
 ```
@@ -42,10 +43,11 @@ graph LR;
 - **[`Segmentation Task`][quadra.tasks.Segmentation]:** It has the same functionality as the lightning task but it will also generate segmentation reports on demand.
 - **[`Classification Task`][quadra.tasks.Classification]:** This task is designed to train from scratch or finetune a classification model using the `pytorch-lightning` library.
 - **[`SklearnClassification Task`][quadra.tasks.classification.SklearnClassification]:** This task is designed to train an `sklearn` classifier on top of a torch feature extractor.
+- **[`PatchSklearnClassification Task`][quadra.tasks.patch.PatchSklearnClassification]:** This task is designed to train an `sklearn` patch classifier on top of a torch feature extractor.
 - **[`Anomalib Detection Task`][quadra.tasks.AnomalibDetection]:** This task is designed to train an anomaly detection model using the `anomalib` library.
 - **[`SSL (Self Supervised Learning) Task`][quadra.tasks.SSL]:** This task is designed to train a torch module with a given SSL algorithm.
 
 Most of these tasks have an associated evaluation task used for inference.
 ## Adding new tasks
 
-If your require the `pytorch-lightning` library, you can add a new task by extending the [`LightningTask`][quadra.base.LightningTask] class. Otherwise, you can simply start implementing a new task by extending the `Task` class.
+If you require the `pytorch-lightning` library, you can add a new task by extending the [`LightningTask`][quadra.tasks.base.LightningTask] class. Otherwise, you can simply start implementing a new task by extending the `Task` class.

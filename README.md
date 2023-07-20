@@ -1,4 +1,7 @@
-<h1 align="center">Quadra</h1>
+<h1></h1>
+<p align="center">
+  <img src="docs/images/quadra_text_logo.png" alt="Quadra Logo" width="100%">
+</p>
 
 <p align="center">
   <a href="https://orobix.github.io/quadra/latest/index.html">Docs</a> •
@@ -43,7 +46,7 @@ ______________________________________________________________________
 
 ## Quick Start Guide
 
-Currently we support installing from source since the library is not yet available on `PyPI`.
+Currently we support installing from source since the library is not yet available on `PyPI` and currently supported Python version is `3.9`.
 
 ```shell
 pip install git+https://github.com/orobix/quadra.git
@@ -109,7 +112,8 @@ This command sets the `MLFLOW_TRACKING_URI` variable to `http://localhost:5000`.
 
 **Adding it to your environment file:**
 
-You can also add the `MLFLOW_TRACKING_URI` variable to your environment file (e.g., `.env`). Open the file in a text editor and add the following line:
+`Quadra` uses environment variables to store credentials and other sensitive information. Thanks to [`python-dotenv`](https://pypi.org/project/python-dotenv/) library, you can create a `.env` file in the main folder of your project and store the credentials there. During the runtime, the library will automatically load the environment variables from the `.env` file. You can also add the `MLFLOW_TRACKING_URI` variable to your environment file (e.g., `.env`). Open the file in a text editor and add the following line:
+
 ```
 MLFLOW_TRACKING_URI=http://localhost:5000
 ```
@@ -218,7 +222,7 @@ quadra experiment=custom/<config_name> logger=csv
 
 It will run the experiment using the configuration file you have just created and it will apply the default parameters from the classification configuration file. Furthermore, it will log the metrics to a csv file. You can add or customize the parameters in the configuration file to fit your needs.
 
-For more information about advanced usage, please check [tutorials](/tutorials/configurations.html) and [task specific examples](/tutorials/examples/classification.html).
+For more information about advanced usage, please check [tutorials](https://orobix.github.io/quadra/latest/tutorials/configurations.html) and [task specific examples](https://orobix.github.io/quadra/latest/tutorials/examples/classification.html).
 
 ## Development
 

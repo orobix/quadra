@@ -3,18 +3,21 @@
 defaults:
   - override /transforms: default_resize
   - override /task: sklearn_classification_test
-  - override /backbone: dino_vitb8
   - override /trainer: sklearn_classification
   - override /datamodule: base/sklearn_classification
-
-backbone:
-  model:
-    pretrained: true
-    freeze: true
 
 core:
   tag: run
   name: sklearn-classification-test
+
+task:
+  device: cuda:0
+  gradcam: false
+  output:
+    folder: classification_experiment
+    report: true
+    example: true
+  model_path: ???
 
 datamodule:
   num_workers: 8
