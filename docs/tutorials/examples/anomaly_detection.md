@@ -134,7 +134,7 @@ The post processing configuration allow to specify the method used to compute th
 
 The visualizer callback is used to produce a visualization of the results on the test data, when the min_max_normalization callback is used the input_are_normalized flag must be set to true and the threshold_type should match the one used for normalization. By default it is disabled as it may take a while to compute, to enable just set `disable: false`.
 
-In the context where many images are supplied to our model, either at the test stage or by making inferences, we may be more interested in restricting the output images that are generated to only the cases where the result is not correct. By default it is disabled, to enable just set `plot_only_wrong: true`.
+In the context where many images are supplied to our model, we may be more interested in restricting the output images that are generated to only the cases where the result is not correct. By default it is disabled, to enable just set `plot_only_wrong: true`.
 
 The display of the outputs of a model can be done in a preset format. However, this option may not be as desired, or may be affecting the resolution of the images. In order to give more flexibility to the generation of reports, the heatmap and segmentation ouput files can be generated independently and with the same resolution of the original image. By default it is disabled, to enable just set `plot_raw_outputs: true`.
 
