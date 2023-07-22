@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import cv2
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -92,6 +93,7 @@ class VisualizerCallback(Callback):
         threshold_type: Either 'pixel' or 'image'. If 'pixel', the threshold is computed on the pixel-level.
         disable: whether to disable the callback.
         plot_only_wrong: whether to plot only the images that are not correctly predicted.
+        plot_raw_outputs: Saves the raw images of the segmentation and heatmap output.
     """
 
     def __init__(
@@ -102,6 +104,7 @@ class VisualizerCallback(Callback):
         threshold_type: str = "pixel",
         disable: bool = False,
         plot_only_wrong: bool = False,
+        plot_raw_outputs: bool = False,
     ) -> None:
         self.inputs_are_normalized = inputs_are_normalized
         self.output_path = output_path
@@ -109,6 +112,7 @@ class VisualizerCallback(Callback):
         self.disable = disable
         self.task = task
         self.plot_only_wrong = plot_only_wrong
+        self.plot_raw_outputs = plot_raw_outputs
 
     def _add_images(self, visualizer: Visualizer, filename: Path, output_label_folder: str):
         """Save image to logger/local storage.
@@ -214,8 +218,25 @@ class VisualizerCallback(Callback):
             visualizer.figure.suptitle(
                 f"F1 threshold: {threshold}, Mask_max: {anomaly_map.max():.3f}, Anomaly_score: {anomaly_score:.3f}"
             )
-            self._add_images(visualizer, Path(filename), output_label_folder)
+            filename = Path(filename)
+            self._add_images(visualizer, filename, output_label_folder)
             visualizer.close()
+
+            if self.plot_raw_outputs:
+                for raw_output, raw_name in zip([heat_map, vis_img], ["heatmap", "segmentation"]):
+                    if raw_name == "segmentation":
+                        raw_output = (raw_output * 255).astype(np.uint8)
+                    raw_output = cv2.cvtColor(raw_output, cv2.COLOR_RGB2BGR)
+                    raw_filename = (
+                        Path(self.output_path)
+                        / "images"
+                        / output_label_folder
+                        / filename.parent.name
+                        / "raw_outputs"
+                        / Path(filename.stem + f"_{raw_name}.png")
+                    )
+                    raw_filename.parent.mkdir(parents=True, exist_ok=True)
+                    cv2.imwrite(str(raw_filename), raw_output)
 
     def on_test_end(self, _trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         """Sync logs.

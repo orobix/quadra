@@ -18,6 +18,8 @@ visualizer:
   output_path: anomaly_output
   threshold_type: ${callbacks.min_max_normalization.threshold_type}
   disable: true
+  plot_only_wrong: false
+  plot_raw_outputs: false
 # Standard callbacks
 early_stopping:
   _target_: pytorch_lightning.callbacks.EarlyStopping
