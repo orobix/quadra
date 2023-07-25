@@ -257,7 +257,22 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
     def test(self) -> Any:
         """Test the model."""
         log.info("Starting testing!")
-        return self.trainer.test(model=self.module, datamodule=self.datamodule)
+
+        best_model = None
+        if (
+            self.trainer.checkpoint_callback is not None
+            and hasattr(self.trainer.checkpoint_callback, "best_model_path")
+            and self.trainer.checkpoint_callback.best_model_path is not None
+        ):
+            best_model = self.trainer.checkpoint_callback.best_model_path
+
+        if best_model is None:
+            log.warning(
+                "No best checkpoint model found, using last weights for test, this might lead to worse results, "
+                "consider using a checkpoint callback."
+            )
+
+        return self.trainer.test(model=self.module, datamodule=self.datamodule, ckpt_path=best_model)
 
     def finalize(self) -> None:
         """Finalize the experiment."""
