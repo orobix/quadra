@@ -35,11 +35,6 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         run_test: If True, run test after training. Defaults to False.
         evaluate: Dict with evaluation parameters. Defaults to None.
         report: If True, create report after training. Defaults to False.
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
     def __init__(
@@ -50,14 +45,12 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         run_test: bool = False,
         evaluate: Optional[DictConfig] = None,
         report: bool = False,
-        export_config: Optional[DictConfig] = None,
     ):
         super().__init__(
             config=config,
             checkpoint_path=checkpoint_path,
             run_test=run_test,
             report=report,
-            export_config=export_config,
         )
         self.evaluate = evaluate
         self.num_viz_samples = num_viz_samples
@@ -65,18 +58,18 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         self.exported_model_path: Optional[str] = None
         if self.evaluate and any(self.evaluate.values()):
             if (
-                self.export_config is None
-                or len(self.export_config.types) == 0
-                or "torchscript" not in self.export_config.types
+                self.config.export is None
+                or len(self.config.export.types) == 0
+                or "torchscript" not in self.config.export.types
             ):
                 log.info(
                     "Evaluation is enabled, but training does not export a deployment model. Automatically export the "
                     "model as torchscript."
                 )
-                if self.export_config is None:
-                    self.export_config = DictConfig({"types": ["torchscript"]})
+                if self.config.export is None:
+                    self.config.export = DictConfig({"types": ["torchscript"]})
                 else:
-                    self.export_config.types.append("torchscript")
+                    self.config.export.types.append("torchscript")
 
             if not self.report:
                 log.info("Evaluation is enabled, but reporting is disabled. Enabling reporting automatically.")
@@ -145,17 +138,17 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
             log.info("idx_to_class is present")
             classes = self.config.datamodule.idx_to_class
 
-        if self.export_config is None:
+        if self.config.export is None:
             raise ValueError(
                 "No export type specified. This should not happen, please check if you have set "
                 "the export_type or assign it to a default value."
             )
 
-        input_shapes = self.export_config.input_shapes
+        input_shapes = self.config.export.input_shapes
 
         half_precision = self.trainer.precision == 16
 
-        for export_type in self.export_config.types:
+        for export_type in self.config.export.types:
             if export_type == "torchscript":
                 out = export_torchscript_model(
                     model=module.model,
@@ -170,14 +163,14 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
 
                 self.exported_model_path, input_shapes = out
             elif export_type == "onnx":
-                if not hasattr(self.export_config, "onnx"):
+                if not hasattr(self.config.export, "onnx"):
                     log.warning("No onnx configuration found, skipping onnx export")
                     continue
 
                 out = export_onnx_model(
                     model=module.model,
                     output_path=self.export_folder,
-                    onnx_config=self.export_config.onnx,
+                    onnx_config=self.config.export.onnx,
                     input_shapes=input_shapes,
                     half_precision=half_precision,
                 )

@@ -65,11 +65,6 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
     Args:
         config: The experiment configuration
         output: The otuput configuration.
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
         gradcam: Whether to compute gradcams
         checkpoint_path: The path to the checkpoint to load the model from. Defaults to None.
         lr_multiplier: The multiplier for the backbone learning rate. Defaults to None.
@@ -85,7 +80,6 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         output: DictConfig,
         checkpoint_path: Optional[str] = None,
         lr_multiplier: Optional[float] = None,
-        export_config: Optional[DictConfig] = None,
         gradcam: bool = False,
         report: bool = False,
         run_test: bool = False,
@@ -95,7 +89,6 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             checkpoint_path=checkpoint_path,
             run_test=run_test,
             report=report,
-            export_config=export_config,
         )
         self.output = output
         self.gradcam = gradcam
@@ -255,7 +248,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
 
     def export(self) -> None:
         """Generate deployment models for the task."""
-        if self.export_config is None or len(self.export_config.types) == 0:
+        if self.config.export is None or len(self.config.export.types) == 0:
             log.info("No export type specified skipping export")
             return
 
@@ -284,12 +277,12 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             gradcam=False,
         )
 
-        input_shapes = self.export_config.input_shapes
+        input_shapes = self.config.export.input_shapes
 
         # TODO: This breaks with bf16 precision!!!
         half_precision = int(self.trainer.precision) == 16
 
-        for export_type in self.export_config.types:
+        for export_type in self.config.export.types:
             if export_type == "torchscript":
                 out = export_torchscript_model(
                     model=module.model,
@@ -311,14 +304,14 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                 with open(os.path.join(self.export_folder, "model_config.yaml"), "w") as f:
                     OmegaConf.save(self.config.model, f, resolve=True)
             elif export_type == "onnx":
-                if not hasattr(self.export_config, "onnx"):
+                if not hasattr(self.config.export, "onnx"):
                     log.warning("No onnx configuration found, skipping onnx export")
                     continue
 
                 out = export_onnx_model(
                     model=module.model,
                     output_path=self.export_folder,
-                    onnx_config=self.export_config.onnx,
+                    onnx_config=self.config.export.onnx,
                     input_shapes=input_shapes,
                     half_precision=half_precision,
                 )
@@ -468,11 +461,6 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         config: The experiment configuration
         device: The device to use. Defaults to None.
         output: Dictionary defining which kind of outputs to generate. Defaults to None.
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
     def __init__(
@@ -480,9 +468,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         config: DictConfig,
         output: DictConfig,
         device: str,
-        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config=config, export_config=export_config)
+        super().__init__(config=config)
 
         self._device = device
         self.output = output
@@ -682,13 +669,13 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
     def export(self) -> None:
         """Generate deployment model for the task."""
-        if self.export_config is None or len(self.export_config.types) == 0:
+        if self.config.export is None or len(self.config.export.types) == 0:
             log.info("No export type specified skipping export")
             return
 
-        input_shapes = self.export_config.input_shapes
+        input_shapes = self.config.export.input_shapes
 
-        for export_type in self.export_config.types:
+        for export_type in self.config.export.types:
             if export_type == "torchscript":
                 out = export_torchscript_model(
                     model=self.backbone,
@@ -768,7 +755,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         if self.output.report:
             self.generate_report()
         self.train_full_data()
-        if self.export_config is not None and len(self.export_config.types) > 0:
+        if self.config.export is not None and len(self.config.export.types) > 0:
             self.export()
         if self.output.test_full_data:
             self.test_full_data()

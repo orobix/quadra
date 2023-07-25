@@ -171,10 +171,6 @@ task:
   report: false # allows to generate reports
   evaluate: # custom evaluation toggles
     analysis: false # Perform in depth analysis
-  export_config:
-    types: [torchscript]
-    input_shapes: # Redefine the input shape if not automatically inferred
-
     
 datamodule:
   data_path: /path/to/the/dataset # change the path to the dataset

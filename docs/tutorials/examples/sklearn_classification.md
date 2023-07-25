@@ -95,16 +95,13 @@ defaults:
   - override /trainer: sklearn_classification
   - override /datamodule: base/sklearn_classification
 
+export:
+  types: [pytorch, torchscript]
+  
 backbone:
   model:
     pretrained: true
     freeze: true
-
-task:
-  export_config:
-    types: [pytorch, torchscript]
-    input_shapes: # Redefine the input shape if not automatically inferred
-
 
 core:
   tag: "run"
@@ -132,6 +129,9 @@ defaults:
 core:
   name: experiment-name
 
+export:
+  types: [pytorch, torchscript]
+
 datamodule:
   data_path: path_to_dataset
   batch_size: 64
@@ -152,13 +152,9 @@ task:
     report: true
     example: true
     test_full_data: true
-  export_config:
-    types: [pytorch, torchscript]
-    input_shapes: # Redefine the input shape if not automatically inferred
-
 ```
 
-This will train a logistic regression classifier using a resnet18 backbone, resizing the images to 224x224 and using a 5-fold cross validation. The `class_to_idx` parameter is used to map the class names to indexes, the indexes will be used to train the classifier. The `output` parameter is used to specify the output folder and the type of output to save. The `export_config.types` parameter can be used to export the model in different formats, at the moment `torchscript` and `pytorch` are supported.
+This will train a logistic regression classifier using a resnet18 backbone, resizing the images to 224x224 and using a 5-fold cross validation. The `class_to_idx` parameter is used to map the class names to indexes, the indexes will be used to train the classifier. The `output` parameter is used to specify the output folder and the type of output to save. The `export.types` parameter can be used to export the model in different formats, at the moment `torchscript` and `pytorch` are supported.
 Since `save_backbone` is set to true, the backbone (in torchscript format) will be saved along with the classifier. `test_full_data` is used to specify if a final test should be performed on all the data (after training on the training and validation datasets).
 
 ### Run

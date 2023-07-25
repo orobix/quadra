@@ -42,9 +42,6 @@ output:
   report: true
   example: true
   test_full_data: true
-export_config:
-  types: [torchscript]
-  input_shapes: # Redefine the input shape if not automatically inferred
 ```
 
 You can change the device to `cpu` or a different cuda device depending on your needs.

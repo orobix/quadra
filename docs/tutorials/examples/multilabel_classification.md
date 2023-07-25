@@ -139,9 +139,6 @@ task:
   report: False 
   output:
     example: False 
-  export_config:
-    types: [torchscript]
-    input_shapes: # Redefine the input shape if not automatically inferred
 
   
 logger:

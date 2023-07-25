@@ -114,9 +114,6 @@ task:
   report: True
   output:
     example: True
-  export_config:
-    types: [pytorch, torchscript]
-    input_shapes: # Redefine the input shape if not automatically inferred
 
 
 core:
@@ -187,9 +184,6 @@ task:
   report: True 
   output:
     example: True # Generate an example of concordants and discordants predictions for each class
-  export_config:
-    types: [pytorch, torchscript]
-    input_shapes: # Redefine the input shape if not automatically inferred
 
    
 model:

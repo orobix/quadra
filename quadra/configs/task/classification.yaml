@@ -4,15 +4,3 @@ output:
   example: false
 report: false
 run_test: true
-export_config:
-  types: [pytorch, torchscript]
-  input_shapes: # Redefine the input shape if not automatically inferred
-  onnx:
-    input_names: # If null automatically inferred
-    output_names: # If null automatically inferred
-    dynamic_axes: # If null automatically inferred
-    fixed_batch_size: # If not null export with fixed batch size (ignore dynamic axes)
-    export_params: true
-    opset_version: 16
-    do_constant_folding: true
-    simplify: true

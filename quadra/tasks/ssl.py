@@ -1,19 +1,19 @@
 import json
 import os
-from typing import Any, List, Optional, Tuple, Union, cast
+from typing import Any, List, Optional, Tuple, cast
 
 import hydra
 import torch
 from omegaconf import DictConfig, open_dict
 from pytorch_lightning import LightningModule
 from torch import nn
-from torch.jit._script import RecursiveScriptModule
 from torch.nn.functional import interpolate
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from quadra.callbacks.scheduler import WarmupInit
 from quadra.models.base import ModelSignatureWrapper
+from quadra.models.evaluation import BaseEvaluationModel
 from quadra.tasks.base import LightningTask, Task
 from quadra.utils import utils
 from quadra.utils.export import export_onnx_model, export_torchscript_model, import_deployment_model
@@ -29,11 +29,6 @@ class SSL(LightningTask):
         checkpoint_path: The path to the checkpoint to load the model from Defaults to None
         report: Whether to create the report
         run_test: Whether to run final test
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
     def __init__(
@@ -42,14 +37,12 @@ class SSL(LightningTask):
         run_test: bool = False,
         report: bool = False,
         checkpoint_path: Optional[str] = None,
-        export_config: Optional[DictConfig] = None,
     ):
         super().__init__(
             config=config,
             checkpoint_path=checkpoint_path,
             run_test=run_test,
             report=report,
-            export_config=export_config,
         )
         self._backbone: nn.Module
         self._optimizer: torch.optim.Optimizer
@@ -100,7 +93,7 @@ class SSL(LightningTask):
 
     def export(self) -> None:
         """Deploy a model ready for production."""
-        if self.export_config is None or len(self.export_config.types) == 0:
+        if self.config.export is None or len(self.config.export.types) == 0:
             log.info("No export type specified skipping export")
             return
 
@@ -108,9 +101,9 @@ class SSL(LightningTask):
         std = self.config.transforms.std
         half_precision = int(self.trainer.precision) == 16
 
-        input_shapes = self.export_config.input_shapes
+        input_shapes = self.config.export.input_shapes
 
-        for export_type in self.export_config.types:
+        for export_type in self.config.export.types:
             if export_type == "torchscript":
                 out = export_torchscript_model(
                     model=cast(nn.Module, self.module.model),
@@ -125,14 +118,14 @@ class SSL(LightningTask):
 
                 _, input_shapes = out
             elif export_type == "onnx":
-                if not hasattr(self.export_config, "onnx"):
+                if not hasattr(self.config.export, "onnx"):
                     log.warning("No onnx configuration found, skipping onnx export")
                     continue
 
                 out = export_onnx_model(
                     model=cast(nn.Module, self.module.model),
                     output_path=self.export_folder,
-                    onnx_config=self.export_config.onnx,
+                    onnx_config=self.config.export.onnx,
                     input_shapes=input_shapes,
                     half_precision=False,
                 )
@@ -163,11 +156,6 @@ class Simsiam(SSL):
             with weights loaded from the checkpoint path specified.
             Defaults to None.
         run_test: Whether to run final test
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
     def __init__(
@@ -175,9 +163,8 @@ class Simsiam(SSL):
         config: DictConfig,
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
-        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config=config, export_config=export_config, checkpoint_path=checkpoint_path, run_test=run_test)
+        super().__init__(config=config, checkpoint_path=checkpoint_path, run_test=run_test)
         self.backbone: nn.Module
         self.projection_mlp: nn.Module
         self.prediction_mlp: nn.Module
@@ -238,11 +225,6 @@ class SimCLR(SSL):
             with weights loaded from the checkpoint path specified.
             Defaults to None.
         run_test: Whether to run final test
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
     def __init__(
@@ -250,9 +232,8 @@ class SimCLR(SSL):
         config: DictConfig,
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
-        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config=config, export_config=export_config, checkpoint_path=checkpoint_path, run_test=run_test)
+        super().__init__(config=config, checkpoint_path=checkpoint_path, run_test=run_test)
         self.backbone: nn.Module
         self.projection_mlp: nn.Module
 
@@ -305,11 +286,6 @@ class Barlow(SimCLR):
             with weights loaded from the checkpoint path specified.
             Defaults to None.
         run_test: Whether to run final test
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
     def __init__(
@@ -317,9 +293,8 @@ class Barlow(SimCLR):
         config: DictConfig,
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
-        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config=config, export_config=export_config, checkpoint_path=checkpoint_path, run_test=run_test)
+        super().__init__(config=config, checkpoint_path=checkpoint_path, run_test=run_test)
 
     def prepare(self) -> None:
         """Prepare the experiment."""
@@ -348,11 +323,6 @@ class BYOL(SSL):
             with weights loaded from the checkpoint path specified.
             Defaults to None.
         run_test: Whether to run final test
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
         **kwargs: Keyword arguments
     """
 
@@ -361,12 +331,10 @@ class BYOL(SSL):
         config: DictConfig,
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
-        export_config: Optional[DictConfig] = None,
         **kwargs: Any,
     ):
         super().__init__(
             config=config,
-            export_config=export_config,
             checkpoint_path=checkpoint_path,
             run_test=run_test,
             **kwargs,
@@ -438,11 +406,6 @@ class DINO(SSL):
             with weights loaded from the checkpoint path specified.
             Defaults to None.
         run_test: Whether to run final test
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
     def __init__(
@@ -450,9 +413,8 @@ class DINO(SSL):
         config: DictConfig,
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
-        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config=config, export_config=export_config, checkpoint_path=checkpoint_path, run_test=run_test)
+        super().__init__(config=config, checkpoint_path=checkpoint_path, run_test=run_test)
         self.student_model: nn.Module
         self.teacher_model: nn.Module
         self.student_projection_mlp: nn.Module
@@ -547,7 +509,7 @@ class EmbeddingVisualization(Task):
         self.embedding_writer = SummaryWriter(self.embeddings_path)
         self.writer_step = 0  # for tensorboard
         self.embedding_image_size = embedding_image_size
-        self._deployment_model: Union[RecursiveScriptModule, nn.Module]
+        self._deployment_model: BaseEvaluationModel
         self.deployment_model_type: str
 
     @property
@@ -560,8 +522,7 @@ class EmbeddingVisualization(Task):
 
         if self.deployment_model is not None:
             # After prepare
-            if isinstance(self.deployment_model, RecursiveScriptModule):
-                self.deployment_model = self.deployment_model.to(self._device)
+            self.deployment_model = self.deployment_model.to(self._device)
 
     @property
     def deployment_model(self):
@@ -571,7 +532,7 @@ class EmbeddingVisualization(Task):
     @deployment_model.setter
     def deployment_model(self, model_path: str):
         """Set the deployment model."""
-        self._deployment_model, self.deployment_model_type = import_deployment_model(model_path, self.device)
+        self._deployment_model = import_deployment_model(model_path, self.device)
 
     def prepare(self) -> None:
         """Prepare the evaluation."""

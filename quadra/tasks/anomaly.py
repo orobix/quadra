@@ -41,11 +41,6 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             Defaults to None.
         run_test: Whether to run the test after training. Defaults to False.
         report: Whether to report the results. Defaults to False.
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
     def __init__(
@@ -55,14 +50,12 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         checkpoint_path: Optional[str] = None,
         run_test: bool = True,
         report: bool = True,
-        export_config: Optional[DictConfig] = None,
     ):
         super().__init__(
             config=config,
             checkpoint_path=checkpoint_path,
             run_test=run_test,
             report=report,
-            export_config=export_config,
         )
         self._module: AnomalyModule
         self.module_function = module_function
@@ -112,7 +105,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
     def export(self) -> None:
         """Export model for production."""
-        if self.export_config is None or len(self.export_config.types) == 0:
+        if self.config.export is None or len(self.config.export.types) == 0:
             log.info("No export type specified skipping export")
             return
 
@@ -122,11 +115,11 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
         model = self.module.model
 
-        input_shapes = self.export_config.input_shapes
+        input_shapes = self.config.export.input_shapes
 
         half_precision = int(self.trainer.precision) == 16
 
-        for export_type in self.export_config.types:
+        for export_type in self.config.export.types:
             if export_type == "torchscript":
                 out = export_torchscript_model(
                     model=model,
@@ -141,14 +134,14 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
                 _, input_shapes = out
             elif export_type == "onnx":
-                if not hasattr(self.export_config, "onnx"):
+                if not hasattr(self.config.export, "onnx"):
                     log.warning("No onnx configuration found, skipping onnx export")
                     continue
 
                 out = export_onnx_model(
                     model=model,
                     output_path=self.export_folder,
-                    onnx_config=self.export_config.onnx,
+                    onnx_config=self.config.export.onnx,
                     input_shapes=input_shapes,
                     half_precision=half_precision,
                 )

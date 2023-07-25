@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, cast
 
 import hydra
 import torch
@@ -12,6 +12,7 @@ from sklearn.base import ClassifierMixin
 from quadra.datamodules import PatchSklearnClassificationDataModule
 from quadra.datasets.patch import PatchSklearnClassificationTrainDataset
 from quadra.models.base import ModelSignatureWrapper
+from quadra.models.evaluation import BaseEvaluationModel
 from quadra.tasks.base import Evaluation, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
@@ -29,11 +30,6 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         config: The experiment configuration
         device: The device to use
         output: Dictionary defining which kind of outputs to generate. Defaults to None.
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
     def __init__(
@@ -41,9 +37,8 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         config: DictConfig,
         output: DictConfig,
         device: str,
-        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config=config, export_config=export_config)
+        super().__init__(config=config)
         self.device: str = device
         self.output: DictConfig = output
         self.return_polygon: bool = True
@@ -207,15 +202,15 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
 
     def export(self) -> None:
         """Generate deployment model for the task."""
-        if self.export_config is None or len(self.export_config.types) == 0:
+        if self.config.export is None or len(self.config.export.types) == 0:
             log.info("No export type specified skipping export")
             return
 
         os.makedirs(self.export_folder, exist_ok=True)
 
-        input_shapes = self.export_config.input_shapes
+        input_shapes = self.config.export.input_shapes
 
-        for export_type in self.export_config.types:
+        for export_type in self.config.export.types:
             if export_type == "torchscript":
                 out = export_torchscript_model(
                     model=self.backbone,
@@ -230,14 +225,14 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
 
                 _, input_shapes = out
             elif export_type == "onnx":
-                if not hasattr(self.export_config, "onnx"):
+                if not hasattr(self.config.export, "onnx"):
                     log.warning("No onnx configuration found, skipping onnx export")
                     continue
 
                 out = export_onnx_model(
                     model=self.backbone,
                     output_path=self.export_folder,
-                    onnx_config=self.export_config.onnx,
+                    onnx_config=self.config.export.onnx,
                     input_shapes=input_shapes,
                     half_precision=False,
                 )
@@ -283,7 +278,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         self.train()
         if self.output.report:
             self.generate_report()
-        if self.export_config is not None and len(self.export_config.types) > 0:
+        if self.config.export is not None and len(self.config.export.types) > 0:
             self.export()
         self.finalize()
 
@@ -307,7 +302,7 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
     ):
         super().__init__(config=config, model_path=model_path, device=device)
         self.output = output
-        self._backbone: torch.nn.Module
+        self._backbone: BaseEvaluationModel
         self._classifier: ClassifierMixin
         self.class_to_idx: Dict[str, int]
         self.idx_to_class: Dict[int, str]
@@ -389,7 +384,7 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
         self._classifier = load(classifier_path)
 
     @property
-    def backbone(self) -> torch.nn.Module:
+    def backbone(self) -> BaseEvaluationModel:
         """Backbone: The backbone."""
         return self._backbone
 
@@ -413,8 +408,7 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
             self._backbone = self._backbone.to(self.device)
         else:
             log.info("Importing trained model")
-            self._backbone, model_type = import_deployment_model(model_path=model_path, device=self.device)
-            log.info("Imported %s model", model_type)
+            self._backbone = import_deployment_model(model_path=model_path, device=self.device)
 
     @property
     def trainer(self) -> SklearnClassificationTrainer:

@@ -1,5 +1,2 @@
 _target_: quadra.tasks.SSL
 run_test: false
-export_config:
-  types: [torchscript]
-  input_shapes:

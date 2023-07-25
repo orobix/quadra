@@ -129,7 +129,7 @@ def test_cflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_datas
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
-        "task.export_config=null",
+        "export=null",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
