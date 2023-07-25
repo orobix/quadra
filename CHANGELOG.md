@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.1.2]
+
+#### Fixed
+
+- Fix best checkpoint not used for testing when available in `LightningTask` class.
+
 ### [1.1.1]
 
 #### Fixed
