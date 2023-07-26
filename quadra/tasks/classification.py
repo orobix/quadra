@@ -37,12 +37,7 @@ from quadra.tasks.base import Evaluation, LightningTask, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
 from quadra.utils.classification import get_results, save_classification_result
-from quadra.utils.export import (
-    export_onnx_model,
-    export_pytorch_model,
-    export_torchscript_model,
-    import_deployment_model,
-)
+from quadra.utils.export import export_model, import_deployment_model
 from quadra.utils.models import get_feature, is_vision_transformer
 from quadra.utils.vit_explainability import VitAttentionGradRollout
 
@@ -248,12 +243,6 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
 
     def export(self) -> None:
         """Generate deployment models for the task."""
-        if self.config.export is None or len(self.config.export.types) == 0:
-            log.info("No export type specified skipping export")
-            return
-
-        os.makedirs(self.export_folder, exist_ok=True)
-
         if self.datamodule.class_to_idx is None:
             log.warning(
                 "No `class_to_idx` found in the datamodule, class information will not be saved in the model.json"
@@ -263,73 +252,36 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
 
         if self.trainer.checkpoint_callback is None:
-            raise ValueError("No checkpoint callback found in the trainer")
+            log.warning("No checkpoint callback found in the trainer, exporting the last model weights")
+        else:
+            best_model_path = self.trainer.checkpoint_callback.best_model_path  # type: ignore[attr-defined]
+            log.info("Saving deployment model for %s checkpoint", best_model_path)
 
-        best_model_path = self.trainer.checkpoint_callback.best_model_path  # type: ignore[attr-defined]
-        log.info("Saving deployment model for %s checkpoint", best_model_path)
-
-        module = self.module.load_from_checkpoint(
-            best_model_path,
-            model=self.module.model,
-            optimizer=self.optimizer,
-            lr_scheduler=self.scheduler,
-            criterion=self.module.criterion,
-            gradcam=False,
-        )
+            module = self.module.load_from_checkpoint(
+                best_model_path,
+                model=self.module.model,
+                optimizer=self.optimizer,
+                lr_scheduler=self.scheduler,
+                criterion=self.module.criterion,
+                gradcam=False,
+            )
 
         input_shapes = self.config.export.input_shapes
 
-        # TODO: This breaks with bf16 precision!!!
-        half_precision = int(self.trainer.precision) == 16
+        # TODO: What happens if we have 64 precision?
+        half_precision = "16" in self.config.trainer.precision
 
-        for export_type in self.config.export.types:
-            if export_type == "torchscript":
-                out = export_torchscript_model(
-                    model=module.model,
-                    input_shapes=input_shapes,
-                    output_path=self.export_folder,
-                    half_precision=half_precision,
-                )
+        self.model_json = export_model(
+            config=self.config,
+            model=module.model,
+            export_folder=self.export_folder,
+            half_precision=half_precision,
+            input_shapes=input_shapes,
+            idx_to_class=idx_to_class,
+        )
 
-                if out is None:
-                    log.warning("Skipping torchscript export since the model is not supported")
-                    continue
-
-                _, input_shapes = out
-            elif export_type == "pytorch":
-                export_pytorch_model(
-                    model=module.model,
-                    output_path=self.export_folder,
-                )
-                with open(os.path.join(self.export_folder, "model_config.yaml"), "w") as f:
-                    OmegaConf.save(self.config.model, f, resolve=True)
-            elif export_type == "onnx":
-                if not hasattr(self.config.export, "onnx"):
-                    log.warning("No onnx configuration found, skipping onnx export")
-                    continue
-
-                out = export_onnx_model(
-                    model=module.model,
-                    output_path=self.export_folder,
-                    onnx_config=self.config.export.onnx,
-                    input_shapes=input_shapes,
-                    half_precision=half_precision,
-                )
-
-                if out is None:
-                    log.warning("Skipping onnx export since the model is not supported")
-                    continue
-
-                _, input_shapes = out
-            else:
-                log.warning("Export type: %s not implemented", export_type)
-
-        self.model_json = {
-            "input_size": input_shapes,
-            "classes": idx_to_class,
-            "mean": list(self.config.transforms.mean),
-            "std": list(self.config.transforms.std),
-        }
+        if self.model_json is None:
+            return
 
         with open(os.path.join(self.export_folder, self.deploy_info_file), "w") as f:
             json.dump(self.model_json, f)
@@ -675,42 +627,22 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
         input_shapes = self.config.export.input_shapes
 
-        for export_type in self.config.export.types:
-            if export_type == "torchscript":
-                out = export_torchscript_model(
-                    model=self.backbone,
-                    input_shapes=input_shapes,
-                    output_path=self.export_folder,
-                    half_precision=False,
-                )
+        idx_to_class = {v: k for k, v in self.datamodule.full_dataset.class_to_idx.items()}
 
-                if out is None:
-                    log.warning("Skipping torchscript export since the model is not supported")
-                    continue
-
-                _, input_shapes = out
-            elif export_type == "pytorch":
-                os.makedirs(self.export_folder, exist_ok=True)
-                # We only need to save classifier.joblib + backbone config file
-                with open(os.path.join(self.export_folder, "backbone_config.yaml"), "w") as f:
-                    OmegaConf.save(self.config.backbone, f, resolve=True)
-                log.info("backbone_config.yaml saved (export type 'pytorch')")
-            else:
-                log.warning("Export type: %s not implemented", export_type)
+        model_json = export_model(
+            config=self.config,
+            model=self.backbone,
+            export_folder=self.export_folder,
+            half_precision=False,
+            input_shapes=input_shapes,
+            idx_to_class=idx_to_class,
+        )
 
         dump(self.model, os.path.join(self.export_folder, "classifier.joblib"))
 
-        idx_to_class = {v: k for k, v in self.datamodule.full_dataset.class_to_idx.items()}
-
-        model_json = {
-            "input_size": input_shapes,
-            "classes": idx_to_class,
-            "mean": list(self.config.transforms.mean),
-            "std": list(self.config.transforms.std),
-        }
-
-        with open(os.path.join(self.export_folder, self.deploy_info_file), "w") as f:
-            json.dump(model_json, f)
+        if model_json is not None:
+            with open(os.path.join(self.export_folder, self.deploy_info_file), "w") as f:
+                json.dump(model_json, f)
 
     def generate_report(self) -> None:
         """Generate report for the task."""
@@ -856,7 +788,7 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
         file_extension = os.path.splitext(os.path.basename(model_path))[1]
         if file_extension == ".yaml":
             log.info("Model path points to '.yaml' file")
-            backbone_config_path = os.path.join(Path(model_path).parent, "backbone_config.yaml")
+            backbone_config_path = os.path.join(Path(model_path).parent, "model_config.yaml")
             log.info("Loading backbone from config")
             backbone_config = OmegaConf.load(backbone_config_path)
 

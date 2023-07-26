@@ -24,7 +24,7 @@ from quadra.modules.base import ModelSignatureWrapper
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
 from quadra.utils.classification import get_results
-from quadra.utils.export import export_onnx_model, export_torchscript_model
+from quadra.utils.export import export_model
 
 log = utils.get_logger(__name__)
 
@@ -117,49 +117,22 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
         input_shapes = self.config.export.input_shapes
 
-        half_precision = int(self.trainer.precision) == 16
+        half_precision = "16" in self.config.trainer.precision
 
-        for export_type in self.config.export.types:
-            if export_type == "torchscript":
-                out = export_torchscript_model(
-                    model=model,
-                    input_shapes=input_shapes,
-                    output_path=self.export_folder,
-                    half_precision=half_precision,
-                )
+        model_json = export_model(
+            config=self.config,
+            model=model,
+            export_folder=self.export_folder,
+            half_precision=half_precision,
+            input_shapes=input_shapes,
+            idx_to_class={0: "good", 1: "defect"},
+        )
 
-                if out is None:
-                    log.warning("Skipping torchscript export since the model is not supported")
-                    continue
+        if model_json is None:
+            return
 
-                _, input_shapes = out
-            elif export_type == "onnx":
-                if not hasattr(self.config.export, "onnx"):
-                    log.warning("No onnx configuration found, skipping onnx export")
-                    continue
-
-                out = export_onnx_model(
-                    model=model,
-                    output_path=self.export_folder,
-                    onnx_config=self.config.export.onnx,
-                    input_shapes=input_shapes,
-                    half_precision=half_precision,
-                )
-
-                if out is None:
-                    log.warning("Skipping onnx export since the model is not supported")
-                    continue
-
-                _, input_shapes = out
-
-        model_json = {
-            "input_size": input_shapes,
-            "classes": {0: "good", 1: "defect"},
-            "mean": list(self.config.transforms.mean),
-            "std": list(self.config.transforms.std),
-            "image_threshold": np.round(self.module.image_threshold.value.item(), 3),
-            "pixel_threshold": np.round(self.module.pixel_threshold.value.item(), 3),
-        }
+        model_json["image_threshold"] = np.round(self.module.image_threshold.value.item(), 3)
+        model_json["pixel_threshold"] = np.round(self.module.pixel_threshold.value.item(), 3)
 
         with open(os.path.join(self.export_folder, "model.json"), "w") as f:
             json.dump(model_json, f)

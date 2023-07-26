@@ -16,7 +16,7 @@ from quadra.models.base import ModelSignatureWrapper
 from quadra.models.evaluation import BaseEvaluationModel
 from quadra.tasks.base import LightningTask, Task
 from quadra.utils import utils
-from quadra.utils.export import export_onnx_model, export_torchscript_model, import_deployment_model
+from quadra.utils.export import export_model, import_deployment_model
 
 log = utils.get_logger(__name__)
 
@@ -93,55 +93,21 @@ class SSL(LightningTask):
 
     def export(self) -> None:
         """Deploy a model ready for production."""
-        if self.config.export is None or len(self.config.export.types) == 0:
-            log.info("No export type specified skipping export")
-            return
-
-        mean = self.config.transforms.mean
-        std = self.config.transforms.std
-        half_precision = int(self.trainer.precision) == 16
+        half_precision = "16" in self.config.trainer.precision
 
         input_shapes = self.config.export.input_shapes
 
-        for export_type in self.config.export.types:
-            if export_type == "torchscript":
-                out = export_torchscript_model(
-                    model=cast(nn.Module, self.module.model),
-                    input_shapes=input_shapes,
-                    output_path=self.export_folder,
-                    half_precision=half_precision,
-                )
+        model_json = export_model(
+            config=self.config,
+            model=self.module.model,
+            export_folder=self.export_folder,
+            half_precision=half_precision,
+            input_shapes=input_shapes,
+            idx_to_class=None,
+        )
 
-                if out is None:
-                    log.warning("Skipping torchscript export since the model is not supported")
-                    continue
-
-                _, input_shapes = out
-            elif export_type == "onnx":
-                if not hasattr(self.config.export, "onnx"):
-                    log.warning("No onnx configuration found, skipping onnx export")
-                    continue
-
-                out = export_onnx_model(
-                    model=cast(nn.Module, self.module.model),
-                    output_path=self.export_folder,
-                    onnx_config=self.config.export.onnx,
-                    input_shapes=input_shapes,
-                    half_precision=False,
-                )
-
-                if out is None:
-                    log.warning("Skipping onnx export since the model is not supported")
-                    continue
-
-                _, input_shapes = out
-
-        model_json = {
-            "input_size": input_shapes,
-            "classes": None,
-            "mean": mean,
-            "std": std,
-        }
+        if model_json is None:
+            return
 
         with open(os.path.join(self.export_folder, "model.json"), "w") as f:
             json.dump(model_json, f, cls=utils.HydraEncoder)

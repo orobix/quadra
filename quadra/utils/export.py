@@ -1,9 +1,9 @@
 import os
-from typing import Any, List, Optional, Sequence, Tuple, TypeVar, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, TypeVar, Union
 
 import torch
 from anomalib.models.cflow import CflowLightning
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from torch import nn
 
 from quadra.models.base import ModelSignatureWrapper
@@ -285,6 +285,85 @@ def export_pytorch_model(model: nn.Module, output_path: str, model_name: str = "
     log.info("Pytorch model saved to %s", os.path.join(output_path, model_name))
 
     return os.path.join(os.getcwd(), model_path)
+
+
+def export_model(
+    config: DictConfig,
+    model: Any,
+    export_folder: str,
+    half_precision: bool,
+    input_shapes: Optional[List[Any]] = None,
+    idx_to_class: Optional[Dict[int, str]] = None,
+) -> Optional[Dict[str, Any]]:
+    """Generate deployment models for the task."""
+    if config.export is None or len(config.export.types) == 0:
+        log.info("No export type specified skipping export")
+        return None
+
+    os.makedirs(export_folder, exist_ok=True)
+
+    input_shapes = config.export.input_shapes
+
+    exported = False
+
+    for export_type in config.export.types:
+        if export_type == "torchscript":
+            out = export_torchscript_model(
+                model=model,
+                input_shapes=input_shapes,
+                output_path=export_folder,
+                half_precision=half_precision,
+            )
+
+            if out is None:
+                log.warning("Skipping torchscript export since the model is not supported")
+                continue
+
+            _, input_shapes = out
+            exported = True
+        elif export_type == "pytorch":
+            export_pytorch_model(
+                model=model,
+                output_path=export_folder,
+            )
+            with open(os.path.join(export_folder, "model_config.yaml"), "w") as f:
+                OmegaConf.save(config.model, f, resolve=True)
+
+            exported = True
+        elif export_type == "onnx":
+            if not hasattr(config.export, "onnx"):
+                log.warning("No onnx configuration found, skipping onnx export")
+                continue
+
+            out = export_onnx_model(
+                model=model,
+                output_path=export_folder,
+                onnx_config=config.export.onnx,
+                input_shapes=input_shapes,
+                half_precision=half_precision,
+            )
+
+            if out is None:
+                log.warning("Skipping onnx export since the model is not supported")
+                continue
+
+            _, input_shapes = out
+            exported = True
+        else:
+            log.warning("Export type: %s not implemented", export_type)
+
+    if not exported:
+        log.warning("No export type was successful, skipping export")
+        return None
+
+    model_json = {
+        "input_size": input_shapes,
+        "classes": idx_to_class,
+        "mean": list(config.transforms.mean),
+        "std": list(config.transforms.std),
+    }
+
+    return model_json
 
 
 def import_deployment_model(model_path: str, device: str, model: Optional[nn.Module] = None) -> BaseEvaluationModel:

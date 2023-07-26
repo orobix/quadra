@@ -16,7 +16,7 @@ from quadra.models.evaluation import BaseEvaluationModel
 from quadra.tasks.base import Evaluation, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
-from quadra.utils.export import export_onnx_model, export_torchscript_model, import_deployment_model
+from quadra.utils.export import export_model, import_deployment_model
 from quadra.utils.patch import RleEncoder, compute_patch_metrics, save_classification_result
 from quadra.utils.patch.dataset import PatchDatasetFileFormat
 
@@ -202,75 +202,44 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
 
     def export(self) -> None:
         """Generate deployment model for the task."""
-        if self.config.export is None or len(self.config.export.types) == 0:
-            log.info("No export type specified skipping export")
-            return
-
-        os.makedirs(self.export_folder, exist_ok=True)
-
         input_shapes = self.config.export.input_shapes
-
-        for export_type in self.config.export.types:
-            if export_type == "torchscript":
-                out = export_torchscript_model(
-                    model=self.backbone,
-                    input_shapes=input_shapes,
-                    output_path=self.export_folder,
-                    half_precision=False,
-                )
-
-                if out is None:
-                    log.warning("Skipping torchscript export since the model is not supported")
-                    continue
-
-                _, input_shapes = out
-            elif export_type == "onnx":
-                if not hasattr(self.config.export, "onnx"):
-                    log.warning("No onnx configuration found, skipping onnx export")
-                    continue
-
-                out = export_onnx_model(
-                    model=self.backbone,
-                    output_path=self.export_folder,
-                    onnx_config=self.config.export.onnx,
-                    input_shapes=input_shapes,
-                    half_precision=False,
-                )
-
-                if out is None:
-                    log.warning("Skipping onnx export since the model is not supported")
-                    continue
-
-                _, input_shapes = out
-
-        dump(self.model, os.path.join(self.export_folder, "classifier.joblib"))
-
-        dataset_info = self.datamodule.info
-
-        horizontal_patches = dataset_info.patch_number[1] if dataset_info.patch_number is not None else None
-        vertical_patches = dataset_info.patch_number[0] if dataset_info.patch_number is not None else None
-        patch_height = dataset_info.patch_size[0] if dataset_info.patch_size is not None else None
-        patch_width = dataset_info.patch_size[1] if dataset_info.patch_size is not None else None
-        overlap = dataset_info.overlap
 
         idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
 
-        model_json = {
-            "input_size": input_shapes,
-            "classes": idx_to_class,
-            "mean": self.config.transforms.mean,
-            "std": self.config.transforms.std,
-            "horizontal_patches": horizontal_patches,
-            "vertical_patches": vertical_patches,
-            "patch_height": patch_height,
-            "patch_width": patch_width,
-            "overlap": overlap,
-            "reconstruction_method": self.output.reconstruction_method,
-            "class_to_skip": self.datamodule.class_to_skip_training,
-        }
+        model_json = export_model(
+            config=self.config,
+            model=self.backbone,
+            export_folder=self.export_folder,
+            half_precision=False,
+            input_shapes=input_shapes,
+            idx_to_class=idx_to_class,
+        )
 
-        with open(os.path.join(self.export_folder, "model.json"), "w") as f:
-            json.dump(model_json, f, cls=utils.HydraEncoder)
+        if model_json is not None:
+            dataset_info = self.datamodule.info
+
+            horizontal_patches = dataset_info.patch_number[1] if dataset_info.patch_number is not None else None
+            vertical_patches = dataset_info.patch_number[0] if dataset_info.patch_number is not None else None
+            patch_height = dataset_info.patch_size[0] if dataset_info.patch_size is not None else None
+            patch_width = dataset_info.patch_size[1] if dataset_info.patch_size is not None else None
+            overlap = dataset_info.overlap
+
+            model_json.update(
+                {
+                    "horizontal_patches": horizontal_patches,
+                    "vertical_patches": vertical_patches,
+                    "patch_height": patch_height,
+                    "patch_width": patch_width,
+                    "overlap": overlap,
+                    "reconstruction_method": self.output.reconstruction_method,
+                    "class_to_skip": self.datamodule.class_to_skip_training,
+                }
+            )
+
+            with open(os.path.join(self.export_folder, "model.json"), "w") as f:
+                json.dump(model_json, f, cls=utils.HydraEncoder)
+
+        dump(self.model, os.path.join(self.export_folder, "classifier.joblib"))
 
     def execute(self) -> None:
         """Execute the experiment and all the steps."""

@@ -16,7 +16,7 @@ from quadra.modules.base import SegmentationModel
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
 from quadra.utils.evaluation import create_mask_report
-from quadra.utils.export import export_onnx_model, export_torchscript_model
+from quadra.utils.export import export_model
 
 log = utils.get_logger(__name__)
 
@@ -119,24 +119,26 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         log.info("Exporting model ready for deployment")
         # Get best model!
         if self.trainer.checkpoint_callback is None:
-            raise ValueError("No checkpoint callback found in the trainer")
-        best_model_path = self.trainer.checkpoint_callback.best_model_path  # type: ignore[attr-defined]
-        log.info("Loaded best model from %s", best_model_path)
+            log.warning("No checkpoint callback found in the trainer, exporting the last model weights")
+            module = self.module
+        else:
+            best_model_path = self.trainer.checkpoint_callback.best_model_path  # type: ignore[attr-defined]
+            log.info("Loaded best model from %s", best_model_path)
 
-        module = self.module.load_from_checkpoint(
-            best_model_path,
-            model=self.module.model,
-            loss_fun=None,
-            optimizer=self.module.optimizer,
-            lr_scheduler=self.module.schedulers,
-        )
+            module = self.module.load_from_checkpoint(
+                best_model_path,
+                model=self.module.model,
+                loss_fun=None,
+                optimizer=self.module.optimizer,
+                lr_scheduler=self.module.schedulers,
+            )
 
         if "idx_to_class" not in self.config.datamodule:
             log.info("No idx_to_class key")
-            classes = {0: "good", 1: "bad"}
+            idx_to_class = {0: "good", 1: "bad"}  # TODO: Why is this the default value?
         else:
             log.info("idx_to_class is present")
-            classes = self.config.datamodule.idx_to_class
+            idx_to_class = self.config.datamodule.idx_to_class
 
         if self.config.export is None:
             raise ValueError(
@@ -144,52 +146,21 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
                 "the export_type or assign it to a default value."
             )
 
+        half_precision = "16" in self.config.trainer.precision
+
         input_shapes = self.config.export.input_shapes
 
-        half_precision = self.trainer.precision == 16
+        model_json = export_model(
+            config=self.config,
+            model=module.model,
+            export_folder=self.export_folder,
+            half_precision=half_precision,
+            input_shapes=input_shapes,
+            idx_to_class=idx_to_class,
+        )
 
-        for export_type in self.config.export.types:
-            if export_type == "torchscript":
-                out = export_torchscript_model(
-                    model=module.model,
-                    input_shapes=input_shapes,
-                    output_path=self.export_folder,
-                    half_precision=half_precision,
-                )
-
-                if out is None:
-                    log.warning("Skipping torchscript export since the model is not supported")
-                    continue
-
-                self.exported_model_path, input_shapes = out
-            elif export_type == "onnx":
-                if not hasattr(self.config.export, "onnx"):
-                    log.warning("No onnx configuration found, skipping onnx export")
-                    continue
-
-                out = export_onnx_model(
-                    model=module.model,
-                    output_path=self.export_folder,
-                    onnx_config=self.config.export.onnx,
-                    input_shapes=input_shapes,
-                    half_precision=half_precision,
-                )
-
-                if out is None:
-                    log.warning("Skipping onnx export since the model is not supported")
-                    continue
-
-                self.exported_model_path, input_shapes = out
-
-        if input_shapes is None:
-            log.warning("Not able to export the model in any format")
-
-        model_json = {
-            "input_size": input_shapes,
-            "classes": classes,
-            "mean": self.config.transforms.mean,
-            "std": self.config.transforms.std,
-        }
+        if model_json is None:
+            return
 
         with open(os.path.join(self.export_folder, "model.json"), "w") as f:
             json.dump(model_json, f, cls=utils.HydraEncoder)
