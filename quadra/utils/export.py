@@ -185,7 +185,10 @@ def export_onnx_model(
     else:
         model.cpu()
 
-    batch_size = 1 if onnx_config.fixed_batch_size is None else onnx_config.fixed_batch_size
+    if hasattr(onnx_config, "fixed_batch_size") and onnx_config.fixed_batch_size is not None:
+        batch_size = onnx_config.fixed_batch_size
+    else:
+        batch_size = 1
 
     model_inputs = extract_torch_model_inputs(
         model=model, input_shapes=input_shapes, half_precision=half_precision, batch_size=batch_size
@@ -216,7 +219,7 @@ def export_onnx_model(
 
     dynamic_axes = onnx_config.dynamic_axes if hasattr(onnx_config, "dynamic_axes") else None
 
-    if onnx_config.fixed_batch_size is None:
+    if hasattr(onnx_config, "fixed_batch_size") and onnx_config.fixed_batch_size is None:
         if dynamic_axes is None:
             dynamic_axes = {}
             for i, _ in enumerate(input_names):
@@ -234,7 +237,6 @@ def export_onnx_model(
     onnx_config["dynamic_axes"] = dynamic_axes
 
     simplify = onnx_config.pop("simplify", False)
-    _ = onnx_config.pop("fixed_batch_size", None)
 
     if len(inp) == 1:
         inp = inp[0]
