@@ -63,7 +63,7 @@ dependencies = [
   "h5py==3.8.*",
   "timm==0.6.12", # required by smp
   "segmentation-models-pytorch==0.3.*",
-  "anomalib@git+https://github.com/orobix/anomalib.git@v0.4.0+obx.1.0.1",
+  "anomalib@git+https://github.com/orobix/anomalib.git@v0.4.0+obx.1.0.2",
   "xxhash==3.2.*",
 ]
 
