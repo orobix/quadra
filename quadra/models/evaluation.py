@@ -5,6 +5,7 @@ from typing import Any, cast
 
 import numpy as np
 import torch
+from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
 from torch.jit import RecursiveScriptModule
 
@@ -134,6 +135,9 @@ class ONNXEvaluationModel(BaseEvaluationModel):
                 dict[str, Any], OmegaConf.to_container(self.config.session_options, resolve=True)
             )
             for key, value in session_options_dict.items():
+                if isinstance(value, dict) and "_target_" in value:
+                    value = instantiate(value)
+
                 setattr(session_options, key, value)
 
         return session_options

@@ -2,11 +2,12 @@
 import os
 import shutil
 from pathlib import Path
+from typing import List
 
 import pytest
 
 from quadra.utils.tests.fixtures import base_anomaly_dataset
-from quadra.utils.tests.helpers import execute_quadra_experiment
+from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, get_export_extension
 
 BASE_EXPERIMENT_OVERRIDES = [
     "trainer=lightning_cpu",
@@ -19,20 +20,6 @@ BASE_EXPERIMENT_OVERRIDES = [
     "trainer.max_epochs=1",
     "~logger.mlflow",
 ]
-
-
-def _check_deployment_model(invert: bool = False):
-    """Check that the runtime model is present and valid.
-
-    Args:
-        invert: If true check that the runtime model is not present.
-    """
-    if invert:
-        assert not os.path.exists("deployment_model/model.pt")
-        assert not os.path.exists("deployment_model/model.json")
-    else:
-        assert os.path.exists("deployment_model/model.pt")
-        assert os.path.exists("deployment_model/model.json")
 
 
 def _check_report(invert: bool = False):
@@ -51,7 +38,10 @@ def _check_report(invert: bool = False):
         assert os.path.exists("avg_score_by_label.csv")
 
 
-def _run_inference_experiment(data_path: str, train_path: str, test_path: str):
+def _run_inference_experiment(data_path: str, train_path: str, test_path: str, export_type: str):
+    """Run an inference experiment for the given export type."""
+    extension = get_export_extension(export_type)
+
     test_overrides = [
         "task.device=cpu",
         "experiment=base/anomaly/inference",
@@ -59,24 +49,41 @@ def _run_inference_experiment(data_path: str, train_path: str, test_path: str):
         "datamodule.num_workers=1",
         "datamodule.test_batch_size=32",
         "logger=csv",
-        f"task.model_path={os.path.join(train_path, 'deployment_model', 'model.pt')}",
+        f"task.model_path={os.path.join(train_path, 'deployment_model', f'model.{extension}')}",
     ]
 
     execute_quadra_experiment(overrides=test_overrides, experiment_path=test_path)
 
 
+def run_inference_experiments(data_path: str, train_path: str, test_path: str, export_types: List[str]):
+    """Run inference experiments for the given export types."""
+    for export_type in export_types:
+        cwd = os.getcwd()
+        check_deployment_model(export_type=export_type)
+
+        _run_inference_experiment(
+            data_path=data_path, train_path=train_path, test_path=test_path, export_type=export_type
+        )
+
+        # Change back to the original working directory
+        os.chdir(cwd)
+
+
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_padim_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
+    """Test the training of the PADIM model."""
     data_path, _ = base_anomaly_dataset
 
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
 
+    export_types = ["onnx", "torchscript"]
     overrides = [
         "experiment=base/anomaly/padim",
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
+        f"export.types=[{','.join(export_types)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -84,26 +91,30 @@ def test_padim_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_datas
 
     assert os.path.exists("checkpoints/final_model.ckpt")
 
-    _check_deployment_model()
     _check_report()
 
-    _run_inference_experiment(data_path, train_path, test_path)
+    run_inference_experiments(
+        data_path=data_path, train_path=train_path, test_path=test_path, export_types=export_types
+    )
 
     shutil.rmtree(tmp_path)
 
 
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_patchcore_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
+    """Test the training of the PatchCore model."""
     data_path, _ = base_anomaly_dataset
 
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
 
+    export_types = ["onnx", "torchscript"]
     overrides = [
         "experiment=base/anomaly/patchcore",
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
+        f"export.types=[{','.join(export_types)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -111,10 +122,11 @@ def test_patchcore_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_d
 
     assert os.path.exists("checkpoints/final_model.ckpt")
 
-    _check_deployment_model()
     _check_report()
 
-    _run_inference_experiment(data_path, train_path, test_path)
+    run_inference_experiments(
+        data_path=data_path, train_path=train_path, test_path=test_path, export_types=["torchscript"]
+    )
 
     shutil.rmtree(tmp_path)
 
@@ -129,7 +141,7 @@ def test_cflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_datas
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
-        "export=null",
+        "export.types=[]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -137,10 +149,9 @@ def test_cflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_datas
 
     assert os.path.exists("checkpoints/final_model.ckpt")
 
-    _check_deployment_model(invert=True)  # cflow does not support runtime model
     _check_report()
 
-    # cflow does not support inference with jitted model
+    # cflow does not support exporting to torchscript and onnx at the moment
     shutil.rmtree(tmp_path)
 
 
@@ -151,10 +162,13 @@ def test_csflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_data
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
 
+    export_types = ["onnx", "torchscript"]
+
     overrides = [
         "experiment=base/anomaly/csflow",
         f"datamodule.data_path={data_path}",
         f"model.dataset.task={task}",
+        f"export.types=[{','.join(export_types)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -162,10 +176,11 @@ def test_csflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_data
 
     assert os.path.exists("checkpoints/final_model.ckpt")
 
-    _check_deployment_model()
     _check_report()
 
-    _run_inference_experiment(data_path, train_path, test_path)
+    run_inference_experiments(
+        data_path=data_path, train_path=train_path, test_path=test_path, export_types=["torchscript"]
+    )
 
     shutil.rmtree(tmp_path)
 
@@ -177,11 +192,13 @@ def test_fastflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_da
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
 
+    export_types = ["onnx", "torchscript"]
     overrides = [
         "experiment=base/anomaly/fastflow",
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
+        f"export.types=[{','.join(export_types)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -189,10 +206,11 @@ def test_fastflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_da
 
     assert os.path.exists("checkpoints/final_model.ckpt")
 
-    _check_deployment_model()
     _check_report()
 
-    _run_inference_experiment(data_path, train_path, test_path)
+    run_inference_experiments(
+        data_path=data_path, train_path=train_path, test_path=test_path, export_types=["torchscript"]
+    )
 
     shutil.rmtree(tmp_path)
 
@@ -204,10 +222,12 @@ def test_draem_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_datas
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
 
+    export_types = ["onnx", "torchscript"]
     overrides = [
         "experiment=base/anomaly/draem",
         f"datamodule.data_path={data_path}",
         f"model.dataset.task={task}",
+        f"export.types=[{','.join(export_types)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -215,9 +235,10 @@ def test_draem_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_datas
 
     assert os.path.exists("checkpoints/final_model.ckpt")
 
-    _check_deployment_model()
     _check_report()
 
-    _run_inference_experiment(data_path, train_path, test_path)
+    run_inference_experiments(
+        data_path=data_path, train_path=train_path, test_path=test_path, export_types=["torchscript"]
+    )
 
     shutil.rmtree(tmp_path)

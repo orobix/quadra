@@ -138,16 +138,20 @@ def export_torchscript_model(
 
     inp, input_shapes = model_inputs
 
-    model_jit = torch.jit.trace(model, inp)
+    try:
+        model_jit = torch.jit.trace(model, inp)
 
-    os.makedirs(output_path, exist_ok=True)
+        os.makedirs(output_path, exist_ok=True)
 
-    model_path = os.path.join(output_path, model_name)
-    model_jit.save(model_path)
+        model_path = os.path.join(output_path, model_name)
+        model_jit.save(model_path)
 
-    log.info("Torchscript model saved to %s", os.path.join(os.getcwd(), model_path))
+        log.info("Torchscript model saved to %s", os.path.join(os.getcwd(), model_path))
 
-    return os.path.join(os.getcwd(), model_path), input_shapes
+        return os.path.join(os.getcwd(), model_path), input_shapes
+    except Exception as e:
+        log.debug("Failed to export torchscript model with exception: %s", e)
+        return None
 
 
 @torch.inference_mode()
@@ -242,7 +246,7 @@ def export_onnx_model(
         # Check if ONNX model is valid
         onnx.checker.check_model(onnx_model)
     except Exception as e:
-        log.warning("ONNX export failed with error: %s", e)
+        log.debug("ONNX export failed with error: %s", e)
         return None
 
     log.info("ONNX model saved to %s", os.path.join(os.getcwd(), model_path))
@@ -250,10 +254,15 @@ def export_onnx_model(
     if simplify:
         log.info("Attempting to simplify ONNX model")
         onnx_model = onnx.load(model_path)
-        simplified_model, check = onnx_simplify(onnx_model)
+
+        try:
+            simplified_model, check = onnx_simplify(onnx_model)
+        except Exception as e:
+            log.debug("ONNX simplification failed with error: %s", e)
+            check = False
 
         if not check:
-            log.warning("Simplified ONNX model could not be validated, using original ONNX model")
+            log.warning("Something failed during model simplification, only original ONNX model will be exported")
         else:
             model_filename, model_extension = os.path.splitext(model_name)
             model_name = f"{model_filename}_simplified{model_extension}"
@@ -315,7 +324,7 @@ def export_model(
             )
 
             if out is None:
-                log.warning("Skipping torchscript export since the model is not supported")
+                log.warning("Torchscript export failed, enable debug logging for more details")
                 continue
 
             _, input_shapes = out
@@ -343,7 +352,7 @@ def export_model(
             )
 
             if out is None:
-                log.warning("Skipping onnx export since the model is not supported")
+                log.warning("ONNX export failed, enable debug logging for more details")
                 continue
 
             _, input_shapes = out
@@ -352,7 +361,7 @@ def export_model(
             log.warning("Export type: %s not implemented", export_type)
 
     if not exported:
-        log.warning("No export type was successful, skipping export")
+        log.warning("No export type was successful, no model will be available for deployment")
         return None
 
     model_json = {

@@ -28,3 +28,36 @@ def execute_quadra_experiment(overrides: List[str], experiment_path: Path) -> No
         HydraConfig.instance().set_config(cfg)
 
         main(cfg)
+
+
+def get_export_extension(export_type: str) -> str:
+    """Get the extension of the exported model.
+
+    Args:
+        export_type: The type of the exported model.
+
+    Returns:
+        The extension of the exported model.
+    """
+    if export_type == "onnx":
+        extension = "onnx"
+    elif export_type == "torchscript":
+        extension = "pt"
+    elif export_type == "torch":
+        extension = "pth"
+    else:
+        raise ValueError(f"Unsupported export type {export_type}")
+
+    return extension
+
+
+def check_deployment_model(export_type: str):
+    """Check that the runtime model is present and valid.
+
+    Args:
+        export_type: The type of the exported model.
+    """
+    extension = get_export_extension(export_type)
+
+    assert os.path.exists(f"deployment_model/model.{extension}")
+    assert os.path.exists("deployment_model/model.json")
