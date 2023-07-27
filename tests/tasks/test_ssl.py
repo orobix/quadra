@@ -19,6 +19,7 @@ BASE_EXPERIMENT_OVERRIDES = [
     "+trainer.limit_val_batches=1",
     "+trainer.limit_test_batches=1",
     "logger=csv",
+    "export.types=[onnx,torchscript]",
 ]
 
 
