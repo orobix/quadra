@@ -12,5 +12,4 @@ defaults:
   - override /trainer: null
   - override /callbacks: null
   - override /logger: null
-  - override /export: default
   - _self_

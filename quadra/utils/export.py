@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List, Optional, Sequence, Tuple, TypeVar, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, TypeVar, Union, cast
 
 import torch
 from anomalib.models.cflow import CflowLightning
@@ -223,21 +223,20 @@ def export_onnx_model(
     else:
         dynamic_axes = None
 
+    onnx_config = cast(Dict[str, Any], OmegaConf.to_container(onnx_config, resolve=True))
+
+    onnx_config["input_names"] = input_names
+    onnx_config["output_names"] = output_names
+    onnx_config["dynamic_axes"] = dynamic_axes
+
+    simplify = onnx_config.pop("simplify", False)
+    _ = onnx_config.pop("fixed_batch_size", None)
+
     if len(inp) == 1:
         inp = inp[0]
     try:
-        with torch.autocast("cuda"):
-            torch.onnx.export(
-                model=model,
-                args=inp,
-                f=model_path,
-                export_params=onnx_config.export_params,
-                opset_version=onnx_config.opset_version,
-                do_constant_folding=onnx_config.do_constant_folding,
-                input_names=input_names,
-                output_names=output_names,
-                dynamic_axes=dynamic_axes,
-            )
+        with torch.autocast("cuda"):  # TODO: Do we need this?
+            torch.onnx.export(model=model, args=inp, f=model_path, **onnx_config)
 
         onnx_model = onnx.load(model_path)
         # Check if ONNX model is valid
@@ -248,7 +247,7 @@ def export_onnx_model(
 
     log.info("ONNX model saved to %s", os.path.join(os.getcwd(), model_path))
 
-    if onnx_config.simplify:
+    if simplify:
         log.info("Attempting to simplify ONNX model")
         onnx_model = onnx.load(model_path)
         simplified_model, check = onnx_simplify(onnx_model)
@@ -366,12 +365,15 @@ def export_model(
     return model_json
 
 
-def import_deployment_model(model_path: str, device: str, model: Optional[nn.Module] = None) -> BaseEvaluationModel:
+def import_deployment_model(
+    model_path: str, inference_config: DictConfig, device: str, model: Optional[nn.Module] = None
+) -> BaseEvaluationModel:
     """Try to import a model for deployment, currently only supports torchscript .pt files and
     state dictionaries .pth files.
 
     Args:
         model_path: Path to the model
+        inference_config: Inference configuration, should contain keys for the different deployment models
         device: Device to load the model on
         model: Pytorch model needed to load the parameter dictionary
 
@@ -382,14 +384,14 @@ def import_deployment_model(model_path: str, device: str, model: Optional[nn.Mod
     deployment_model: Optional[BaseEvaluationModel] = None
 
     if file_extension == ".pt":
-        deployment_model = TorchscriptEvaluationModel()
+        deployment_model = TorchscriptEvaluationModel(config=inference_config.torchscript)
     if file_extension == ".pth":
         if model is None:
             raise ValueError("Model is not defined, can not load state_dict!")
 
-        deployment_model = TorchEvaluationModel(model=model)
+        deployment_model = TorchEvaluationModel(model=model, config=inference_config.torch)
     if file_extension == ".onnx":
-        deployment_model = ONNXEvaluationModel()
+        deployment_model = ONNXEvaluationModel(config=inference_config.onnx)
 
     if deployment_model is not None:
         deployment_model.load_from_disk(model_path=model_path, device=device)

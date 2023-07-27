@@ -93,7 +93,7 @@ class SSL(LightningTask):
 
     def export(self) -> None:
         """Deploy a model ready for production."""
-        half_precision = "16" in self.config.trainer.precision
+        half_precision = "16" in self.trainer.precision
 
         input_shapes = self.config.export.input_shapes
 
@@ -498,7 +498,9 @@ class EmbeddingVisualization(Task):
     @deployment_model.setter
     def deployment_model(self, model_path: str):
         """Set the deployment model."""
-        self._deployment_model = import_deployment_model(model_path, self.device)
+        self._deployment_model = import_deployment_model(
+            model_path=model_path, device=self.device, inference_config=self.config.inference
+        )
 
     def prepare(self) -> None:
         """Prepare the evaluation."""

@@ -146,7 +146,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
                 "the export_type or assign it to a default value."
             )
 
-        half_precision = "16" in self.config.trainer.precision
+        half_precision = "16" in self.trainer.precision
 
         input_shapes = self.config.export.input_shapes
 

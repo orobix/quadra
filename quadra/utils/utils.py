@@ -268,7 +268,9 @@ def finish(
             if model_json is not None:
                 for model_path in deployed_models:
                     if model_path.endswith(".pt"):
-                        model = quadra_export.import_deployment_model(model_path, device="cpu").model
+                        model = quadra_export.import_deployment_model(
+                            model_path, device="cpu", inference_config=config
+                        ).model
 
                         input_size = model_json["input_size"]
 

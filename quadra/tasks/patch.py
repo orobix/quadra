@@ -377,7 +377,9 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
             self._backbone = self._backbone.to(self.device)
         else:
             log.info("Importing trained model")
-            self._backbone = import_deployment_model(model_path=model_path, device=self.device)
+            self._backbone = import_deployment_model(
+                model_path=model_path, device=self.device, inference_config=self.config.inference
+            )
 
     @property
     def trainer(self) -> SklearnClassificationTrainer:

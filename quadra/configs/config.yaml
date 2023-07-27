@@ -18,6 +18,8 @@ defaults:
   - experiment: null
   - hparams_search: null
   - hydra: default
+  - export: default
+  - inference: default
 
   # enable color logging
   - override hydra/hydra_logging: colorlog

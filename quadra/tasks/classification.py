@@ -269,7 +269,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         input_shapes = self.config.export.input_shapes
 
         # TODO: What happens if we have 64 precision?
-        half_precision = "16" in self.config.trainer.precision
+        half_precision = "16" in self.trainer.precision
 
         self.model_json = export_model(
             config=self.config,
@@ -800,10 +800,12 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
                 backbone = hydra.utils.instantiate(backbone_config.model)
             backbone.eval()
             backbone = backbone.to(self.device)
-            self._backbone = TorchEvaluationModel(backbone)
+            self._backbone = TorchEvaluationModel(backbone, self.config)
         else:
             log.info("Importing trained model")
-            self._backbone = import_deployment_model(model_path=model_path, device=self.device)
+            self._backbone = import_deployment_model(
+                model_path=model_path, device=self.device, inference_config=self.config.inference
+            )
             log.info("Imported %s model", self._backbone.__class__.__name__)
 
     @property
@@ -938,7 +940,9 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
                 raise ValueError("Invalid model config, it should be a DictConfig")
 
             model_architecture = self.get_torch_model(model_config)
-        self._deployment_model = import_deployment_model(model_path, self.device, model_architecture)
+        self._deployment_model = import_deployment_model(
+            model_path=model_path, device=self.device, model=model_architecture, inference_config=self.config.inference
+        )
         if self.gradcam and not isinstance(self.deployment_model, TorchEvaluationModel):
             log.warning("To compute gradcams you need to provide the path to an exported .pth state_dict file")
             self.gradcam = False

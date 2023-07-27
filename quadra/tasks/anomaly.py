@@ -105,10 +105,6 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
     def export(self) -> None:
         """Export model for production."""
-        if self.config.export is None or len(self.config.export.types) == 0:
-            log.info("No export type specified skipping export")
-            return
-
         if self.config.trainer.get("fast_dev_run"):
             log.warning("Skipping export since fast_dev_run is enabled")
             return
@@ -117,7 +113,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
         input_shapes = self.config.export.input_shapes
 
-        half_precision = "16" in self.config.trainer.precision
+        half_precision = "16" in self.trainer.precision
 
         model_json = export_model(
             config=self.config,

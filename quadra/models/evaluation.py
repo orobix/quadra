@@ -5,6 +5,7 @@ from typing import Any, cast
 
 import numpy as np
 import torch
+from omegaconf import DictConfig, OmegaConf
 from torch.jit import RecursiveScriptModule
 
 try:
@@ -18,10 +19,11 @@ except ImportError:
 class BaseEvaluationModel(ABC):
     """Base interface for all evaluation models."""
 
-    def __init__(self) -> None:
+    def __init__(self, config: DictConfig) -> None:
         self.model: Any
         self.model_path: str | None
         self.device: str
+        self.config = config
 
     @abstractmethod
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
@@ -92,12 +94,12 @@ class TorchEvaluationModel(TorchscriptEvaluationModel):
         model: Torch model to wrap.
     """
 
-    def __init__(self, model: torch.nn.Module):
+    def __init__(self, model: torch.nn.Module, config: DictConfig) -> None:
         self.model = model
 
         # Extract device from model
         self.device = str(next(self.model.parameters()).device)
-        super().__init__()
+        super().__init__(config=config)
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.model(*args, **kwargs)
@@ -115,12 +117,26 @@ class TorchEvaluationModel(TorchscriptEvaluationModel):
 class ONNXEvaluationModel(BaseEvaluationModel):
     """Wrapper for ONNX models. It's designed to provide a similar interface to standard torch models."""
 
-    def __init__(self):
+    def __init__(self, config: DictConfig) -> None:
         if not ONNX_AVAILABLE:
             raise ImportError(
                 "onnxruntime is not installed. Please install ONNX capabilities for quadra with: pip install .[onnx]"
             )
-        super().__init__()
+        super().__init__(config=config)
+        self.session_options = self.generate_session_options()
+
+    def generate_session_options(self) -> ort.SessionOptions:
+        """Generate session options from the current config."""
+        session_options = ort.SessionOptions()
+
+        if hasattr(self.config, "session_options") and self.config.session_options is not None:
+            session_options_dict = cast(
+                dict[str, Any], OmegaConf.to_container(self.config.session_options, resolve=True)
+            )
+            for key, value in session_options_dict.items():
+                setattr(session_options, key, value)
+
+        return session_options
 
     def __call__(self, inputs: list[np.ndarray] | np.ndarray | list[torch.Tensor] | torch.Tensor) -> Any:
         """Run inference on the model and return the output as torch tensors."""
@@ -152,11 +168,7 @@ class ONNXEvaluationModel(BaseEvaluationModel):
         self.device = device
 
         ort_providers = self._get_providers(device)
-        # TODO: Add support for custom session options
-        session_options = ort.SessionOptions()
-        session_options.intra_op_num_threads = 8
-        session_options.inter_op_num_threads = 8
-        self.model = ort.InferenceSession(self.model_path, providers=ort_providers, sess_options=session_options)
+        self.model = ort.InferenceSession(self.model_path, providers=ort_providers, sess_options=self.session_options)
 
     def _get_providers(self, device: str) -> list[tuple[str, dict[str, Any]] | str]:
         """Return the providers for the ONNX model based on the device."""
