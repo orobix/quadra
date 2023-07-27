@@ -13,7 +13,7 @@ import pandas as pd
 import timm
 import torch
 from joblib import dump, load
-from omegaconf import DictConfig, ListConfig, OmegaConf
+from omegaconf import DictConfig, OmegaConf
 from pytorch_grad_cam import GradCAM
 from scipy import ndimage
 from sklearn.base import ClassifierMixin
@@ -636,6 +636,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             half_precision=False,
             input_shapes=input_shapes,
             idx_to_class=idx_to_class,
+            pytorch_model_type="backbone",
         )
 
         dump(self.model, os.path.join(self.export_folder, "classifier.joblib"))
@@ -703,6 +704,7 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
         model_path: path to trained model generated from SklearnClassification task.
         device: the device where to run the model (cuda or cpu)
         gradcam: Whether to compute gradcams
+        **kwargs: Additional arguments to pass to the task
     """
 
     def __init__(
@@ -714,7 +716,7 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
         gradcam: bool = False,
         **kwargs: Any,
     ):
-        super().__init__(config=config, model_path=model_path, device=device)
+        super().__init__(config=config, model_path=model_path, device=device, **kwargs)
         self.gradcam = gradcam
         self.output = output
         self._backbone: BaseEvaluationModel
@@ -785,28 +787,31 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
     @backbone.setter
     def backbone(self, model_path: str) -> None:
         """Load backbone."""
-        file_extension = os.path.splitext(os.path.basename(model_path))[1]
-        if file_extension == ".yaml":
-            log.info("Model path points to '.yaml' file")
+        file_extension = os.path.splitext(model_path)[1]
+
+        model_architecture = None
+        if file_extension == ".pth":
             backbone_config_path = os.path.join(Path(model_path).parent, "model_config.yaml")
             log.info("Loading backbone from config")
             backbone_config = OmegaConf.load(backbone_config_path)
 
             if backbone_config.metadata.get("checkpoint"):
                 log.info("Loading backbone from <%s>", backbone_config.metadata.checkpoint)
-                backbone = torch.load(backbone_config.metadata.checkpoint)
+                model_architecture = torch.load(backbone_config.metadata.checkpoint)
             else:
                 log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
-                backbone = hydra.utils.instantiate(backbone_config.model)
-            backbone.eval()
-            backbone = backbone.to(self.device)
-            self._backbone = TorchEvaluationModel(backbone, self.config)
-        else:
-            log.info("Importing trained model")
-            self._backbone = import_deployment_model(
-                model_path=model_path, device=self.device, inference_config=self.config.inference
-            )
-            log.info("Imported %s model", self._backbone.__class__.__name__)
+                model_architecture = hydra.utils.instantiate(backbone_config.model)
+
+        self._backbone = import_deployment_model(
+            model_path=model_path,
+            device=self.device,
+            inference_config=self.config.inference,
+            model_architecture=model_architecture,
+        )
+
+        if self.gradcam and not isinstance(self._backbone, TorchEvaluationModel):
+            log.warning("Gradcam is supported only for pytorch models. Skipping gradcam")
+            self.gradcam = False
 
     @property
     def trainer(self) -> SklearnClassificationTrainer:
@@ -932,17 +937,24 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
     @deployment_model.setter
     def deployment_model(self, model_path: str):
         """Set the deployment model."""
-        model_architecture = None
+        file_extension = os.path.splitext(model_path)[1]
 
-        if os.path.splitext(os.path.basename(model_path))[1] == ".pth":
-            model_config = OmegaConf.load(os.path.join(Path(self.model_path).parent, "model_config.yaml"))
-            if isinstance(model_config, ListConfig):
-                raise ValueError("Invalid model config, it should be a DictConfig")
+        model_architecture = None
+        if file_extension == ".pth":
+            model_config = OmegaConf.load(os.path.join(Path(model_path).parent, "model_config.yaml"))
+
+            if not isinstance(model_config, DictConfig):
+                raise ValueError(f"The model config must be a DictConfig, got {type(model_config)}")
 
             model_architecture = self.get_torch_model(model_config)
+
         self._deployment_model = import_deployment_model(
-            model_path=model_path, device=self.device, model=model_architecture, inference_config=self.config.inference
+            model_path=model_path,
+            device=self.device,
+            inference_config=self.config.inference,
+            model_architecture=model_architecture,
         )
+
         if self.gradcam and not isinstance(self.deployment_model, TorchEvaluationModel):
             log.warning("To compute gradcams you need to provide the path to an exported .pth state_dict file")
             self.gradcam = False
@@ -967,7 +979,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
                 ]  # type: ignore[index]
             ]
             self.cam = GradCAM(
-                model=self.deployment_model,
+                model=self.deployment_model.model,
                 target_layers=target_layers,
                 use_cuda=(self.device != "cpu"),
             )

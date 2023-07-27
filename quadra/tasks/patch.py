@@ -213,6 +213,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
             half_precision=False,
             input_shapes=input_shapes,
             idx_to_class=idx_to_class,
+            pytorch_model_type="backbone",
         )
 
         if model_json is not None:
@@ -360,26 +361,27 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
     @backbone.setter
     def backbone(self, model_path: str) -> None:
         """Load backbone."""
-        file_extension = os.path.splitext(os.path.basename(model_path))[1]
-        if file_extension == ".yaml":
-            log.info("Model path points to '.yaml' file")
-            backbone_config_path = os.path.join(Path(model_path).parent, "backbone_config.yaml")
+        file_extension = os.path.splitext(model_path)[1]
+
+        model_architecture = None
+        if file_extension == ".pth":
+            backbone_config_path = os.path.join(Path(model_path).parent, "model_config.yaml")
             log.info("Loading backbone from config")
             backbone_config = OmegaConf.load(backbone_config_path)
 
             if backbone_config.metadata.get("checkpoint"):
                 log.info("Loading backbone from <%s>", backbone_config.metadata.checkpoint)
-                self._backbone = torch.load(backbone_config.metadata.checkpoint)
+                model_architecture = torch.load(backbone_config.metadata.checkpoint)
             else:
                 log.info("Loading backbone from <%s>", backbone_config.model["_target_"])
-                self._backbone = hydra.utils.instantiate(backbone_config.model)
-            self._backbone.eval()
-            self._backbone = self._backbone.to(self.device)
-        else:
-            log.info("Importing trained model")
-            self._backbone = import_deployment_model(
-                model_path=model_path, device=self.device, inference_config=self.config.inference
-            )
+                model_architecture = hydra.utils.instantiate(backbone_config.model)
+
+        self._backbone = import_deployment_model(
+            model_path=model_path,
+            device=self.device,
+            inference_config=self.config.inference,
+            model_architecture=model_architecture,
+        )
 
     @property
     def trainer(self) -> SklearnClassificationTrainer:

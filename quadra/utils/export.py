@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List, Optional, Sequence, Tuple, TypeVar, Union, cast
+from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, TypeVar, Union, cast
 
 import torch
 from anomalib.models.cflow import CflowLightning
@@ -302,8 +302,20 @@ def export_model(
     half_precision: bool,
     input_shapes: Optional[List[Any]] = None,
     idx_to_class: Optional[Dict[int, str]] = None,
+    pytorch_model_type: Literal["backbone", "model"] = "model",
 ) -> Optional[Dict[str, Any]]:
-    """Generate deployment models for the task."""
+    """Generate deployment models for the task.
+
+    Args:
+        config: Experiment config
+        model: Model to be exported
+        export_folder: Path to save the exported model
+        half_precision: Whether to use half precision for the exported model
+        input_shapes: Input shapes for the exported model
+        idx_to_class: Mapping from class index to class name
+        pytorch_model_type: Type of the pytorch model config to be exported, if it's backbone on disk we will save the
+            config.backbone config, otherwise we will save the config.model
+    """
     if config.export is None or len(config.export.types) == 0:
         log.info("No export type specified skipping export")
         return None
@@ -335,7 +347,7 @@ def export_model(
                 output_path=export_folder,
             )
             with open(os.path.join(export_folder, "model_config.yaml"), "w") as f:
-                OmegaConf.save(config.model, f, resolve=True)
+                OmegaConf.save(getattr(config, pytorch_model_type), f, resolve=True)
 
             exported = True
         elif export_type == "onnx":
@@ -375,7 +387,7 @@ def export_model(
 
 
 def import_deployment_model(
-    model_path: str, inference_config: DictConfig, device: str, model: Optional[nn.Module] = None
+    model_path: str, inference_config: DictConfig, device: str, model_architecture: Optional[nn.Module] = None
 ) -> BaseEvaluationModel:
     """Try to import a model for deployment, currently only supports torchscript .pt files and
     state dictionaries .pth files.
@@ -384,26 +396,31 @@ def import_deployment_model(
         model_path: Path to the model
         inference_config: Inference configuration, should contain keys for the different deployment models
         device: Device to load the model on
-        model: Pytorch model needed to load the parameter dictionary
+        model_architecture: Optional model architecture to use for loading a plain pytorch model
 
     Returns:
         A tuple containing the model and the model type
     """
+    log.info("Importing trained model")
+
     file_extension = os.path.splitext(os.path.basename(model_path))[1]
     deployment_model: Optional[BaseEvaluationModel] = None
 
     if file_extension == ".pt":
         deployment_model = TorchscriptEvaluationModel(config=inference_config.torchscript)
-    if file_extension == ".pth":
-        if model is None:
-            raise ValueError("Model is not defined, can not load state_dict!")
+    elif file_extension == ".pth":
+        if model_architecture is None:
+            raise ValueError("model_architecture must be specified when loading a .pth file")
 
-        deployment_model = TorchEvaluationModel(model=model, config=inference_config.torch)
-    if file_extension == ".onnx":
+        deployment_model = TorchEvaluationModel(config=inference_config.pytorch, model_architecture=model_architecture)
+    elif file_extension == ".onnx":
         deployment_model = ONNXEvaluationModel(config=inference_config.onnx)
 
     if deployment_model is not None:
         deployment_model.load_from_disk(model_path=model_path, device=device)
+
+        log.info("Imported %s model", deployment_model.__class__.__name__)
+
         return deployment_model
 
     raise ValueError(f"Unable to load model with extension {file_extension}, valid extensions are: ['.pt', 'pth']")

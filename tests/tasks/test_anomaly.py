@@ -70,8 +70,8 @@ def run_inference_experiments(data_path: str, train_path: str, test_path: str, e
 
 
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
-def test_padim_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
-    """Test the training of the PADIM model."""
+def test_padim(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
+    """Test the training and evaluation of the PADIM model."""
     data_path, _ = base_anomaly_dataset
 
     train_path = tmp_path / "train"
@@ -101,8 +101,8 @@ def test_padim_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_datas
 
 
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
-def test_patchcore_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
-    """Test the training of the PatchCore model."""
+def test_patchcore(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
+    """Test the training and evaluation of the PatchCore model."""
     data_path, _ = base_anomaly_dataset
 
     train_path = tmp_path / "train"
@@ -133,7 +133,8 @@ def test_patchcore_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_d
 
 @pytest.mark.slow
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
-def test_cflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
+def test_cflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
+    """Test the training and evaluation of the cflow model."""
     data_path, _ = base_anomaly_dataset
 
     overrides = [
@@ -157,7 +158,8 @@ def test_cflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_datas
 
 @pytest.mark.slow
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
-def test_csflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
+def test_csflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
+    """Test the training and evaluation of the csflow model."""
     data_path, _ = base_anomaly_dataset
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
@@ -187,7 +189,8 @@ def test_csflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_data
 
 @pytest.mark.slow
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
-def test_fastflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
+def test_fastflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
+    """Test the training and evaluation of the fastflow model."""
     data_path, _ = base_anomaly_dataset
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
@@ -217,7 +220,8 @@ def test_fastflow_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_da
 
 @pytest.mark.slow
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
-def test_draem_training(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
+def test_draem(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
+    """Test the training and evaluation of the draem model."""
     data_path, _ = base_anomaly_dataset
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"

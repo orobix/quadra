@@ -22,5 +22,5 @@ onnx:
     use_deterministic_compute: false
     profile_file_prefix: onnxruntime_profile_
 
-torch:
+pytorch:
 torchscript:

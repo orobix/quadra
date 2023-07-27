@@ -7,7 +7,10 @@ import numpy as np
 import torch
 from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
+from torch import nn
 from torch.jit import RecursiveScriptModule
+
+from quadra.utils.logger import get_logger
 
 try:
     import onnxruntime as ort  # noqa
@@ -15,6 +18,9 @@ try:
     ONNX_AVAILABLE = True
 except ImportError:
     ONNX_AVAILABLE = False
+
+
+log = get_logger(__name__)
 
 
 class BaseEvaluationModel(ABC):
@@ -92,15 +98,15 @@ class TorchEvaluationModel(TorchscriptEvaluationModel):
     """Wrapper for torch models.
 
     Args:
-        model: Torch model to wrap.
+        model_architecture: Optional torch model architecture
     """
 
-    def __init__(self, model: torch.nn.Module, config: DictConfig) -> None:
-        self.model = model
-
-        # Extract device from model
-        self.device = str(next(self.model.parameters()).device)
+    def __init__(self, config: DictConfig, model_architecture: nn.Module) -> None:
         super().__init__(config=config)
+        self.model = model_architecture
+        self.model.eval()
+        device = next(self.model.parameters()).device
+        self.device = str(device)
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.model(*args, **kwargs)
@@ -109,7 +115,6 @@ class TorchEvaluationModel(TorchscriptEvaluationModel):
         """Load model from disk."""
         self.model_path = model_path
         self.device = device
-
         self.model.load_state_dict(torch.load(self.model_path))
         self.model.eval()
         self.model.to(self.device)

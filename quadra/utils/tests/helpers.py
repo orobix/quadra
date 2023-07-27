@@ -43,7 +43,7 @@ def get_export_extension(export_type: str) -> str:
         extension = "onnx"
     elif export_type == "torchscript":
         extension = "pt"
-    elif export_type == "torch":
+    elif export_type == "pytorch":
         extension = "pth"
     else:
         raise ValueError(f"Unsupported export type {export_type}")
