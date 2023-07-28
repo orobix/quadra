@@ -237,12 +237,12 @@ def export_onnx_model(
     onnx_config["dynamic_axes"] = dynamic_axes
 
     simplify = onnx_config.pop("simplify", False)
+    _ = onnx_config.pop("fixed_batch_size", None)
 
     if len(inp) == 1:
         inp = inp[0]
     try:
-        with torch.autocast("cuda"):  # TODO: Do we need this?
-            torch.onnx.export(model=model, args=inp, f=model_path, **onnx_config)
+        torch.onnx.export(model=model, args=inp, f=model_path, **onnx_config)
 
         onnx_model = onnx.load(model_path)
         # Check if ONNX model is valid
