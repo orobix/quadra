@@ -90,7 +90,7 @@ def check_export_model_outputs(tmp_path: Path, model: nn.Module, export_types: l
             assert torch.allclose(outputs[i], outputs[i + 1], atol=1e-5)
 
 
-@pytest.skipif(not ONNX_AVAILABLE, reason="ONNX not available")
+@pytest.mark.skipif(not ONNX_AVAILABLE, reason="ONNX not available")
 @pytest.mark.parametrize(
     "model",
     [
@@ -109,7 +109,7 @@ def test_classification_models_export(tmp_path: Path, model: nn.Module):
     check_export_model_outputs(tmp_path=tmp_path, model=model, export_types=export_types, input_shapes=input_shapes)
 
 
-@pytest.skipif(not ONNX_AVAILABLE, reason="ONNX not available")
+@pytest.mark.skipif(not ONNX_AVAILABLE, reason="ONNX not available")
 @pytest.mark.parametrize(
     "model",
     [
@@ -125,7 +125,7 @@ def test_segmentation_models_export(tmp_path: Path, model: nn.Module):
     check_export_model_outputs(tmp_path=tmp_path, model=model, export_types=export_types, input_shapes=input_shapes)
 
 
-@pytest.skipif(not ONNX_AVAILABLE, reason="ONNX not available")
+@pytest.mark.skipif(not ONNX_AVAILABLE, reason="ONNX not available")
 @pytest.mark.parametrize(
     "model",
     [
