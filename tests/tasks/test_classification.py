@@ -13,10 +13,21 @@ from quadra.utils.tests.fixtures import (
 )
 from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, get_export_extension
 
+try:
+    import onnx  # noqa
+    import onnxruntime  # noqa
+    import onnxsim  # noqa
+
+    ONNX_AVAILABLE = True
+except ImportError:
+    ONNX_AVAILABLE = False
+
 BASE_EXPERIMENT_OVERRIDES = [
     "datamodule.num_workers=1",
     "logger=csv",
 ]
+
+BASE_EXPORT_TYPES = ["pytorch", "torchscript"] if not ONNX_AVAILABLE else ["pytorch", "torchscript", "onnx"]
 
 
 def _run_inference_experiment(
@@ -55,14 +66,12 @@ def test_sklearn_classification(tmp_path: Path, base_classification_dataset: bas
     """Test the training and evaluation of a sklearn classification model."""
     data_path, _ = base_classification_dataset
 
-    export_types = ["pytorch", "onnx", "torchscript"]
-
     train_overrides = [
         "experiment=base/classification/sklearn_classification",
         f"datamodule.data_path={data_path}",
         "backbone=resnet18",
         "task.device=cpu",
-        f"export.types=[{','.join(export_types)}]",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ] + BASE_EXPERIMENT_OVERRIDES
 
     train_path = tmp_path / "train"
@@ -84,7 +93,7 @@ def test_sklearn_classification(tmp_path: Path, base_classification_dataset: bas
         data_path=data_path,
         train_path=train_path,
         test_path=test_path,
-        export_types=export_types,
+        export_types=BASE_EXPORT_TYPES,
     )
 
     shutil.rmtree(tmp_path)
@@ -107,8 +116,6 @@ def test_sklearn_classification_patch(
 
     backbone = "resnet18"
 
-    export_types = ["pytorch", "onnx", "torchscript"]
-
     train_overrides = [
         "experiment=base/classification/sklearn_classification_patch",
         f"datamodule.data_path={data_path}",
@@ -116,7 +123,7 @@ def test_sklearn_classification_patch(
         "trainer.iteration_over_training=1",
         f"backbone={backbone}",
         "task.device=cpu",
-        f"export.types=[{','.join(export_types)}]",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ] + BASE_EXPERIMENT_OVERRIDES
     execute_quadra_experiment(overrides=train_overrides, experiment_path=train_experiment_path)
 
@@ -131,7 +138,7 @@ def test_sklearn_classification_patch(
         data_path=data_path,
         train_path=train_experiment_path,
         test_path=test_experiment_path,
-        export_types=export_types,
+        export_types=BASE_EXPORT_TYPES,
     )
 
     shutil.rmtree(tmp_path)
@@ -157,8 +164,6 @@ def test_classification(
 
     num_classes = len(arguments.samples)
 
-    export_types = ["pytorch", "onnx", "torchscript"]
-
     overrides = [
         "experiment=base/classification/classification",
         "trainer=lightning_cpu",
@@ -171,7 +176,7 @@ def test_classification(
         "trainer.max_epochs=1",
         "task.report=True",
         f"task.run_test={run_test}",
-        f"export.types=[{','.join(export_types)}]",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ] + BASE_EXPERIMENT_OVERRIDES
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
@@ -189,7 +194,7 @@ def test_classification(
         data_path=data_path,
         train_path=train_path,
         test_path=test_path,
-        export_types=export_types,
+        export_types=BASE_EXPORT_TYPES,
     )
 
     shutil.rmtree(tmp_path)
@@ -201,8 +206,6 @@ def test_multilabel_classification(
     """Test the training and evaluation of a torch based multilabel classification model."""
     data_path, arguments = base_multilabel_classification_dataset
 
-    export_types = ["pytorch", "onnx", "torchscript"]
-
     overrides = [
         "experiment=base/classification/multilabel_classification",
         "trainer=lightning_cpu",
@@ -212,7 +215,7 @@ def test_multilabel_classification(
         f"model.classifier.out_features={len(arguments.samples)}",
         "backbone=resnet18",
         "trainer.max_epochs=1",
-        f"export.types=[{','.join(export_types)}]",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ] + BASE_EXPERIMENT_OVERRIDES
 
     execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)

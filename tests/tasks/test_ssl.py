@@ -5,6 +5,17 @@ from pathlib import Path
 from quadra.utils.tests.fixtures import base_classification_dataset
 from quadra.utils.tests.helpers import execute_quadra_experiment
 
+try:
+    import onnx  # noqa
+    import onnxruntime  # noqa
+    import onnxsim  # noqa
+
+    ONNX_AVAILABLE = True
+except ImportError:
+    ONNX_AVAILABLE = False
+
+BASE_EXPORT_TYPES = ["torchscript"] if not ONNX_AVAILABLE else ["torchscript", "onnx"]
+
 BASE_EXPERIMENT_OVERRIDES = [
     "trainer=lightning_cpu",
     "trainer.devices=1",
@@ -19,7 +30,7 @@ BASE_EXPERIMENT_OVERRIDES = [
     "+trainer.limit_val_batches=1",
     "+trainer.limit_test_batches=1",
     "logger=csv",
-    "export.types=[onnx,torchscript]",
+    f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
 ]
 
 

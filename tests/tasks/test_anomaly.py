@@ -9,6 +9,15 @@ import pytest
 from quadra.utils.tests.fixtures import base_anomaly_dataset
 from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, get_export_extension
 
+try:
+    import onnx  # noqa
+    import onnxruntime  # noqa
+    import onnxsim  # noqa
+
+    ONNX_AVAILABLE = True
+except ImportError:
+    ONNX_AVAILABLE = False
+
 BASE_EXPERIMENT_OVERRIDES = [
     "trainer=lightning_cpu",
     "trainer.devices=1",
@@ -20,6 +29,8 @@ BASE_EXPERIMENT_OVERRIDES = [
     "trainer.max_epochs=1",
     "~logger.mlflow",
 ]
+
+BASE_EXPORT_TYPES = ["torchscript"] if not ONNX_AVAILABLE else ["torchscript", "onnx"]
 
 
 def _check_report(invert: bool = False):
@@ -77,13 +88,12 @@ def test_padim(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
 
-    export_types = ["onnx", "torchscript"]
     overrides = [
         "experiment=base/anomaly/padim",
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
-        f"export.types=[{','.join(export_types)}]",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -94,7 +104,7 @@ def test_padim(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
     _check_report()
 
     run_inference_experiments(
-        data_path=data_path, train_path=train_path, test_path=test_path, export_types=export_types
+        data_path=data_path, train_path=train_path, test_path=test_path, export_types=BASE_EXPORT_TYPES
     )
 
     shutil.rmtree(tmp_path)
@@ -108,13 +118,12 @@ def test_patchcore(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, t
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
 
-    export_types = ["onnx", "torchscript"]
     overrides = [
         "experiment=base/anomaly/patchcore",
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
-        f"export.types=[{','.join(export_types)}]",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -125,7 +134,7 @@ def test_patchcore(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, t
     _check_report()
 
     run_inference_experiments(
-        data_path=data_path, train_path=train_path, test_path=test_path, export_types=["torchscript"]
+        data_path=data_path, train_path=train_path, test_path=test_path, export_types=BASE_EXPORT_TYPES
     )
 
     shutil.rmtree(tmp_path)
@@ -164,13 +173,11 @@ def test_csflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
 
-    export_types = ["onnx", "torchscript"]
-
     overrides = [
         "experiment=base/anomaly/csflow",
         f"datamodule.data_path={data_path}",
         f"model.dataset.task={task}",
-        f"export.types=[{','.join(export_types)}]",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -181,7 +188,7 @@ def test_csflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task
     _check_report()
 
     run_inference_experiments(
-        data_path=data_path, train_path=train_path, test_path=test_path, export_types=["torchscript"]
+        data_path=data_path, train_path=train_path, test_path=test_path, export_types=BASE_EXPORT_TYPES
     )
 
     shutil.rmtree(tmp_path)
@@ -195,13 +202,12 @@ def test_fastflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, ta
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
 
-    export_types = ["onnx", "torchscript"]
     overrides = [
         "experiment=base/anomaly/fastflow",
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
-        f"export.types=[{','.join(export_types)}]",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -212,7 +218,7 @@ def test_fastflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, ta
     _check_report()
 
     run_inference_experiments(
-        data_path=data_path, train_path=train_path, test_path=test_path, export_types=["torchscript"]
+        data_path=data_path, train_path=train_path, test_path=test_path, export_types=BASE_EXPORT_TYPES
     )
 
     shutil.rmtree(tmp_path)
@@ -226,12 +232,11 @@ def test_draem(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
 
-    export_types = ["onnx", "torchscript"]
     overrides = [
         "experiment=base/anomaly/draem",
         f"datamodule.data_path={data_path}",
         f"model.dataset.task={task}",
-        f"export.types=[{','.join(export_types)}]",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -242,7 +247,7 @@ def test_draem(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
     _check_report()
 
     run_inference_experiments(
-        data_path=data_path, train_path=train_path, test_path=test_path, export_types=["torchscript"]
+        data_path=data_path, train_path=train_path, test_path=test_path, export_types=BASE_EXPORT_TYPES
     )
 
     shutil.rmtree(tmp_path)

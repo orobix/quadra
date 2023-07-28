@@ -9,6 +9,15 @@ import pytest
 from quadra.utils.tests.fixtures import base_binary_segmentation_dataset, base_multiclass_segmentation_dataset
 from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, get_export_extension
 
+try:
+    import onnx  # noqa
+    import onnxruntime  # noqa
+    import onnxsim  # noqa
+
+    ONNX_AVAILABLE = True
+except ImportError:
+    ONNX_AVAILABLE = False
+
 BASE_EXPERIMENT_OVERRIDES = [
     "trainer=lightning_cpu",
     "trainer.devices=1",
@@ -20,6 +29,8 @@ BASE_EXPERIMENT_OVERRIDES = [
     "+trainer.limit_test_batches=1",
     "logger=csv",
 ]
+
+BASE_EXPORT_TYPES = ["torchscript"] if not ONNX_AVAILABLE else ["torchscript", "onnx"]
 
 
 def _run_inference_experiment(
@@ -65,14 +76,12 @@ def test_smp_binary(
     train_path.mkdir()
     test_path.mkdir()
 
-    export_types = ["onnx", "torchscript"]
-
     overrides = [
         "experiment=base/segmentation/smp",
         f"datamodule.data_path={data_path}",
         f"task.report={generate_report}",
         "task.evaluate.analysis=false",
-        f"export.types=[{','.join(export_types)}]",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -88,7 +97,7 @@ def test_smp_binary(
         data_path=data_path,
         train_path=train_path,
         test_path=test_path,
-        export_types=export_types,
+        export_types=BASE_EXPORT_TYPES,
     )
 
     shutil.rmtree(tmp_path)
@@ -107,14 +116,12 @@ def test_smp_multiclass(tmp_path: Path, base_multiclass_segmentation_dataset: ba
         "'", ""
     )  # Remove single quotes so that it can be parsed by hydra
 
-    export_types = ["onnx", "torchscript"]
-
     overrides = [
         "experiment=base/segmentation/smp_multiclass",
         f"datamodule.data_path={data_path}",
         f"datamodule.idx_to_class={idx_to_class_parameter}",
         "task.evaluate.analysis=false",
-        f"export.types=[{','.join(export_types)}]",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -131,7 +138,7 @@ def test_smp_multiclass(tmp_path: Path, base_multiclass_segmentation_dataset: ba
         data_path=data_path,
         train_path=train_path,
         test_path=test_path,
-        export_types=export_types,
+        export_types=BASE_EXPORT_TYPES,
     )
 
     shutil.rmtree(tmp_path)
@@ -147,14 +154,12 @@ def test_smp_multiclass_with_binary_dataset(
         "'", ""
     )  # Remove single quotes so that it can be parsed by hydra
 
-    export_types = ["onnx", "torchscript"]
-
     overrides = [
         "experiment=base/segmentation/smp_multiclass",
         f"datamodule.data_path={data_path}",
         f"datamodule.idx_to_class={idx_to_class_parameter}",
         "task.evaluate.analysis=false",
-        f"export.types=[{','.join(export_types)}]",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
