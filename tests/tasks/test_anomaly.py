@@ -202,12 +202,14 @@ def test_fastflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, ta
     train_path = tmp_path / "train"
     test_path = tmp_path / "test"
 
+    export_types = ["torchscript"]  # fastflow does not support exporting to onnx at the moment
+
     overrides = [
         "experiment=base/anomaly/fastflow",
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
-        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
+        f"export.types=[{','.join(export_types)}]",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
 
@@ -218,7 +220,7 @@ def test_fastflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, ta
     _check_report()
 
     run_inference_experiments(
-        data_path=data_path, train_path=train_path, test_path=test_path, export_types=BASE_EXPORT_TYPES
+        data_path=data_path, train_path=train_path, test_path=test_path, export_types=export_types
     )
 
     shutil.rmtree(tmp_path)
