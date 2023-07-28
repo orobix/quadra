@@ -88,7 +88,6 @@ dev = [
     "bumpver==2023.1124",
     "twine==4.0.*",
     "build==0.10.*"
-
 ]
 
 docs = [
