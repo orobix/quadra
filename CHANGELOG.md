@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 #### Added
 
 - Add plot_raw_outputs feature to class VisualizerCallback in anomaly detection, to save the raw images of the segmentation and heatmap output.
+### [1.1.2]
+
+#### Fixed
+
+- Fix best checkpoint not used for testing when available in `LightningTask` class.
+
+### [1.1.1]
+
+#### Fixed
+
+- Fix deprecated link for tutorials in `README.md` file.
 
 ### [1.1.0]
 
