@@ -161,31 +161,42 @@ def compute_patch_info(
     patch_size_w = np.ceil(img_w / (1 + (patch_num_w - 1) - (patch_num_w - 1) * overlap)).astype(int)
     step_w = patch_size_w - np.ceil(overlap * patch_size_w).astype(int)
 
-    alternate = True
-    while (patch_num_h - 1) * step_h + patch_size_h < img_h:
-        if alternate:
+    # We want a combination of patch size and step that if the image is not divisible by the number of patches
+    # will try to fit the maximum number of patches in the image + ONLY 1 extra patch that will be taken from the end
+    # of the image.
+
+    counter = 0
+    original_patch_size_h = patch_size_h
+    original_patch_size_w = patch_size_w
+    original_step_h = step_h
+    original_step_w = step_w
+
+    while (patch_num_h - 1) * step_h + patch_size_h < img_h or (patch_num_h - 2) * step_h + patch_size_h > img_h:
+        counter += 1
+        if (patch_num_h - 1) * (step_h + 1) + patch_size_h < img_h:
             step_h += 1
-            if ((patch_num_h - 1) * step_h + patch_size_h - img_h) > patch_size_h:
-                # If increasing the step size would result in a too large gap
-                step_h -= 1
-                patch_size_h += 1
-            alternate = False
         else:
             patch_size_h += 1
-            alternate = True
 
-    alternate = True
-    while (patch_num_w - 1) * step_w + patch_size_w < img_w:
-        if alternate:
+        if counter == 100:
+            # We probably entered an infinite loop, restart with smaller step size
+            step_h = original_step_h - 1
+            patch_size_h = original_patch_size_h
+            counter = 0
+
+    counter = 0
+    while (patch_num_w - 1) * step_w + patch_size_w < img_w or (patch_num_w - 2) * step_w + patch_size_w > img_w:
+        counter += 1
+        if (patch_num_w - 1) * (step_w + 1) + patch_size_w < img_w:
             step_w += 1
-            if ((patch_num_w - 1) * step_w + patch_size_w - img_w) > patch_size_w:
-                # If increasing the step size would result in a too large gap
-                step_w -= 1
-                patch_size_w += 1
-            alternate = False
         else:
             patch_size_w += 1
-            alternate = True
+
+        if counter == 100:
+            # We probably entered an infinite loop, restart with smaller step size
+            step_w = original_step_w - 1
+            patch_size_w = original_patch_size_w
+            counter = 0
 
     return (patch_size_h, patch_size_w), (step_h, step_w)
 
@@ -821,9 +832,12 @@ def extract_patches(
     if pad_h > 0 or pad_w > 0:
         # We work with copies as view_as_windows returns a view of the original image
         crop_img = deepcopy(image)
-        crop_img = crop_img[
-            0 : (patch_num_h - 2) * step[0] + patch_height, 0 : (patch_num_w - 2) * step[1] + patch_width
-        ]
+
+        if pad_h:
+            crop_img = crop_img[0 : (patch_num_h - 2) * step[0] + patch_height, :]
+
+        if pad_w:
+            crop_img = crop_img[:, 0 : (patch_num_w - 2) * step[1] + patch_width]
 
         # Extract safe patches inside the image
         patches = view_as_windows(crop_img, patch_size, step=step)
