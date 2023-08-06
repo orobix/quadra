@@ -807,33 +807,80 @@ def extract_patches(
     (patch_num_h, patch_num_w) = patch_number
     (patch_height, patch_width) = patch_size
 
-    final_image = image.copy()
     pad_h = (patch_num_h - 1) * step[0] + patch_size[0] - image.shape[0]
     pad_w = (patch_num_w - 1) * step[1] + patch_size[1] - image.shape[1]
     # if the image has 3 channel change dimension
-    if len(image.shape) > 2:
+    if len(image.shape) == 3:
         patch_size = (patch_size[0], patch_size[1], image.shape[2])
         step = (step[0], step[1], image.shape[2])
-        final_image = np.pad(final_image, ((0, pad_h), (0, pad_w), (0, 0)), mode="constant")
+
+    # If this is not true there's some strange case I didn't take into account
+    if pad_h < 0 or pad_w < 0:
+        raise ValueError("Something went wrong with the patch extraction, expected positive padding values")
+
+    if pad_h > 0 or pad_w > 0:
+        # We work with copies as view_as_windows returns a view of the original image
+        crop_img = deepcopy(image)
+        crop_img = crop_img[
+            0 : (patch_num_h - 2) * step[0] + patch_height, 0 : (patch_num_w - 2) * step[1] + patch_width
+        ]
+
+        # Extract safe patches inside the image
+        patches = view_as_windows(crop_img, patch_size, step=step)
     else:
-        final_image = np.pad(final_image, ((0, pad_h), (0, pad_w)), mode="constant")
+        patches = view_as_windows(image, patch_size, step=step)
+
+    extra_patches_h = None
+    extra_patches_w = None
 
     if pad_h > 0:
-        final_image[-patch_height:, 0 : (final_image.shape[1] - pad_w)] = image[-patch_height:, :]
+        # Append extra patches taken from the edge of the image
+        extra_patches_h = view_as_windows(image[-patch_height:, :], patch_size, step=step)
 
     if pad_w > 0:
-        final_image[0 : (final_image.shape[0] - pad_h), -patch_width:] = image[:, -patch_width:]
+        extra_patches_w = view_as_windows(image[:, -patch_width:], patch_size, step=step)
 
-    if pad_h > 0 and pad_w > 0:
-        final_image[-patch_height:, -patch_width:] = image[-patch_height:, -patch_width:]
+        if extra_patches_h is not None:
+            # Add an extra column and set is content to the bottom right patch area of the original image if both
+            # dimension requires extra patches
+            if extra_patches_h.ndim == 6:
+                # RGB
+                extra_patches_h = np.concatenate(
+                    [
+                        extra_patches_h,
+                        (np.zeros([1, 1, 1, patch_size[0], patch_size[1], extra_patches_h.shape[-1]], dtype=np.uint8)),
+                    ],
+                    axis=1,
+                )
+            else:
+                extra_patches_h = np.concatenate(
+                    [extra_patches_h, (np.zeros([1, 1, patch_size[0], patch_size[1]], dtype=np.uint8))], axis=1
+                )
 
-    # Extract safe patches inside the image
-    patches = view_as_windows(final_image, patch_size, step=step)
+            if extra_patches_h is None:
+                # Required by mypy as it cannot infer that extra_patch_h cannot be None
+                raise ValueError("Extra patch h cannot be None!")
+
+            extra_patches_h[:, -1, :] = image[-patch_height:, -patch_width:]
 
     if patches.ndim == 6:
         # With RGB images there's an extra dimension, axis 2 is important don't use plain squeeze or it breaks if
         # the number of patches is set to 1!
         patches = patches.squeeze(axis=2)
+
+    if extra_patches_w is not None:
+        if extra_patches_w.ndim == 6:
+            # RGB
+            patches = np.concatenate([patches, extra_patches_w.squeeze(2)], axis=1)
+        else:
+            patches = np.concatenate([patches, extra_patches_w], axis=1)
+
+    if extra_patches_h is not None:
+        if extra_patches_h.ndim == 6:
+            # RGB
+            patches = np.concatenate([patches, extra_patches_h.squeeze(2)], axis=0)
+        else:
+            patches = np.concatenate([patches, extra_patches_h], axis=0)
 
     # If this is not true there's some strange case I didn't take into account
     assert (
