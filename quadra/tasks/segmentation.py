@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.datamodules import SegmentationDataModule, SegmentationMulticlassDataModule
 from quadra.models.base import ModelSignatureWrapper
+from quadra.models.evaluation import BaseEvaluationModel
 from quadra.modules.base import SegmentationModel
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
@@ -254,7 +255,7 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
 
     @torch.no_grad()
     def inference(
-        self, dataloader: DataLoader, deployment_model: torch.nn.Module, device: torch.device
+        self, dataloader: DataLoader, deployment_model: BaseEvaluationModel, device: torch.device
     ) -> Dict[str, torch.Tensor]:
         """Run inference on the dataloader and return the output.
 

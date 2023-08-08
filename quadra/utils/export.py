@@ -324,7 +324,10 @@ def export_model(
 
     os.makedirs(export_folder, exist_ok=True)
 
-    input_shapes = config.export.input_shapes
+    if input_shapes is None:
+        # Try to get input shapes from config
+        # If this is also None we will try to retrieve it from the ModelSignatureWrapper, if it fails we can't export
+        input_shapes = config.export.input_shapes
 
     exported = False
 
