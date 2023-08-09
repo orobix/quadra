@@ -305,7 +305,7 @@ def export_model(
     input_shapes: Optional[List[Any]] = None,
     idx_to_class: Optional[Dict[int, str]] = None,
     pytorch_model_type: Literal["backbone", "model"] = "model",
-) -> Optional[Dict[str, Any]]:
+) -> Tuple[Dict[str, Any], Dict[str, str]]:
     """Generate deployment models for the task.
 
     Args:
@@ -317,10 +317,14 @@ def export_model(
         idx_to_class: Mapping from class index to class name
         pytorch_model_type: Type of the pytorch model config to be exported, if it's backbone on disk we will save the
             config.backbone config, otherwise we will save the config.model
+
+    Returns:
+        If the model is exported successfully, return a dictionary containing information about the exported model and
+        a second dictionary containing the paths to the exported models. Otherwise, return two empty dictionaries.
     """
     if config.export is None or len(config.export.types) == 0:
         log.info("No export type specified skipping export")
-        return None
+        return {}, {}
 
     os.makedirs(export_folder, exist_ok=True)
 
@@ -329,7 +333,7 @@ def export_model(
         # If this is also None we will try to retrieve it from the ModelSignatureWrapper, if it fails we can't export
         input_shapes = config.export.input_shapes
 
-    exported = False
+    export_paths = {}
 
     for export_type in config.export.types:
         if export_type == "torchscript":
@@ -344,17 +348,16 @@ def export_model(
                 log.warning("Torchscript export failed, enable debug logging for more details")
                 continue
 
-            _, input_shapes = out
-            exported = True
+            export_path, input_shapes = out
+            export_paths[export_type] = export_path
         elif export_type == "pytorch":
-            export_pytorch_model(
+            export_path = export_pytorch_model(
                 model=model,
                 output_path=export_folder,
             )
+            export_paths[export_type] = export_path
             with open(os.path.join(export_folder, "model_config.yaml"), "w") as f:
                 OmegaConf.save(getattr(config, pytorch_model_type), f, resolve=True)
-
-            exported = True
         elif export_type == "onnx":
             if not hasattr(config.export, "onnx"):
                 log.warning("No onnx configuration found, skipping onnx export")
@@ -372,14 +375,14 @@ def export_model(
                 log.warning("ONNX export failed, enable debug logging for more details")
                 continue
 
-            _, input_shapes = out
-            exported = True
+            export_path, input_shapes = out
+            export_paths[export_type] = export_path
         else:
             log.warning("Export type: %s not implemented", export_type)
 
-    if not exported:
+    if len(export_paths) == 0:
         log.warning("No export type was successful, no model will be available for deployment")
-        return None
+        return {}, export_paths
 
     model_json = {
         "input_size": input_shapes,
@@ -388,7 +391,7 @@ def export_model(
         "std": list(config.transforms.std),
     }
 
-    return model_json
+    return model_json, export_paths
 
 
 def import_deployment_model(

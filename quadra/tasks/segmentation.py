@@ -151,7 +151,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
 
         input_shapes = self.config.export.input_shapes
 
-        model_json = export_model(
+        model_json, export_paths = export_model(
             config=self.config,
             model=module.model,
             export_folder=self.export_folder,
@@ -160,7 +160,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
             idx_to_class=idx_to_class,
         )
 
-        if model_json is None:
+        if len(export_paths) == 0:
             return
 
         with open(os.path.join(self.export_folder, "model.json"), "w") as f:

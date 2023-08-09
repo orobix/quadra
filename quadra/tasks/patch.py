@@ -206,7 +206,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
 
         idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
 
-        model_json = export_model(
+        model_json, export_paths = export_model(
             config=self.config,
             model=self.backbone,
             export_folder=self.export_folder,
@@ -216,7 +216,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
             pytorch_model_type="backbone",
         )
 
-        if model_json is not None:
+        if len(export_paths) > 0:
             dataset_info = self.datamodule.info
 
             horizontal_patches = dataset_info.patch_number[1] if dataset_info.patch_number is not None else None

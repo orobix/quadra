@@ -271,7 +271,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         # TODO: What happens if we have 64 precision?
         half_precision = "16" in self.trainer.precision
 
-        self.model_json = export_model(
+        self.model_json, export_paths = export_model(
             config=self.config,
             model=module.model,
             export_folder=self.export_folder,
@@ -280,7 +280,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             idx_to_class=idx_to_class,
         )
 
-        if self.model_json is None:
+        if len(export_paths) == 0:
             return
 
         with open(os.path.join(self.export_folder, self.deploy_info_file), "w") as f:
@@ -629,7 +629,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
         idx_to_class = {v: k for k, v in self.datamodule.full_dataset.class_to_idx.items()}
 
-        model_json = export_model(
+        model_json, export_paths = export_model(
             config=self.config,
             model=self.backbone,
             export_folder=self.export_folder,
@@ -641,7 +641,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
         dump(self.model, os.path.join(self.export_folder, "classifier.joblib"))
 
-        if model_json is not None:
+        if len(export_paths) > 0:
             with open(os.path.join(self.export_folder, self.deploy_info_file), "w") as f:
                 json.dump(model_json, f)
 

@@ -115,7 +115,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
         half_precision = "16" in self.trainer.precision
 
-        model_json = export_model(
+        model_json, export_paths = export_model(
             config=self.config,
             model=model,
             export_folder=self.export_folder,
@@ -124,7 +124,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             idx_to_class={0: "good", 1: "defect"},
         )
 
-        if model_json is None:
+        if len(export_paths) == 0:
             return
 
         model_json["image_threshold"] = np.round(self.module.image_threshold.value.item(), 3)
