@@ -15,11 +15,12 @@ defaults:
   - datamodule: null
   - callbacks: default
   - logger: mlflow
-  - experiment: null
-  - hparams_search: null
-  - hydra: default
   - export: default
   - inference: default
+  - hparams_search: null
+  - hydra: default
+  # BE CAREFUL TO KEEP EXPERIMENT LAST
+  - experiment: null
 
   # enable color logging
   - override hydra/hydra_logging: colorlog
