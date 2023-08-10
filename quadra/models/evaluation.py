@@ -52,6 +52,10 @@ class BaseEvaluationModel(ABC):
     def half(self):
         """Convert model to half precision."""
 
+    @abstractmethod
+    def cpu(self):
+        """Move model to cpu."""
+
     @property
     def training(self) -> bool:
         """Return whether model is in training mode."""
@@ -92,6 +96,10 @@ class TorchscriptEvaluationModel(BaseEvaluationModel):
     def half(self):
         """Convert model to half precision."""
         self.model.half()
+
+    def cpu(self):
+        """Move model to cpu."""
+        self.model.cpu()
 
 
 class TorchEvaluationModel(TorchscriptEvaluationModel):
@@ -258,3 +266,7 @@ class ONNXEvaluationModel(BaseEvaluationModel):
     def half(self):
         """Convert model to half precision."""
         raise NotImplementedError("At the moment ONNX models do not support half method.")
+
+    def cpu(self):
+        """Move model to cpu."""
+        self.to("cpu")
