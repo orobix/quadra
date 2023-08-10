@@ -6,12 +6,13 @@ from typing import List
 
 import pytest
 
+from quadra.utils.export import get_export_extension
 from quadra.utils.tests.fixtures import (
     base_classification_dataset,
     base_multilabel_classification_dataset,
     base_patch_classification_dataset,
 )
-from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, get_export_extension
+from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment
 
 try:
     import onnx  # noqa

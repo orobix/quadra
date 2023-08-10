@@ -432,3 +432,25 @@ def import_deployment_model(
         return deployment_model
 
     raise ValueError(f"Unable to load model with extension {file_extension}, valid extensions are: ['.pt', 'pth']")
+
+
+# This may be better as a dict?
+def get_export_extension(export_type: str) -> str:
+    """Get the extension of the exported model.
+
+    Args:
+        export_type: The type of the exported model.
+
+    Returns:
+        The extension of the exported model.
+    """
+    if export_type == "onnx":
+        extension = "onnx"
+    elif export_type == "torchscript":
+        extension = "pt"
+    elif export_type == "pytorch":
+        extension = "pth"
+    else:
+        raise ValueError(f"Unsupported export type {export_type}")
+
+    return extension
