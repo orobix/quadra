@@ -149,25 +149,74 @@ class ONNXEvaluationModel(BaseEvaluationModel):
 
     def __call__(self, inputs: list[np.ndarray] | np.ndarray | list[torch.Tensor] | torch.Tensor) -> Any:
         """Run inference on the model and return the output as torch tensors."""
-        # TODO: If we get torch inputs we may be able to avoid the numpy conversion
+        use_pytorch = False
+
+        onnx_inputs: dict[str, np.ndarray | torch.Tensor] = {}
+
         if isinstance(inputs, torch.Tensor):
-            inputs = inputs.cpu().numpy()
+            onnx_inputs[self.model.get_inputs()[0].name] = inputs
+            use_pytorch = True
+        elif isinstance(inputs, np.ndarray):
+            onnx_inputs[self.model.get_inputs()[0].name] = inputs
         elif isinstance(inputs, list):
-            inputs = [x.cpu().numpy() if isinstance(x, torch.Tensor) else x for x in inputs]
+            for x, y in zip(self.model.get_inputs(), inputs):
+                if isinstance(y, torch.Tensor):
+                    use_pytorch = True
 
-        if isinstance(inputs, np.ndarray):
-            ort_inputs = {self.model.get_inputs()[0].name: inputs}
+                if use_pytorch and isinstance(y, np.ndarray):
+                    raise ValueError("Cannot mix torch and numpy inputs")
+
+                onnx_inputs[x.name] = y  # type: ignore
         else:
-            ort_inputs = {x.name: y for x, y in zip(self.model.get_inputs(), inputs)}
+            raise ValueError(f"Invalid input type: {type(inputs)}")
 
-        ort_outputs = [x.name for x in self.model.get_outputs()]
-
-        onnx_output = self.model.run(ort_outputs, ort_inputs)
+        if use_pytorch:
+            onnx_output = self._forward_from_pytorch(cast(dict[str, torch.Tensor], onnx_inputs))
+        else:
+            onnx_output = self._forward_from_numpy(cast(dict[str, np.ndarray], onnx_inputs))
 
         onnx_output = [torch.from_numpy(x).to(self.device) if isinstance(x, np.ndarray) else x for x in onnx_output]
 
         if len(onnx_output) == 1:
             onnx_output = onnx_output[0]
+
+        return onnx_output
+
+    def _forward_from_pytorch(self, input_dict: dict[str, torch.Tensor]):
+        """Run inference on the model and return the output as torch tensors."""
+        io_binding = self.model.io_binding()
+        device_type = self.device.split(":")[0]
+
+        for k, v in input_dict.items():
+            if not v.is_contiguous():
+                # If not contiguous onnx give wrong results
+                v = v.contiguous()
+
+            io_binding.bind_input(
+                name=k,
+                device_type=device_type,
+                # Weirdly enough onnx wants 0 for cpu
+                device_id=0 if device_type == "cpu" else int(self.device.split(":")[1]),
+                element_type=np.float32,
+                shape=tuple(v.shape),
+                buffer_ptr=v.data_ptr(),
+            )
+
+        for x in self.model.get_outputs():
+            # TODO: Is it possible to also bind the output? We require info about output dimensions
+            io_binding.bind_output(name=x.name)
+
+        self.model.run_with_iobinding(io_binding)
+
+        output = io_binding.copy_outputs_to_cpu()
+
+        return output
+
+    def _forward_from_numpy(self, input_dict: dict[str, np.ndarray]):
+        """Run inference on the model and return the output as numpy array."""
+        ort_outputs = [x.name for x in self.model.get_outputs()]
+
+        onnx_output = self.model.run(ort_outputs, input_dict)
 
         return onnx_output
 
