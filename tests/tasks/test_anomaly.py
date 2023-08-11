@@ -8,7 +8,7 @@ import pytest
 
 from quadra.utils.export import get_export_extension
 from quadra.utils.tests.fixtures import base_anomaly_dataset
-from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment
+from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, setup_trainer_for_lightning
 
 try:
     import onnx  # noqa
@@ -20,7 +20,6 @@ except ImportError:
     ONNX_AVAILABLE = False
 
 BASE_EXPERIMENT_OVERRIDES = [
-    "trainer=lightning_cpu",
     "trainer.devices=1",
     "datamodule.num_workers=1",
     "datamodule.train_batch_size=1",
@@ -96,7 +95,9 @@ def test_padim(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
         f"model.dataset.task={task}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
+    trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
 
@@ -126,7 +127,9 @@ def test_patchcore(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, t
         f"model.dataset.task={task}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
+    trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
 
@@ -154,7 +157,9 @@ def test_cflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
         f"model.dataset.task={task}",
         "export.types=[]",
     ]
+    trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
 
@@ -180,7 +185,9 @@ def test_csflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task
         f"model.dataset.task={task}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
+    trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
 
@@ -212,7 +219,9 @@ def test_fastflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, ta
         f"model.dataset.task={task}",
         f"export.types=[{','.join(export_types)}]",
     ]
+    trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
 
@@ -241,7 +250,9 @@ def test_draem(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
         f"model.dataset.task={task}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
+    trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
 

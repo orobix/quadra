@@ -12,7 +12,12 @@ from quadra.utils.tests.fixtures import (
     base_multilabel_classification_dataset,
     base_patch_classification_dataset,
 )
-from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment
+from quadra.utils.tests.helpers import (
+    check_deployment_model,
+    execute_quadra_experiment,
+    get_quadra_test_device,
+    setup_trainer_for_lightning,
+)
 
 try:
     import onnx  # noqa
@@ -67,11 +72,13 @@ def test_sklearn_classification(tmp_path: Path, base_classification_dataset: bas
     """Test the training and evaluation of a sklearn classification model."""
     data_path, _ = base_classification_dataset
 
+    device = get_quadra_test_device()
+
     train_overrides = [
         "experiment=base/classification/sklearn_classification",
         f"datamodule.data_path={data_path}",
         "backbone=resnet18",
-        "task.device=cpu",
+        f"task.device={device}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ] + BASE_EXPERIMENT_OVERRIDES
 
@@ -85,7 +92,7 @@ def test_sklearn_classification(tmp_path: Path, base_classification_dataset: bas
     inference_overrides = [
         "experiment=base/classification/sklearn_classification_test",
         "backbone=resnet18",
-        "task.device=cpu",
+        f"task.device={device}",
         "task.gradcam=true",
     ] + BASE_EXPERIMENT_OVERRIDES
 
@@ -105,6 +112,7 @@ def test_sklearn_classification_patch(
 ):
     """Test the training and evaluation of a sklearn classification model with patches."""
     data_path, _, class_to_idx = base_patch_classification_dataset
+    device = get_quadra_test_device()
 
     class_to_idx_parameter = str(class_to_idx).replace(
         "'", ""
@@ -123,7 +131,7 @@ def test_sklearn_classification_patch(
         f"datamodule.class_to_idx={class_to_idx_parameter}",
         "trainer.iteration_over_training=1",
         f"backbone={backbone}",
-        "task.device=cpu",
+        f"task.device={device}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ] + BASE_EXPERIMENT_OVERRIDES
     execute_quadra_experiment(overrides=train_overrides, experiment_path=train_experiment_path)
@@ -167,7 +175,6 @@ def test_classification(
 
     overrides = [
         "experiment=base/classification/classification",
-        "trainer=lightning_cpu",
         "trainer.devices=1",
         f"datamodule.data_path={data_path}",
         f"model.num_classes={num_classes}",
@@ -178,7 +185,10 @@ def test_classification(
         "task.report=True",
         f"task.run_test={run_test}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
-    ] + BASE_EXPERIMENT_OVERRIDES
+    ]
+    trainer_overrides = setup_trainer_for_lightning()
+    overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
 
@@ -209,7 +219,6 @@ def test_multilabel_classification(
 
     overrides = [
         "experiment=base/classification/multilabel_classification",
-        "trainer=lightning_cpu",
         "trainer.devices=1",
         f"datamodule.data_path={data_path}",
         f"datamodule.images_and_labels_file={Path(data_path) / 'samples.txt'}",
@@ -217,7 +226,10 @@ def test_multilabel_classification(
         "backbone=resnet18",
         "trainer.max_epochs=1",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
-    ] + BASE_EXPERIMENT_OVERRIDES
+    ]
+    trainer_overrides = setup_trainer_for_lightning()
+    overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
 

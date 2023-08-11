@@ -8,7 +8,7 @@ import pytest
 
 from quadra.utils.export import get_export_extension
 from quadra.utils.tests.fixtures import base_binary_segmentation_dataset, base_multiclass_segmentation_dataset
-from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment
+from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, setup_trainer_for_lightning
 
 try:
     import onnx  # noqa
@@ -20,7 +20,6 @@ except ImportError:
     ONNX_AVAILABLE = False
 
 BASE_EXPERIMENT_OVERRIDES = [
-    "trainer=lightning_cpu",
     "trainer.devices=1",
     "trainer.max_epochs=1",
     "datamodule.num_workers=1",
@@ -68,7 +67,9 @@ def run_inference_experiments(
 
 @pytest.mark.parametrize("generate_report", [True, False])
 def test_smp_binary(
-    tmp_path: Path, base_binary_segmentation_dataset: base_binary_segmentation_dataset, generate_report: bool
+    tmp_path: Path,
+    base_binary_segmentation_dataset: base_binary_segmentation_dataset,
+    generate_report: bool,
 ):
     data_path, _, _ = base_binary_segmentation_dataset
 
@@ -84,7 +85,9 @@ def test_smp_binary(
         "task.evaluate.analysis=false",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
+    trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
 
@@ -124,7 +127,9 @@ def test_smp_multiclass(tmp_path: Path, base_multiclass_segmentation_dataset: ba
         "task.evaluate.analysis=false",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
+    trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
 
@@ -162,7 +167,9 @@ def test_smp_multiclass_with_binary_dataset(
         "task.evaluate.analysis=false",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
+    trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
 

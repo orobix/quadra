@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 from quadra.utils.tests.fixtures import base_classification_dataset
-from quadra.utils.tests.helpers import execute_quadra_experiment
+from quadra.utils.tests.helpers import execute_quadra_experiment, setup_trainer_for_lightning
 
 try:
     import onnx  # noqa
@@ -17,7 +17,6 @@ except ImportError:
 BASE_EXPORT_TYPES = ["torchscript"] if not ONNX_AVAILABLE else ["torchscript", "onnx"]
 
 BASE_EXPERIMENT_OVERRIDES = [
-    "trainer=lightning_cpu",
     "trainer.devices=1",
     "trainer.max_epochs=1",
     "trainer.check_val_every_n_epoch=1",
@@ -41,7 +40,10 @@ def test_simsiam(tmp_path: Path, base_classification_dataset: base_classificatio
         "experiment=base/ssl/simsiam",
         f"datamodule.data_path={data_path}",
         "backbone=resnet18",
-    ] + BASE_EXPERIMENT_OVERRIDES
+    ]
+    trainer_overrides = setup_trainer_for_lightning()
+    overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
 
@@ -72,7 +74,10 @@ def test_simclr(tmp_path: Path, base_classification_dataset: base_classification
         "experiment=base/ssl/simclr",
         f"datamodule.data_path={data_path}",
         "backbone=resnet18",
-    ] + BASE_EXPERIMENT_OVERRIDES
+    ]
+    trainer_overrides = setup_trainer_for_lightning()
+    overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
 
@@ -86,7 +91,10 @@ def test_byol(tmp_path: Path, base_classification_dataset: base_classification_d
         "experiment=base/ssl/byol",
         f"datamodule.data_path={data_path}",
         "backbone=resnet18",
-    ] + BASE_EXPERIMENT_OVERRIDES
+    ]
+    trainer_overrides = setup_trainer_for_lightning()
+    overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
 
@@ -100,7 +108,10 @@ def test_barlow(tmp_path: Path, base_classification_dataset: base_classification
         "experiment=base/ssl/barlow",
         f"datamodule.data_path={data_path}",
         "backbone=resnet18",
-    ] + BASE_EXPERIMENT_OVERRIDES
+    ]
+    trainer_overrides = setup_trainer_for_lightning()
+    overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
 
