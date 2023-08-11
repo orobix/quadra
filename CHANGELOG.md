@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.1.3]
+
+#### Fixed
+
+- Fix penultimate patch extracted containing replicated data, now the penultimate patch contain the right data. Fix also the patch size and step computation to avoid generating more than one extra patch.
+
 ### [1.1.2]
 
 #### Fixed
