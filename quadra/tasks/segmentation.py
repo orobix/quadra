@@ -163,6 +163,9 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         if len(export_paths) == 0:
             return
 
+        # Pick one model for evaluation, it should be independent of the export type as the model is wrapped
+        self.exported_model_path = next(iter(export_paths.values()))
+
         with open(os.path.join(self.export_folder, "model.json"), "w") as f:
             json.dump(model_json, f, cls=utils.HydraEncoder)
 
