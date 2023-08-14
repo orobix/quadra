@@ -7,6 +7,12 @@ All notable changes to this project will be documented in this file.
 #### Added
 
 - Add plot_raw_outputs feature to class VisualizerCallback in anomaly detection, to save the raw images of the segmentation and heatmap output.
+### [1.1.3]
+
+#### Fixed
+
+- Fix penultimate patch extracted containing replicated data, now the penultimate patch contain the right data. Fix also the patch size and step computation to avoid generating more than one extra patch.
+
 ### [1.1.2]
 
 #### Fixed
