@@ -149,14 +149,13 @@ task:
   device: cuda:0
   output:
     folder: classification_experiment
-    save_backbone: true
     report: true
     example: true
     test_full_data: true
 ```
 
 This will train a logistic regression classifier using a resnet18 backbone, resizing the images to 224x224 and using a 5-fold cross validation. The `class_to_idx` parameter is used to map the class names to indexes, the indexes will be used to train the classifier. The `output` parameter is used to specify the output folder and the type of output to save. The `export.types` parameter can be used to export the model in different formats, at the moment `torchscript`, `onnx` and `pytorch` are supported.
-Since `save_backbone` is set to true, the backbone (in torchscript and pytorch format) will be saved along with the classifier. `test_full_data` is used to specify if a final test should be performed on all the data (after training on the training and validation datasets).
+The backbone (in torchscript and pytorch format) will be saved along with the classifier. `test_full_data` is used to specify if a final test should be performed on all the data (after training on the training and validation datasets).
 
 ### Run
 
@@ -178,7 +177,7 @@ classification_experiment_2  config_tree.txt              test
 
 Each `classification_experiment_X` folder contains the metrics for the corresponding fold while the `classification_experiment` folder contains the metrics computed aggregating the results of all the folds.
 
-The `data` folder contains a joblib version of the datamodule containing parameters and splits for reproducibility. The `deployment_model` folder contains the backbone exported in torchscript format if `save_backbone` to true alongside the joblib version of trained classifier. The `test` folder contains the metrics for the final test on all the data after the model has been trained on both train and validation.
+The `data` folder contains a joblib version of the datamodule containing parameters and splits for reproducibility. The `deployment_model` folder contains the backbone exported in torchscript and pytorch format alongside the joblib version of trained classifier. The `test` folder contains the metrics for the final test on all the data after the model has been trained on both train and validation.
 
 ## Evaluation
 The same datamodule specified before can be used for inference by setting the `phase` parameter to `test`. 
