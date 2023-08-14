@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Fix failures when trying to override `hydra` configuration groups due to wrong override order.
+- Fix quadra crash when launching an experiment inside a git repository not fully initialized (e.g. without a single commit).
 
 ### [1.1.4]
 
