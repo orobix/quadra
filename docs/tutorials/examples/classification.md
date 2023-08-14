@@ -169,6 +169,9 @@ defaults:
   - override /backbone: vit16_tiny
   - _self_
 
+export:
+  types: [onnx, torchscript]
+
 datamodule:
   num_workers: 12
   batch_size: 32
@@ -230,7 +233,7 @@ checkpoints           config_tree.txt  deployment_model  test
 config_resolved.yaml  data             main.log
 ```
 
-Where `checkpoints` contains the pytorch lightning checkpoints of the model, `data` contains the joblib dump of the datamodule with its parameters and dataset split, `deployment_model` contains the model in exported format (default is torchscript), `test` contains the test artifacts.
+Where `checkpoints` contains the pytorch lightning checkpoints of the model, `data` contains the joblib dump of the datamodule with its parameters and dataset split, `deployment_model` contains the model in exported format (in this case onnx and torchscript, but by default is only torchscript), `test` contains the test artifacts.
 
 ## Evaluation
 

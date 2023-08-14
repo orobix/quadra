@@ -205,6 +205,9 @@ defaults:
   - override /backbone: resnet18
   - _self_
 
+export:
+  types: [torchscript]
+  
 core:
   name: experiment-name
 

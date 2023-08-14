@@ -162,6 +162,9 @@ defaults:
   - base/segmentation/smp_multiclass  # use smp file as default
   - _self_ # use this file as final config
 
+export:
+  types: [onnx, torchscript]
+
 backbone:
   model:
     classes: 4 # The total number of classes (background + foreground)
@@ -196,7 +199,7 @@ core:
     When defining the `idx_to_class` dictionary, the keys should be the class index and the values should be the class name. The class index starts from 1.
 
 
-In the final configuration experiment we have specified the path to the dataset, batch size, split files, GPU device, experiment name and toggled some evaluation options.
+In the final configuration experiment we have specified the path to the dataset, batch size, split files, GPU device, experiment name and toggled some evaluation options, moreover we have specified that we want to export the model to `onnx` and `torchscript` formats.
 
 By default data will be logged to `Mlflow`. If `Mlflow` is not available it's possible to configure a simple csv logger by adding an override to the file above:
   

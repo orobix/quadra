@@ -118,6 +118,7 @@ By default the experiment will use dino_vitb8 as backbone, resizing the images t
 It will also export the model in two formats, "torchscript" and "pytorch".
 
 An actual configuration file based on the above could be this one (suppose it's saved under `configs/experiment/custom_experiment/sklearn_classification.yaml`):
+
 ```yaml
 # @package _global_
 
@@ -154,8 +155,8 @@ task:
     test_full_data: true
 ```
 
-This will train a logistic regression classifier using a resnet18 backbone, resizing the images to 224x224 and using a 5-fold cross validation. The `class_to_idx` parameter is used to map the class names to indexes, the indexes will be used to train the classifier. The `output` parameter is used to specify the output folder and the type of output to save. The `export.types` parameter can be used to export the model in different formats, at the moment `torchscript` and `pytorch` are supported.
-Since `save_backbone` is set to true, the backbone (in torchscript format) will be saved along with the classifier. `test_full_data` is used to specify if a final test should be performed on all the data (after training on the training and validation datasets).
+This will train a logistic regression classifier using a resnet18 backbone, resizing the images to 224x224 and using a 5-fold cross validation. The `class_to_idx` parameter is used to map the class names to indexes, the indexes will be used to train the classifier. The `output` parameter is used to specify the output folder and the type of output to save. The `export.types` parameter can be used to export the model in different formats, at the moment `torchscript`, `onnx` and `pytorch` are supported.
+Since `save_backbone` is set to true, the backbone (in torchscript and pytorch format) will be saved along with the classifier. `test_full_data` is used to specify if a final test should be performed on all the data (after training on the training and validation datasets).
 
 ### Run
 
