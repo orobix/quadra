@@ -15,6 +15,7 @@ nav:
       - Setting up devices: tutorials/devices_setup.md
       - Reproducibility: tutorials/reproducibility.md
       - Model Management: tutorials/model_management.md
+      - Export models for inference: tutorials/export.md
       - External projects integration: tutorials/integration.md
       - Contributing: tutorials/contribution.md
       - Building documentation: tutorials/documentation.md
