@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 
 - Move `export_types` parameter from `task` configuration group to `export` configuration group under `types` parameter.
 - Refactor export model function to be more generic and be availble from the base task class.
+- Remove `save_backbone` parameter for scikit-learn based tasks.
 
 ### Fixed
 
