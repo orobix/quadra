@@ -142,7 +142,11 @@ def export_torchscript_model(
     inp, input_shapes = model_inputs
 
     try:
-        model_jit = torch.jit.trace(model, inp)
+        try:
+            model_jit = torch.jit.trace(model, inp)
+        except RuntimeError as e:
+            log.warning("Standard tracing failed with exception %s, attempting tracing with strict=False", e)
+            model_jit = torch.jit.trace(model, inp, strict=False)
 
         os.makedirs(output_path, exist_ok=True)
 
