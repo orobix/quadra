@@ -425,7 +425,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
         self._device = device
         self.output = output
-        self._backbone: nn.Module
+        self._backbone: ModelSignatureWrapper
         self._trainer: SklearnClassificationTrainer
         self._model: ClassifierMixin
         self.metadata: Dict[str, Any] = {
@@ -470,7 +470,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self._model = hydra.utils.instantiate(model_config)
 
     @property
-    def backbone(self) -> nn.Module:
+    def backbone(self) -> ModelSignatureWrapper:
         """Backbone: The backbone."""
         return self._backbone
 
