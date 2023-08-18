@@ -80,7 +80,6 @@ def extract_torch_model_inputs(
     if isinstance(model, ModelSignatureWrapper):
         if input_shapes is None:
             input_shapes = model.input_shapes
-        model = model.instance
 
     if input_shapes is None:
         log.warning(
@@ -133,8 +132,12 @@ def export_torchscript_model(
         model.cpu()
 
     model_inputs = extract_torch_model_inputs(model, input_shapes, half_precision)
+
     if model_inputs is None:
         return None
+
+    if isinstance(model, ModelSignatureWrapper):
+        model = model.instance
 
     inp, input_shapes = model_inputs
 
@@ -196,6 +199,9 @@ def export_onnx_model(
     if model_inputs is None:
         return None
 
+    if isinstance(model, ModelSignatureWrapper):
+        model = model.instance
+
     inp, input_shapes = model_inputs
 
     os.makedirs(output_path, exist_ok=True)
@@ -241,6 +247,13 @@ def export_onnx_model(
 
     if len(inp) == 1:
         inp = inp[0]
+
+    if isinstance(inp, list):
+        inp = tuple(inp)  # onnx doesn't like lists representing tuples of inputs
+
+    if isinstance(inp, dict):
+        raise ValueError("ONNX export does not support model with dict inputs")
+
     try:
         torch.onnx.export(model=model, args=inp, f=model_path, **onnx_config)
 
@@ -287,6 +300,9 @@ def export_pytorch_model(model: nn.Module, output_path: str, model_name: str = "
         If the model is exported successfully, the path to the model is returned.
 
     """
+    if isinstance(model, ModelSignatureWrapper):
+        model = model.instance
+
     os.makedirs(output_path, exist_ok=True)
     model.eval()
     model.cpu()
