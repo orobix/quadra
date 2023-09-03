@@ -229,7 +229,9 @@ def export_onnx_model(
 
     dynamic_axes = onnx_config.dynamic_axes if hasattr(onnx_config, "dynamic_axes") else None
 
-    if hasattr(onnx_config, "fixed_batch_size") and onnx_config.fixed_batch_size is None:
+    if hasattr(onnx_config, "fixed_batch_size") and onnx_config.fixed_batch_size is not None:
+        dynamic_axes = None
+    else:
         if dynamic_axes is None:
             dynamic_axes = {}
             for i, _ in enumerate(input_names):
@@ -237,8 +239,6 @@ def export_onnx_model(
 
             for i, _ in enumerate(output_names):
                 dynamic_axes[output_names[i]] = {0: "batch_size"}
-    else:
-        dynamic_axes = None
 
     onnx_config = cast(Dict[str, Any], OmegaConf.to_container(onnx_config, resolve=True))
 
