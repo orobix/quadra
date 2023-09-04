@@ -129,6 +129,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
         model_json["image_threshold"] = np.round(self.module.image_threshold.value.item(), 3)
         model_json["pixel_threshold"] = np.round(self.module.pixel_threshold.value.item(), 3)
+        model_json["anomaly_method"] = self.config.model.model.name
 
         with open(os.path.join(self.export_folder, "model.json"), "w") as f:
             json.dump(model_json, f)
@@ -328,7 +329,10 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 batch_labels = batch_item["label"]
                 image_labels.extend(batch_labels.tolist())
                 image_paths.extend(batch_item["image_path"])
-                model_output = self.deployment_model(batch_images.to(self.device))
+                if self.model_data["anomaly_method"] == "efficientad":
+                    model_output = self.deployment_model(batch_images.to(self.device), None)
+                else:
+                    model_output = self.deployment_model(batch_images.to(self.device))
                 anomaly_map, anomaly_score = model_output[0], model_output[1]
                 anomaly_map = anomaly_map.cpu()
                 anomaly_score = anomaly_score.cpu()
