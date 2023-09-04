@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, TypeVar,
 
 import torch
 from anomalib.models.cflow import CflowLightning
+from anomalib.models.efficientad import EfficientADModel
 from omegaconf import DictConfig, OmegaConf
 from torch import nn
 
@@ -140,6 +141,11 @@ def export_torchscript_model(
         model = model.instance
 
     inp, input_shapes = model_inputs
+    if isinstance(model, EfficientADModel):
+        # Keep only the first input, excluding the batch_imagenet
+        inp = inp[0]
+        # Pop the second input_shape from the list
+        input_shapes.pop(1)
 
     try:
         try:

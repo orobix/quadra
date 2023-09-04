@@ -66,7 +66,7 @@ class TorchscriptEvaluationModel(BaseEvaluationModel):
     """Wrapper for torchscript models."""
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        return self.model(*args, **kwargs, batch_imagenet=None)
+        return self.model(*args, **kwargs)
 
     def load_from_disk(self, model_path: str, device: str = "cpu"):
         """Load model from disk."""
