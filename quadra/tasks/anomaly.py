@@ -200,10 +200,12 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             if any(
                 isinstance(x, MinMaxNormalizationCallback) for x in self.trainer.callbacks  # type: ignore[attr-defined]
             )
-            else self.module.image_metrics.F1Score.threshold
+            else self.module.image_metrics.F1Score.threshold  # type: ignore[union-attr]
         )
 
-        plot_cumulative_histogram(good_scores, defect_scores, threshold.item(), self.report_path)
+        plot_cumulative_histogram(
+            good_scores, defect_scores, threshold.item(), self.report_path  # type: ignore[arg-type, operator]
+        )
 
         _, pd_cm, _ = get_results(np.array(gt_labels), np.array(pred_labels), idx_to_class)
         np_cm = np.array(pd_cm)
@@ -313,7 +315,7 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         self.datamodule.setup(stage="test")
         test_dataloader = self.datamodule.test_dataloader()
 
-        optimal_f1 = OptimalF1(num_classes=None, pos_label=1)
+        optimal_f1 = OptimalF1(num_classes=None, pos_label=1)  # type: ignore[arg-type]
 
         anomaly_scores = []
         anomaly_maps = []
@@ -326,7 +328,8 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 batch_labels = batch_item["label"]
                 image_labels.extend(batch_labels.tolist())
                 image_paths.extend(batch_item["image_path"])
-                anomaly_map, anomaly_score = self.deployment_model(batch_images.to(self.device))
+                model_output = self.deployment_model(batch_images.to(self.device))
+                anomaly_map, anomaly_score = model_output[0], model_output[1]
                 anomaly_map = anomaly_map.cpu()
                 anomaly_score = anomaly_score.cpu()
                 known_labels = torch.where(batch_labels != -1)[0]
