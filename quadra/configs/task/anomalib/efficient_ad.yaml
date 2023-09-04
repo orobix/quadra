@@ -2,4 +2,4 @@ _target_: quadra.tasks.anomaly.AnomalibDetection
 report: true
 run_test: true
 module_function:
-  _target_: anomalib.models.efficientad.lightning_model.EfficientadLightning
+  _target_: anomalib.models.efficient_ad.lightning_model.EfficientAdLightning
