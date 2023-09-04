@@ -143,9 +143,8 @@ def export_torchscript_model(
     inp, input_shapes = model_inputs
     if isinstance(model, EfficientADModel):
         # Keep only the first input, excluding the batch_imagenet
-        inp = inp[0]
-        # Pop the second input_shape from the list
-        input_shapes.pop(1)
+        inp = [inp[0]]
+        input_shapes = [input_shapes[0]]
 
     try:
         try:
@@ -213,6 +212,10 @@ def export_onnx_model(
         model = model.instance
 
     inp, input_shapes = model_inputs
+    if isinstance(model, EfficientADModel):
+        # Keep only the first input, excluding the batch_imagenet
+        inp = [inp[0]]
+        input_shapes = [input_shapes[0]]
 
     os.makedirs(output_path, exist_ok=True)
 
