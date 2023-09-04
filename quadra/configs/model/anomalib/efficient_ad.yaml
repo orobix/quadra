@@ -1,7 +1,5 @@
 dataset:
   task: segmentation
-  #image_size: [256,256]
-  #center_crop: null # dimensions to which images are center-cropped after resizing (optional)
 
 model:
   name: efficientad
@@ -15,8 +13,9 @@ model:
   # generic params
   normalization_method: min_max # options: [null, min_max, cdf]
   train_batch_size: 1 # ${datamodule.train_batch_size}
-  pretrained_models_dir:
-  imagenette_dir:
+  pretrained_models_dir: ${oc.env:HOME}/.aigord/models/efficient_ad
+  imagenette_dir: ${oc.env:HOME}/.aigord/datasets/
+  pretrained_teacher_type: nelson
 
 metrics:
   image:
