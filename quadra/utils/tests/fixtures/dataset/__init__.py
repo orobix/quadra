@@ -1,4 +1,4 @@
-from .anomaly import AnomalyDatasetArguments, anomaly_dataset, base_anomaly_dataset, imagenette_dataset
+from .anomaly import AnomalyDatasetArguments, anomaly_dataset, base_anomaly_dataset
 from .classification import (
     ClassificationDatasetArguments,
     ClassificationMultilabelDatasetArguments,
@@ -10,6 +10,7 @@ from .classification import (
     classification_patch_dataset,
     multilabel_classification_dataset,
 )
+from .imagenette import imagenette_dataset
 from .segmentation import (
     SegmentationDatasetArguments,
     base_binary_segmentation_dataset,
