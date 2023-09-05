@@ -41,7 +41,7 @@ trainer:
   auto_scale_batch_size: false
   auto_select_gpus: false
   benchmark: false
-  check_val_every_n_epoch: 5 # Don't validate before extracting features.
+  check_val_every_n_epoch: ${trainer.max_epochs}
   default_root_dir: null
   detect_anomaly: false
   deterministic: false
