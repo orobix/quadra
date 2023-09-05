@@ -1,4 +1,4 @@
-from .anomaly import AnomalyDatasetArguments, anomaly_dataset, base_anomaly_dataset
+from .anomaly import AnomalyDatasetArguments, anomaly_dataset, base_anomaly_dataset, imagenette_dataset
 from .classification import (
     ClassificationDatasetArguments,
     ClassificationMultilabelDatasetArguments,
@@ -29,6 +29,7 @@ __all__ = [
     "multilabel_classification_dataset",
     "ClassificationMultilabelDatasetArguments",
     "base_anomaly_dataset",
+    "imagenette_dataset",
     "base_classification_dataset",
     "base_patch_classification_dataset",
     "base_binary_segmentation_dataset",
