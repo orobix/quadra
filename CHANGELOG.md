@@ -2,6 +2,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.1.4]
+
+#### Fixed
+
+- Fix input shape not extracted properly in ModelSignatureWrapper when wrapping around a torchscript model.
 ### [1.1.3]
 
 #### Fixed
