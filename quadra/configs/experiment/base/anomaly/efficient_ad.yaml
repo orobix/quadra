@@ -2,12 +2,12 @@
 
 defaults:
   - override /datamodule: base/anomaly
-  - override /model: anomalib/padim
+  - override /model: anomalib/efficient_ad
   - override /optimizer: null
   - override /scheduler: null
   - override /transforms: default_resize
   - override /loss: null
-  - override /task: anomalib/padim
+  - override /task: anomalib/efficient_ad
   - override /backbone: null
   - override /trainer: lightning_gpu
   - override /callbacks: default_anomalib
@@ -23,7 +23,7 @@ datamodule:
 
 core:
   tag: "run"
-  name: padim_${model.model.backbone}_${trainer.max_epochs}
+  name: efficient_ad_${model.model.model_size}_${trainer.max_epochs}
   test_after_training: true
 
 logger:
@@ -41,7 +41,7 @@ trainer:
   auto_scale_batch_size: false
   auto_select_gpus: false
   benchmark: false
-  check_val_every_n_epoch: ${trainer.max_epochs} # Don't validate before extracting features.
+  check_val_every_n_epoch: ${trainer.max_epochs}
   default_root_dir: null
   detect_anomaly: false
   deterministic: false
@@ -56,8 +56,8 @@ trainer:
   limit_train_batches: 1.0
   limit_val_batches: 1.0
   log_every_n_steps: 50
-  max_epochs: 1
-  max_steps: -1
+  max_epochs: 20
+  max_steps: 20000
   max_time: null
   min_epochs: null
   min_steps: null

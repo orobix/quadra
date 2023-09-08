@@ -225,7 +225,6 @@ task:
   device: cuda:2
   output:
     folder: classification_patch_experiment
-    save_backbone: false
     report: true
     example: true
     reconstruction_method: major_voting
@@ -252,7 +251,7 @@ config_tree.txt                  main.log
 
 Inside the `classification_patch_experiment` folder you should find some report utilities computed over the validation dataset, like the confusion matrix. The `reconstruction_results.json` file contains the reconstruction metrics computed over the validation dataset in terms of covered defects, it will also contain the coordinates of the polygons extracted over predicted areas of the image with the same label.
 
-The `data` folder contains a joblib version of the datamodule containing parameters and splits for reproducibility. The `deployment_model` folder contains the backbone exported in torchscript format if `save_backbone` to true alongside the joblib version of trained classifier.
+The `data` folder contains a joblib version of the datamodule containing parameters and splits for reproducibility. The `deployment_model` folder contains the backbone exported in torchscript format alongside the joblib version of trained classifier.
 
 ## Evaluation
 The same datamodule specified before can be used for inference. 

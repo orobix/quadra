@@ -155,28 +155,24 @@ class ONNXEvaluationModel(BaseEvaluationModel):
 
         return session_options
 
-    def __call__(self, inputs: list[np.ndarray] | np.ndarray | list[torch.Tensor] | torch.Tensor) -> Any:
+    def __call__(self, *inputs: np.ndarray | torch.Tensor) -> Any:
         """Run inference on the model and return the output as torch tensors."""
+        # TODO: Maybe we can support also kwargs
         use_pytorch = False
 
         onnx_inputs: dict[str, np.ndarray | torch.Tensor] = {}
 
-        if isinstance(inputs, torch.Tensor):
-            onnx_inputs[self.model.get_inputs()[0].name] = inputs
-            use_pytorch = True
-        elif isinstance(inputs, np.ndarray):
-            onnx_inputs[self.model.get_inputs()[0].name] = inputs
-        elif isinstance(inputs, list):
-            for x, y in zip(self.model.get_inputs(), inputs):
-                if isinstance(y, torch.Tensor):
-                    use_pytorch = True
+        for onnx_input, current_input in zip(self.model.get_inputs(), inputs):
+            if isinstance(current_input, torch.Tensor):
+                onnx_inputs[onnx_input.name] = current_input
+                use_pytorch = True
+            elif isinstance(current_input, np.ndarray):
+                onnx_inputs[onnx_input.name] = current_input
+            else:
+                raise ValueError(f"Invalid input type: {type(inputs)}")
 
-                if use_pytorch and isinstance(y, np.ndarray):
-                    raise ValueError("Cannot mix torch and numpy inputs")
-
-                onnx_inputs[x.name] = y  # type: ignore
-        else:
-            raise ValueError(f"Invalid input type: {type(inputs)}")
+            if use_pytorch and isinstance(current_input, np.ndarray):
+                raise ValueError("Cannot mix torch and numpy inputs")
 
         if use_pytorch:
             onnx_output = self._forward_from_pytorch(cast(dict[str, torch.Tensor], onnx_inputs))

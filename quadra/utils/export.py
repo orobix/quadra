@@ -80,7 +80,6 @@ def extract_torch_model_inputs(
     if isinstance(model, ModelSignatureWrapper):
         if input_shapes is None:
             input_shapes = model.input_shapes
-        model = model.instance
 
     if input_shapes is None:
         log.warning(
@@ -133,13 +132,21 @@ def export_torchscript_model(
         model.cpu()
 
     model_inputs = extract_torch_model_inputs(model, input_shapes, half_precision)
+
     if model_inputs is None:
         return None
+
+    if isinstance(model, ModelSignatureWrapper):
+        model = model.instance
 
     inp, input_shapes = model_inputs
 
     try:
-        model_jit = torch.jit.trace(model, inp)
+        try:
+            model_jit = torch.jit.trace(model, inp)
+        except RuntimeError as e:
+            log.warning("Standard tracing failed with exception %s, attempting tracing with strict=False", e)
+            model_jit = torch.jit.trace(model, inp, strict=False)
 
         os.makedirs(output_path, exist_ok=True)
 
@@ -196,6 +203,9 @@ def export_onnx_model(
     if model_inputs is None:
         return None
 
+    if isinstance(model, ModelSignatureWrapper):
+        model = model.instance
+
     inp, input_shapes = model_inputs
 
     os.makedirs(output_path, exist_ok=True)
@@ -219,7 +229,9 @@ def export_onnx_model(
 
     dynamic_axes = onnx_config.dynamic_axes if hasattr(onnx_config, "dynamic_axes") else None
 
-    if hasattr(onnx_config, "fixed_batch_size") and onnx_config.fixed_batch_size is None:
+    if hasattr(onnx_config, "fixed_batch_size") and onnx_config.fixed_batch_size is not None:
+        dynamic_axes = None
+    else:
         if dynamic_axes is None:
             dynamic_axes = {}
             for i, _ in enumerate(input_names):
@@ -227,8 +239,6 @@ def export_onnx_model(
 
             for i, _ in enumerate(output_names):
                 dynamic_axes[output_names[i]] = {0: "batch_size"}
-    else:
-        dynamic_axes = None
 
     onnx_config = cast(Dict[str, Any], OmegaConf.to_container(onnx_config, resolve=True))
 
@@ -241,6 +251,13 @@ def export_onnx_model(
 
     if len(inp) == 1:
         inp = inp[0]
+
+    if isinstance(inp, list):
+        inp = tuple(inp)  # onnx doesn't like lists representing tuples of inputs
+
+    if isinstance(inp, dict):
+        raise ValueError("ONNX export does not support model with dict inputs")
+
     try:
         torch.onnx.export(model=model, args=inp, f=model_path, **onnx_config)
 
@@ -287,6 +304,9 @@ def export_pytorch_model(model: nn.Module, output_path: str, model_name: str = "
         If the model is exported successfully, the path to the model is returned.
 
     """
+    if isinstance(model, ModelSignatureWrapper):
+        model = model.instance
+
     os.makedirs(output_path, exist_ok=True)
     model.eval()
     model.cpu()

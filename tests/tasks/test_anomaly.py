@@ -7,7 +7,7 @@ from typing import List
 import pytest
 
 from quadra.utils.export import get_export_extension
-from quadra.utils.tests.fixtures import base_anomaly_dataset
+from quadra.utils.tests.fixtures import base_anomaly_dataset, imagenette_dataset
 from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, setup_trainer_for_lightning
 
 try:
@@ -124,6 +124,47 @@ def test_patchcore(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, t
         "experiment=base/anomaly/patchcore",
         f"datamodule.data_path={data_path}",
         "model.model.backbone=resnet18",
+        f"model.dataset.task={task}",
+        f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
+    ]
+    trainer_overrides = setup_trainer_for_lightning()
+    overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
+
+    execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
+
+    assert os.path.exists("checkpoints/final_model.ckpt")
+
+    _check_report()
+
+    run_inference_experiments(
+        data_path=data_path, train_path=train_path, test_path=test_path, export_types=BASE_EXPORT_TYPES
+    )
+
+    shutil.rmtree(tmp_path)
+
+
+@pytest.mark.parametrize("task", ["classification", "segmentation"])
+def test_efficientad(
+    tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, imagenette_dataset: imagenette_dataset, task: str
+):
+    """Test the training and evaluation of the EfficientAD model."""
+    data_path, _ = base_anomaly_dataset
+    imagenette_path = imagenette_dataset
+
+    train_path = tmp_path / "train"
+    test_path = tmp_path / "test"
+
+    overrides = [
+        "experiment=base/anomaly/efficient_ad",
+        f"datamodule.data_path={data_path}",
+        "transforms.input_height=256",
+        "transforms.input_width=256",
+        "model.model.train_batch_size=1",
+        "datamodule.test_batch_size=1",
+        "model.model.image_size=[256, 256]",
+        "trainer.check_val_every_n_epoch= ${trainer.max_epochs}",
+        f"model.model.imagenette_dir= {imagenette_path}",
         f"model.dataset.task={task}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]

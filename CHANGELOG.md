@@ -11,15 +11,22 @@ All notable changes to this project will be documented in this file.
 - Add support for onnx model import in all evaluation tasks.
 - Add `export` configuration group to regulate exportation parameters.
 - Add `inference` configuration group to regulate inference parameters.
+- Add EfficientAD configuration for anomaly detection.
 
-### Changed 
+#### Updated
+
+- Update anomalib library from version 0.4.0 to 0.7.0
+
+#### Changed 
 
 - Move `export_types` parameter from `task` configuration group to `export` configuration group under `types` parameter.
 - Refactor export model function to be more generic and be availble from the base task class.
+- Remove `save_backbone` parameter for scikit-learn based tasks.
 
-### Fixed
+#### Fixed
 
 - Fix failures when trying to override `hydra` configuration groups due to wrong override order.
+- Fix certain anomalib models not loaded on the correct device.
 - Fix quadra crash when launching an experiment inside a git repository not fully initialized (e.g. without a single commit).
 
 ### [1.1.4]
