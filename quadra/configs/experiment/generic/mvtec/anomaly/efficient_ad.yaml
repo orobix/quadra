@@ -1,0 +1,38 @@
+# @package _global_
+defaults:
+  - base/anomaly/efficient_ad
+  - override /datamodule: generic/mvtec/anomaly/base
+
+transforms:
+  input_height: 256
+  input_width: 256
+
+datamodule:
+  num_workers: 12
+  train_batch_size: 1
+  test_batch_size: 1
+  task: ${model.dataset.task}
+  category: hazelnut
+
+callbacks:
+  min_max_normalization:
+    threshold_type: "pixel"
+
+print_config: false
+
+core:
+  tag: "run"
+  test_after_training: true
+  upload_artifacts: true
+  name: efficient_ad_${datamodule.category}_${model.model.model_size}_${trainer.max_epochs}
+
+logger:
+  mlflow:
+    experiment_name: mvtec-anomaly
+    run_name: ${core.name}
+
+trainer:
+  devices: [0]
+  max_epochs: 50
+  max_steps: 20000
+  check_val_every_n_epoch: ${trainer.max_epochs}
