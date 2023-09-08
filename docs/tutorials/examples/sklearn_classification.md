@@ -95,16 +95,13 @@ defaults:
   - override /trainer: sklearn_classification
   - override /datamodule: base/sklearn_classification
 
+export:
+  types: [pytorch, torchscript]
+  
 backbone:
   model:
     pretrained: true
     freeze: true
-
-task:
-  export_config:
-    types: [pytorch, torchscript]
-    input_shapes: # Redefine the input shape if not automatically inferred
-
 
 core:
   tag: "run"
@@ -121,6 +118,7 @@ By default the experiment will use dino_vitb8 as backbone, resizing the images t
 It will also export the model in two formats, "torchscript" and "pytorch".
 
 An actual configuration file based on the above could be this one (suppose it's saved under `configs/experiment/custom_experiment/sklearn_classification.yaml`):
+
 ```yaml
 # @package _global_
 
@@ -131,6 +129,9 @@ defaults:
 
 core:
   name: experiment-name
+
+export:
+  types: [pytorch, torchscript]
 
 datamodule:
   data_path: path_to_dataset
@@ -148,18 +149,13 @@ task:
   device: cuda:0
   output:
     folder: classification_experiment
-    save_backbone: true
     report: true
     example: true
     test_full_data: true
-  export_config:
-    types: [pytorch, torchscript]
-    input_shapes: # Redefine the input shape if not automatically inferred
-
 ```
 
-This will train a logistic regression classifier using a resnet18 backbone, resizing the images to 224x224 and using a 5-fold cross validation. The `class_to_idx` parameter is used to map the class names to indexes, the indexes will be used to train the classifier. The `output` parameter is used to specify the output folder and the type of output to save. The `export_config.types` parameter can be used to export the model in different formats, at the moment `torchscript` and `pytorch` are supported.
-Since `save_backbone` is set to true, the backbone (in torchscript format) will be saved along with the classifier. `test_full_data` is used to specify if a final test should be performed on all the data (after training on the training and validation datasets).
+This will train a logistic regression classifier using a resnet18 backbone, resizing the images to 224x224 and using a 5-fold cross validation. The `class_to_idx` parameter is used to map the class names to indexes, the indexes will be used to train the classifier. The `output` parameter is used to specify the output folder and the type of output to save. The `export.types` parameter can be used to export the model in different formats, at the moment `torchscript`, `onnx` and `pytorch` are supported.
+The backbone (in torchscript and pytorch format) will be saved along with the classifier. `test_full_data` is used to specify if a final test should be performed on all the data (after training on the training and validation datasets).
 
 ### Run
 
@@ -181,7 +177,7 @@ classification_experiment_2  config_tree.txt              test
 
 Each `classification_experiment_X` folder contains the metrics for the corresponding fold while the `classification_experiment` folder contains the metrics computed aggregating the results of all the folds.
 
-The `data` folder contains a joblib version of the datamodule containing parameters and splits for reproducibility. The `deployment_model` folder contains the backbone exported in torchscript format if `save_backbone` to true alongside the joblib version of trained classifier. The `test` folder contains the metrics for the final test on all the data after the model has been trained on both train and validation.
+The `data` folder contains a joblib version of the datamodule containing parameters and splits for reproducibility. The `deployment_model` folder contains the backbone exported in torchscript and pytorch format alongside the joblib version of trained classifier. The `test` folder contains the metrics for the final test on all the data after the model has been trained on both train and validation.
 
 ## Evaluation
 The same datamodule specified before can be used for inference by setting the `phase` parameter to `test`. 

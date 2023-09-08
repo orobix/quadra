@@ -8,15 +8,13 @@ defaults:
   - override /trainer: sklearn_classification
   - override /datamodule: base/sklearn_classification
 
+export:
+  types: [torchscript, pytorch]
+
 backbone:
   model:
     pretrained: true
     freeze: true
-
-task:
-  export_config:
-    types: [torchscript, pytorch]
-    input_shapes: null
 
 core:
   tag: "run"

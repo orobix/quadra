@@ -1,18 +1,39 @@
 import os
-from typing import Any, List, Optional, Sequence, Tuple, Union, cast
+from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, TypeVar, Union, cast
 
 import torch
 from anomalib.models.cflow import CflowLightning
+from omegaconf import DictConfig, OmegaConf
 from torch import nn
-from torch.jit._script import RecursiveScriptModule
 
 from quadra.models.base import ModelSignatureWrapper
+from quadra.models.evaluation import (
+    BaseEvaluationModel,
+    ONNXEvaluationModel,
+    TorchEvaluationModel,
+    TorchscriptEvaluationModel,
+)
+from quadra.utils.logger import get_logger
 
-# TODO: Solve circular import as it is not possible to import get_logger right now
+try:
+    import onnx  # noqa
+    from onnxsim import simplify as onnx_simplify  # noqa
+
+    ONNX_AVAILABLE = True
+except ImportError:
+    ONNX_AVAILABLE = False
+
+log = get_logger(__name__)
+
+BaseDeploymentModelT = TypeVar("BaseDeploymentModelT", bound=BaseEvaluationModel)
 
 
 def generate_torch_inputs(
-    input_shapes: List[Any], device: str, half_precision: bool = False, dtype: torch.dtype = torch.float32
+    input_shapes: List[Any],
+    device: str,
+    half_precision: bool = False,
+    dtype: torch.dtype = torch.float32,
+    batch_size: int = 1,
 ) -> Union[List[Any], Tuple[Any, ...], torch.Tensor]:
     """Given a list of input shapes that can contain either lists, tuples or dicts, with tuples being the input shapes
     of the model, generate a list of torch tensors with the given device and dtype.
@@ -22,7 +43,7 @@ def generate_torch_inputs(
             return [generate_torch_inputs(inp, device, half_precision, dtype) for inp in input_shapes]
 
         # Base case
-        inp = torch.randn((1, *input_shapes), dtype=dtype, device=device)
+        inp = torch.randn((batch_size, *input_shapes), dtype=dtype, device=device)
 
     if isinstance(input_shapes, dict):
         return {k: generate_torch_inputs(v, device, half_precision, dtype) for k, v in input_shapes.items()}
@@ -33,7 +54,7 @@ def generate_torch_inputs(
             return tuple(generate_torch_inputs(inp, device, half_precision, dtype) for inp in input_shapes)
 
         # Base case
-        inp = torch.randn((1, *input_shapes), dtype=dtype, device=device)
+        inp = torch.randn((batch_size, *input_shapes), dtype=dtype, device=device)
 
     if half_precision:
         inp = inp.half()
@@ -41,6 +62,44 @@ def generate_torch_inputs(
     return inp
 
 
+def extract_torch_model_inputs(
+    model: Union[nn.Module, ModelSignatureWrapper],
+    input_shapes: Optional[List[Any]] = None,
+    half_precision: bool = False,
+    batch_size: int = 1,
+) -> Optional[Tuple[Union[List[Any], Tuple[Any, ...], torch.Tensor], List[Any]]]:
+    """Extract the input shapes for the given model and generate a list of torch tensors with the
+    given device and dtype.
+
+    Args:
+        model: Module or ModelSignatureWrapper
+        input_shapes: Inputs shapes
+        half_precision: If True, the model will be exported with half precision
+        batch_size: Batch size for the input shapes
+    """
+    if isinstance(model, ModelSignatureWrapper):
+        if input_shapes is None:
+            input_shapes = model.input_shapes
+
+    if input_shapes is None:
+        log.warning(
+            "Input shape is None, can not trace model! Please provide input_shapes in the task export configuration."
+        )
+        return None
+
+    if half_precision:
+        inp = generate_torch_inputs(
+            input_shapes=input_shapes, device="cuda:0", half_precision=True, dtype=torch.float16, batch_size=batch_size
+        )
+    else:
+        inp = generate_torch_inputs(
+            input_shapes=input_shapes, device="cpu", half_precision=False, dtype=torch.float32, batch_size=batch_size
+        )
+
+    return inp, input_shapes
+
+
+@torch.inference_mode()
 def export_torchscript_model(
     model: nn.Module,
     output_path: str,
@@ -61,43 +120,174 @@ def export_torchscript_model(
         If the model is exported successfully, the path to the model and the input shape are returned.
 
     """
-    if isinstance(model, ModelSignatureWrapper):
-        if input_shapes is None:
-            input_shapes = model.input_shapes
-        model = model.instance
-
-    if input_shapes is None:
-        # log.warning(
-        #    "Input shape is None, can not trace model! Please provide input_shapes in the task export configuration."
-        # )
-        return None
-
     if isinstance(model, CflowLightning):
-        # log.warning("Exporting cflow model with torchscript is not supported yet.")
+        log.warning("Exporting cflow model with torchscript is not supported yet.")
         return None
 
     model.eval()
     if half_precision:
-        # log.info("Jitting model with half precision on GPU")
         model.to("cuda:0")
         model = model.half()
-        inp = generate_torch_inputs(
-            input_shapes=input_shapes, device="cuda:0", half_precision=True, dtype=torch.float16
-        )
     else:
-        # log.info("Jitting model with double precision")
         model.cpu()
-        inp = generate_torch_inputs(input_shapes=input_shapes, device="cpu", half_precision=False, dtype=torch.float32)
 
-    with torch.no_grad():
-        model_jit = torch.jit.trace(model, inp)
+    model_inputs = extract_torch_model_inputs(model, input_shapes, half_precision)
+
+    if model_inputs is None:
+        return None
+
+    if isinstance(model, ModelSignatureWrapper):
+        model = model.instance
+
+    inp, input_shapes = model_inputs
+
+    try:
+        try:
+            model_jit = torch.jit.trace(model, inp)
+        except RuntimeError as e:
+            log.warning("Standard tracing failed with exception %s, attempting tracing with strict=False", e)
+            model_jit = torch.jit.trace(model, inp, strict=False)
+
+        os.makedirs(output_path, exist_ok=True)
+
+        model_path = os.path.join(output_path, model_name)
+        model_jit.save(model_path)
+
+        log.info("Torchscript model saved to %s", os.path.join(os.getcwd(), model_path))
+
+        return os.path.join(os.getcwd(), model_path), input_shapes
+    except Exception as e:
+        log.debug("Failed to export torchscript model with exception: %s", e)
+        return None
+
+
+@torch.inference_mode()
+def export_onnx_model(
+    model: nn.Module,
+    output_path: str,
+    onnx_config: DictConfig,
+    input_shapes: Optional[List[Any]] = None,
+    half_precision: bool = False,
+    model_name: str = "model.onnx",
+) -> Optional[Tuple[str, Any]]:
+    """Export a PyTorch model with ONNX.
+
+    Args:
+        model: PyTorch model to be exported
+        output_path: Path to save the model
+        input_shapes: Input shapes for tracing
+        onnx_config: ONNX export configuration
+        half_precision: If True, the model will be exported with half precision
+        model_name: Name of the exported model
+    """
+    if not ONNX_AVAILABLE:
+        log.warning("ONNX is not installed, can not export model in this format.")
+        log.warning("Please install ONNX capabilities for quadra with: pip install .[onnx]")
+        return None
+
+    model.eval()
+    if half_precision:
+        model.to("cuda:0")
+        model = model.half()
+    else:
+        model.cpu()
+
+    if hasattr(onnx_config, "fixed_batch_size") and onnx_config.fixed_batch_size is not None:
+        batch_size = onnx_config.fixed_batch_size
+    else:
+        batch_size = 1
+
+    model_inputs = extract_torch_model_inputs(
+        model=model, input_shapes=input_shapes, half_precision=half_precision, batch_size=batch_size
+    )
+    if model_inputs is None:
+        return None
+
+    if isinstance(model, ModelSignatureWrapper):
+        model = model.instance
+
+    inp, input_shapes = model_inputs
 
     os.makedirs(output_path, exist_ok=True)
 
     model_path = os.path.join(output_path, model_name)
-    model_jit.save(model_path)
 
-    # log.info("Torchscript model saved to %s", os.path.join(os.getcwd(), model_path))
+    input_names = onnx_config.input_names if hasattr(onnx_config, "input_names") else None
+
+    if input_names is None:
+        input_names = []
+        for i, _ in enumerate(inp):
+            input_names.append(f"input_{i}")
+
+    output = [model(*inp)]
+    output_names = onnx_config.output_names if hasattr(onnx_config, "output_names") else None
+
+    if output_names is None:
+        output_names = []
+        for i, _ in enumerate(output):
+            output_names.append(f"output_{i}")
+
+    dynamic_axes = onnx_config.dynamic_axes if hasattr(onnx_config, "dynamic_axes") else None
+
+    if hasattr(onnx_config, "fixed_batch_size") and onnx_config.fixed_batch_size is not None:
+        dynamic_axes = None
+    else:
+        if dynamic_axes is None:
+            dynamic_axes = {}
+            for i, _ in enumerate(input_names):
+                dynamic_axes[input_names[i]] = {0: "batch_size"}
+
+            for i, _ in enumerate(output_names):
+                dynamic_axes[output_names[i]] = {0: "batch_size"}
+
+    onnx_config = cast(Dict[str, Any], OmegaConf.to_container(onnx_config, resolve=True))
+
+    onnx_config["input_names"] = input_names
+    onnx_config["output_names"] = output_names
+    onnx_config["dynamic_axes"] = dynamic_axes
+
+    simplify = onnx_config.pop("simplify", False)
+    _ = onnx_config.pop("fixed_batch_size", None)
+
+    if len(inp) == 1:
+        inp = inp[0]
+
+    if isinstance(inp, list):
+        inp = tuple(inp)  # onnx doesn't like lists representing tuples of inputs
+
+    if isinstance(inp, dict):
+        raise ValueError("ONNX export does not support model with dict inputs")
+
+    try:
+        torch.onnx.export(model=model, args=inp, f=model_path, **onnx_config)
+
+        onnx_model = onnx.load(model_path)
+        # Check if ONNX model is valid
+        onnx.checker.check_model(onnx_model)
+    except Exception as e:
+        log.debug("ONNX export failed with error: %s", e)
+        return None
+
+    log.info("ONNX model saved to %s", os.path.join(os.getcwd(), model_path))
+
+    if simplify:
+        log.info("Attempting to simplify ONNX model")
+        onnx_model = onnx.load(model_path)
+
+        try:
+            simplified_model, check = onnx_simplify(onnx_model)
+        except Exception as e:
+            log.debug("ONNX simplification failed with error: %s", e)
+            check = False
+
+        if not check:
+            log.warning("Something failed during model simplification, only original ONNX model will be exported")
+        else:
+            model_filename, model_extension = os.path.splitext(model_name)
+            model_name = f"{model_filename}_simplified{model_extension}"
+            model_path = os.path.join(output_path, model_name)
+            onnx.save(simplified_model, model_path)
+            log.info("Simplified ONNX model saved to %s", os.path.join(os.getcwd(), model_path))
 
     return os.path.join(os.getcwd(), model_path), input_shapes
 
@@ -114,47 +304,173 @@ def export_pytorch_model(model: nn.Module, output_path: str, model_name: str = "
         If the model is exported successfully, the path to the model is returned.
 
     """
+    if isinstance(model, ModelSignatureWrapper):
+        model = model.instance
+
     os.makedirs(output_path, exist_ok=True)
     model.eval()
     model.cpu()
     model_path = os.path.join(output_path, model_name)
     torch.save(model.state_dict(), model_path)
-    # log.info("Pytorch model saved to %s", os.path.join(output_path, model_name))
+    log.info("Pytorch model saved to %s", os.path.join(output_path, model_name))
 
     return os.path.join(os.getcwd(), model_path)
 
 
-# TODO: Update signature when new models are added
+def export_model(
+    config: DictConfig,
+    model: Any,
+    export_folder: str,
+    half_precision: bool,
+    input_shapes: Optional[List[Any]] = None,
+    idx_to_class: Optional[Dict[int, str]] = None,
+    pytorch_model_type: Literal["backbone", "model"] = "model",
+) -> Tuple[Dict[str, Any], Dict[str, str]]:
+    """Generate deployment models for the task.
+
+    Args:
+        config: Experiment config
+        model: Model to be exported
+        export_folder: Path to save the exported model
+        half_precision: Whether to use half precision for the exported model
+        input_shapes: Input shapes for the exported model
+        idx_to_class: Mapping from class index to class name
+        pytorch_model_type: Type of the pytorch model config to be exported, if it's backbone on disk we will save the
+            config.backbone config, otherwise we will save the config.model
+
+    Returns:
+        If the model is exported successfully, return a dictionary containing information about the exported model and
+        a second dictionary containing the paths to the exported models. Otherwise, return two empty dictionaries.
+    """
+    if config.export is None or len(config.export.types) == 0:
+        log.info("No export type specified skipping export")
+        return {}, {}
+
+    os.makedirs(export_folder, exist_ok=True)
+
+    if input_shapes is None:
+        # Try to get input shapes from config
+        # If this is also None we will try to retrieve it from the ModelSignatureWrapper, if it fails we can't export
+        input_shapes = config.export.input_shapes
+
+    export_paths = {}
+
+    for export_type in config.export.types:
+        if export_type == "torchscript":
+            out = export_torchscript_model(
+                model=model,
+                input_shapes=input_shapes,
+                output_path=export_folder,
+                half_precision=half_precision,
+            )
+
+            if out is None:
+                log.warning("Torchscript export failed, enable debug logging for more details")
+                continue
+
+            export_path, input_shapes = out
+            export_paths[export_type] = export_path
+        elif export_type == "pytorch":
+            export_path = export_pytorch_model(
+                model=model,
+                output_path=export_folder,
+            )
+            export_paths[export_type] = export_path
+            with open(os.path.join(export_folder, "model_config.yaml"), "w") as f:
+                OmegaConf.save(getattr(config, pytorch_model_type), f, resolve=True)
+        elif export_type == "onnx":
+            if not hasattr(config.export, "onnx"):
+                log.warning("No onnx configuration found, skipping onnx export")
+                continue
+
+            out = export_onnx_model(
+                model=model,
+                output_path=export_folder,
+                onnx_config=config.export.onnx,
+                input_shapes=input_shapes,
+                half_precision=half_precision,
+            )
+
+            if out is None:
+                log.warning("ONNX export failed, enable debug logging for more details")
+                continue
+
+            export_path, input_shapes = out
+            export_paths[export_type] = export_path
+        else:
+            log.warning("Export type: %s not implemented", export_type)
+
+    if len(export_paths) == 0:
+        log.warning("No export type was successful, no model will be available for deployment")
+        return {}, export_paths
+
+    model_json = {
+        "input_size": input_shapes,
+        "classes": idx_to_class,
+        "mean": list(config.transforms.mean),
+        "std": list(config.transforms.std),
+    }
+
+    return model_json, export_paths
+
+
 def import_deployment_model(
-    model_path: str, device: str, model: Optional[nn.Module] = None
-) -> Tuple[Union[RecursiveScriptModule, nn.Module], str]:
+    model_path: str, inference_config: DictConfig, device: str, model_architecture: Optional[nn.Module] = None
+) -> BaseEvaluationModel:
     """Try to import a model for deployment, currently only supports torchscript .pt files and
     state dictionaries .pth files.
 
     Args:
         model_path: Path to the model
+        inference_config: Inference configuration, should contain keys for the different deployment models
         device: Device to load the model on
-        model: Pytorch model needed to load the parameter dictionary
+        model_architecture: Optional model architecture to use for loading a plain pytorch model
 
     Returns:
         A tuple containing the model and the model type
     """
+    log.info("Importing trained model")
 
     file_extension = os.path.splitext(os.path.basename(model_path))[1]
+    deployment_model: Optional[BaseEvaluationModel] = None
+
     if file_extension == ".pt":
-        model = cast(RecursiveScriptModule, torch.jit.load(model_path))
-        model.eval()
-        model.to(device)
+        deployment_model = TorchscriptEvaluationModel(config=inference_config.torchscript)
+    elif file_extension == ".pth":
+        if model_architecture is None:
+            raise ValueError("model_architecture must be specified when loading a .pth file")
 
-        return model, "torchscript"
-    if file_extension == ".pth":
-        if model is None:
-            raise ValueError("Model is not defined, can not load state_dict!")
+        deployment_model = TorchEvaluationModel(config=inference_config.pytorch, model_architecture=model_architecture)
+    elif file_extension == ".onnx":
+        deployment_model = ONNXEvaluationModel(config=inference_config.onnx)
 
-        model.load_state_dict(torch.load(model_path))
-        model.eval()
-        model.to(device)
+    if deployment_model is not None:
+        deployment_model.load_from_disk(model_path=model_path, device=device)
 
-        return model, "torch"
+        log.info("Imported %s model", deployment_model.__class__.__name__)
+
+        return deployment_model
 
     raise ValueError(f"Unable to load model with extension {file_extension}, valid extensions are: ['.pt', 'pth']")
+
+
+# This may be better as a dict?
+def get_export_extension(export_type: str) -> str:
+    """Get the extension of the exported model.
+
+    Args:
+        export_type: The type of the exported model.
+
+    Returns:
+        The extension of the exported model.
+    """
+    if export_type == "onnx":
+        extension = "onnx"
+    elif export_type == "torchscript":
+        extension = "pt"
+    elif export_type == "pytorch":
+        extension = "pth"
+    else:
+        raise ValueError(f"Unsupported export type {export_type}")
+
+    return extension

@@ -4,6 +4,3 @@ output:
   example: false
 report: false
 run_test: true
-export_config:
-  types: [pytorch, torchscript]
-  input_shapes: # Redefine the input shape if not automatically inferred

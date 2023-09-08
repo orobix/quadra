@@ -47,6 +47,7 @@ class ClassificationDataModule(BaseDataModule):
         val_split_file: The file with validation split. Defaults to None.
         test_split_file: The file with test split. Defaults to None.
         class_to_idx: The mapping from class name to index. Defaults to None.
+        **kwargs: Additional arguments for BaseDataModule.
     """
 
     def __init__(
@@ -75,6 +76,7 @@ class ClassificationDataModule(BaseDataModule):
         test_split_file: Optional[str] = None,
         val_split_file: Optional[str] = None,
         class_to_idx: Optional[Dict[str, int]] = None,
+        **kwargs: Any,
     ):
         super().__init__(
             data_path=data_path,
@@ -90,6 +92,7 @@ class ClassificationDataModule(BaseDataModule):
             n_aug_to_take=n_aug_to_take,
             replace_str_from=replace_str_from,
             replace_str_to=replace_str_to,
+            **kwargs,
         )
         self.replace_str = None
         self.exclude_filter = exclude_filter

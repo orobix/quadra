@@ -7,6 +7,21 @@ All notable changes to this project will be documented in this file.
 #### Added
 
 - Add plot_raw_outputs feature to class VisualizerCallback in anomaly detection, to save the raw images of the segmentation and heatmap output.
+- Add support for onnx exportation of trained models.
+- Add support for onnx model import in all evaluation tasks.
+- Add `export` configuration group to regulate exportation parameters.
+- Add `inference` configuration group to regulate inference parameters.
+
+#### Changed 
+
+- Move `export_types` parameter from `task` configuration group to `export` configuration group under `types` parameter.
+- Refactor export model function to be more generic and be availble from the base task class.
+- Remove `save_backbone` parameter for scikit-learn based tasks.
+
+#### Fixed
+
+- Fix failures when trying to override `hydra` configuration groups due to wrong override order.
+
 ### [1.1.4]
 
 #### Fixed

@@ -31,8 +31,6 @@ from quadra.utils.mlflow import infer_signature_torch_model
 
 IMAGE_EXTENSIONS: List[str] = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pbm", ".pgm", ".ppm", ".pxm", ".pnm"]
 
-IMAGE_EXTENSIONS: List[str] = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pbm", ".pgm", ".ppm", ".pxm", ".pnm"]
-
 
 def get_logger(name=__name__) -> logging.Logger:
     """Initializes multi-GPU-friendly python logger."""
@@ -270,7 +268,9 @@ def finish(
             if model_json is not None:
                 for model_path in deployed_models:
                     if model_path.endswith(".pt"):
-                        model, _ = quadra_export.import_deployment_model(model_path, device="cpu")
+                        model = quadra_export.import_deployment_model(
+                            model_path, device="cpu", inference_config=config.inference
+                        ).model
 
                         input_size = model_json["input_size"]
 

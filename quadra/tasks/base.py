@@ -11,13 +11,11 @@ from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.loggers import Logger, MLFlowLogger
 from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
-from torch import nn
-from torch.jit._script import RecursiveScriptModule
-from torch.nn import Module
 
 from quadra import get_version
 from quadra.callbacks.mlflow import validate_artifact_storage
 from quadra.datamodules.base import BaseDataModule
+from quadra.models.evaluation import BaseEvaluationModel
 from quadra.utils import utils
 from quadra.utils.export import import_deployment_model
 
@@ -30,16 +28,10 @@ class Task(Generic[DataModuleT]):
 
     Args:
         config: The experiment configuration.
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
-    def __init__(self, config: DictConfig, export_config: Optional[DictConfig] = None):
+    def __init__(self, config: DictConfig):
         self.config = config
-        self.export_config = export_config
         self.export_folder: str = "deployment_model"
         self._datamodule: DataModuleT
         self.metadata: Dict[str, Any]
@@ -92,7 +84,7 @@ class Task(Generic[DataModuleT]):
         self.prepare()
         self.train()
         self.test()
-        if self.export_config is not None and len(self.export_config.types) > 0:
+        if self.config.export is not None and len(self.config.export.types) > 0:
             self.export()
         self.generate_report()
         self.finalize()
@@ -106,11 +98,6 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         checkpoint_path: The path to the checkpoint to load the model from. Defaults to None.
         run_test: Whether to run the test after training. Defaults to False.
         report: Whether to generate a report. Defaults to False.
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
     def __init__(
@@ -119,10 +106,8 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         checkpoint_path: Optional[str] = None,
         run_test: bool = False,
         report: bool = False,
-        export_config: Optional[DictConfig] = None,
     ):
-        super().__init__(config, export_config=export_config)
-        self.config = config
+        super().__init__(config=config)
         self.checkpoint_path = checkpoint_path
         self.run_test = run_test
         self.report = report
@@ -308,7 +293,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         self.train()
         if self.run_test:
             self.test()
-        if self.export_config is not None and len(self.export_config.types) > 0:
+        if self.config.export is not None and len(self.config.export.types) > 0:
             self.export()
         if self.report:
             self.generate_report()
@@ -351,21 +336,23 @@ class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
         self.config = config
         self.model_data: Dict[str, Any]
         self.model_path = model_path
-        self._deployment_model: Union[RecursiveScriptModule, Module]
+        self._deployment_model: BaseEvaluationModel
         self.deployment_model_type: str
         self.model_info_filename = "model.json"
         self.report_path = ""
         self.metadata = {"report_files": []}
 
     @property
-    def deployment_model(self) -> Union[RecursiveScriptModule, nn.Module]:
+    def deployment_model(self) -> BaseEvaluationModel:
         """Deployment model."""
         return self._deployment_model
 
     @deployment_model.setter
     def deployment_model(self, model_path: str):
         """Set the deployment model."""
-        self._deployment_model, self.deployment_model_type = import_deployment_model(model_path, self.device)
+        self._deployment_model = import_deployment_model(
+            model_path=model_path, device=self.device, inference_config=self.config.inference
+        )
 
     def prepare(self) -> None:
         """Prepare the evaluation."""

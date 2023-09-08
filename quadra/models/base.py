@@ -36,7 +36,7 @@ class ModelSignatureWrapper(nn.Module):
                 log = get_logger(__name__)
                 log.warning(
                     "Failed to retrieve input shapes after forward! To export the model you'll need to "
-                    "provide the input shapes manually setting the export_config.input_shapes parameter! "
+                    "provide the input shapes manually setting the config.export.input_shapes parameter! "
                     "Alternatively you could try to use a forward with supported input types (and their compositions) "
                     "(list, tuple, dict, tensors)."
                 )

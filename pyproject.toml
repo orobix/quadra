@@ -63,7 +63,7 @@ dependencies = [
   "h5py==3.8.*",
   "timm==0.6.12", # required by smp
   "segmentation-models-pytorch==0.3.*",
-  "anomalib@git+https://github.com/orobix/anomalib.git@v0.4.0+obx.1.0.1",
+  "anomalib@git+https://github.com/orobix/anomalib.git@v0.4.0+obx.1.0.2",
   "xxhash==3.2.*",
 ]
 
@@ -71,6 +71,7 @@ dependencies = [
 test = [
     "pytest==7.2.*",
     "pytest-cov==4.0.*",
+    "pytest-lazy-fixture==0.6.*",
 ]
 
 dev = [
@@ -87,7 +88,6 @@ dev = [
     "bumpver==2023.1124",
     "twine==4.0.*",
     "build==0.10.*"
-
 ]
 
 docs = [
@@ -99,6 +99,12 @@ docs = [
     "mkdocs-section-index==0.3.5",
     "mike==1.1.2",
     "cairosvg==2.7.0"
+]
+
+onnx = [
+  "onnx==1.14.0",
+  "onnxsim==0.4.28",
+  "onnxruntime-gpu==1.15.0",
 ]
 
 [tool.setuptools]

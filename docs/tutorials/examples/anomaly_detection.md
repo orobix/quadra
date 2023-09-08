@@ -184,13 +184,16 @@ As already mentioned anomaly detection requires just good images for training, t
 
 ### Experiment
 
-Suppose that we want to run the experiment on the given dataset using the PADIM technique. We can define take the generic padim config for mnist as an example found under `experiment/generic/mnist/anomaly/padim.yaml`.
+Suppose that we want to run the experiment on the given dataset using the PADIM technique. We can take the generic padim config for mnist as an example found under `experiment/generic/mnist/anomaly/padim.yaml`.
 
 ```yaml
 # @package _global_
 defaults:
   - base/anomaly/padim
   - override /datamodule: generic/mnist/anomaly/base
+
+export:
+  types: [torchscript]
 
 model:
   model:
@@ -226,7 +229,7 @@ trainer:
   check_val_every_n_epoch: ${trainer.max_epochs}
 ```
 
-We start from the base configuration for PADIM, then we override the datamodule to use the generic mnist datamodule. Using this configuration we specify that we want to use PADIM, extracting features using the resnet18 backbone with image size 224x224, the dataset is `mnist`, we specify that the task is taken from the anomalib configuration which specify it to be segmentation. One very important thing to watch out is the `check_val_every_n_epoch` parameter. This parameter should match the number of epochs for `PADIM` and `Patchcore`, the reason is that in the validation phase the model will be fitted and we want the fit to be done only once and on all the data, increasing the max_epoch is useful when we apply data augmentation, otherwise it doesn't make a lot of sense as we would fit the model on the same, replicated data.
+We start from the base configuration for PADIM, then we override the datamodule to use the generic mnist datamodule. Using this configuration we specify that we want to use PADIM, extracting features using the resnet18 backbone with image size 224x224, the dataset is `mnist`, we specify that the task is taken from the anomalib configuration which specify it to be segmentation. One very important thing to watch out is the `check_val_every_n_epoch` parameter. This parameter should match the number of epochs for `PADIM` and `Patchcore`, the reason is that in the validation phase the model will be fitted and we want the fit to be done only once and on all the data, increasing the max_epoch is useful when we apply data augmentation, otherwise it doesn't make a lot of sense as we would fit the model on the same, replicated data. The model will be exported at the end of the training phase, as we have specified the `export.types` parameter to `torchscript` the model will be exported only in torchscript format.
 
 ### Run
 
@@ -289,7 +292,7 @@ task:
 
 By default, the inference will recompute the threshold based on test data to maximize the F1-score, if you want to use the threshold from the training phase you can set the `use_training_threshold` parameter to true.
 
-The model path is the path to an exported model, at the moment only `torchscript` models are supported (exported automatically after a training experiment). Right now only the `CFLOW` model is not supported for inference as it's not compatible with torchscript.
+The model path is the path to an exported model, at the moment `torchscript` and `onnx` models are supported (exported automatically after a training experiment). Right now only the `CFLOW` model is not supported for inference as it's not compatible with botyh torchscript and onnx.
 
 An inference configuration using the mnist dataset is found under `configs/experiment/generic/mnist/anomaly/inference.yaml`.
 

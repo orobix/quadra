@@ -374,7 +374,7 @@ def classification_patch_dataset(
     params=[
         ClassificationPatchDatasetArguments(
             **{
-                "samples": [15, 20, 25],
+                "samples": [5, 5, 5],
                 "classes": ["bg", "a", "b"],
                 "patch_size": [16, 20],
                 "overlap": 0.6,
@@ -389,7 +389,7 @@ def base_patch_classification_dataset(
 ) -> Tuple[str, ClassificationDatasetArguments, Dict[str, int]]:
     """Generate a classification patch dataset with the following parameters:
         - 3 classes named bg, a and b
-        - 15, 20 and 25 samples for each class
+        - 5, 5 and 5 samples for each class
         - patch size of 16x20
         - 60% overlap
         - 10% validation set

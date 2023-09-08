@@ -2,6 +2,11 @@ import os
 from pathlib import Path
 
 import pytest
+import torch
+
+
+def pytest_addoption(parser):
+    parser.addoption("--device", action="store", default="cpu", help="device to run tests on")
 
 
 @pytest.fixture(autouse=True)
@@ -13,7 +18,15 @@ def change_test_dir(tmp_path: Path, monkeypatch):
     monkeypatch.chdir(test_working_directory)
 
 
+@pytest.fixture(scope="session")
+def device(pytestconfig):
+    return pytestconfig.getoption("device")
+
+
 @pytest.fixture(autouse=True)
-def hyde_gpu():
-    """Hyde GPU for tests."""
-    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+def setup_devices(device: str):
+    """Set the device to run tests on."""
+    torch_device = torch.device(device)
+    os.environ["QUADRA_TEST_DEVICE"] = device
+    if torch_device.type != "cuda":
+        os.environ["CUDA_VISIBLE_DEVICES"] = "-1"

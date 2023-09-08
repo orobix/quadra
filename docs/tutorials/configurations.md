@@ -160,6 +160,9 @@ defaults:
   - override /scheduler: rop
   - override /transforms: default_resize
 
+export:
+  types: [torchscript]
+
 datamodule:
   num_workers: 8
   batch_size: 32
@@ -178,10 +181,6 @@ task:
   report: True
   output:
     example: True
-  export_config:
-    types: [torchscript]
-    input_shapes: # Redefine the input shape if not automatically inferred
-
 
 core:
   tag: "run"

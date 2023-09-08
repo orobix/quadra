@@ -9,6 +9,9 @@ defaults:
   - override /scheduler: rop
   - override /transforms: default_resize
 
+export:
+  types: [torchscript, pytorch]
+
 datamodule:
   num_workers: 8
   batch_size: 32
@@ -24,9 +27,6 @@ model:
 task:
   lr_multiplier: 0.0
   run_test: True
-  export_config:
-    types: [torchscript, pytorch]
-    input_shapes:
   report: True
   gradcam: True
   output:
