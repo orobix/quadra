@@ -1,0 +1,30 @@
+dataset:
+  task: segmentation
+
+model:
+  name: efficientad
+  teacher_out_channels: 384
+  model_size: small # options: [small, medium]
+  lr: 0.0001
+  image_size: [256, 256]
+  weight_decay: 0.00001
+  padding: false
+  pad_maps: true # relevant for "padding: false", see EfficientAd in lightning_model.py
+  # generic params
+  normalization_method: min_max # options: [null, min_max, cdf]
+  train_batch_size: 1 # ${datamodule.train_batch_size}
+  pretrained_models_dir: ${oc.env:HOME}/.quadra/models/efficient_ad
+  imagenette_dir: ${oc.env:HOME}/.quadra/datasets/
+  pretrained_teacher_type: nelson
+
+metrics:
+  image:
+    - F1Score
+    - AUROC
+  pixel:
+    - F1Score
+    - AUROC
+  threshold:
+    method: adaptive # options: [adaptive, manual]
+    manual_image: null
+    manual_pixel: null
