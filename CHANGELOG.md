@@ -7,6 +7,11 @@ All notable changes to this project will be documented in this file.
 #### Added
 
 - Add plot_raw_outputs feature to class VisualizerCallback in anomaly detection, to save the raw images of the segmentation and heatmap output.
+### [1.1.4]
+
+#### Fixed
+
+- Fix input shape not extracted properly in ModelSignatureWrapper when wrapping around a torchscript model.
 ### [1.1.3]
 
 #### Fixed

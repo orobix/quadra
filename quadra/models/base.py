@@ -57,17 +57,32 @@ class ModelSignatureWrapper(nn.Module):
         for arg in args:
             input_shapes.append(self._get_input_shape(arg))
 
-        signature = inspect.signature(self.instance.forward)
+        if isinstance(self.instance.forward, torch.ScriptMethod):
+            # Handle torchscript backbones
+            for i, argument in enumerate(self.instance.forward.schema.arguments):
+                if i < (len(args) + 1):  # +1 for self
+                    continue
 
-        for i, key in enumerate(signature.parameters.keys()):
-            if i < len(args):
-                continue
+                if argument.name == "self":
+                    continue
 
-            if key in kwargs:
-                input_shapes.append(self._get_input_shape(kwargs[key]))
-            else:
-                # Retrieve the default value
-                input_shapes.append(self._get_input_shape(signature.parameters[key].default))
+                if argument.name in kwargs:
+                    input_shapes.append(self._get_input_shape(kwargs[argument.name]))
+                else:
+                    # Retrieve the default value
+                    input_shapes.append(self._get_input_shape(argument.default_value))
+        else:
+            signature = inspect.signature(self.instance.forward)
+
+            for i, key in enumerate(signature.parameters.keys()):
+                if i < len(args):
+                    continue
+
+                if key in kwargs:
+                    input_shapes.append(self._get_input_shape(kwargs[key]))
+                else:
+                    # Retrieve the default value
+                    input_shapes.append(self._get_input_shape(signature.parameters[key].default))
 
         return input_shapes
 
