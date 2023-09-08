@@ -72,10 +72,11 @@ class TwoSetAugmentationDataset(Dataset):
         num_local_transforms: Number of local transformations to apply. In total you will have
             two + num_local_transforms transformations for each image. First element of the array will always
             return the original image.
-            images[0] = global_transform[0](original_image)
-            images[1] = global_transform[1](original_image)
-            images[2:] = local_transform(s)(original_image)
-            ...
+
+    Example:
+        >>> images[0] = global_transform[0](original_image)
+        >>> images[1] = global_transform[1](original_image)
+        >>> images[2:] = local_transform(s)(original_image)
     """
 
     def __init__(
