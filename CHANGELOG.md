@@ -26,7 +26,10 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 
 - Fix failures when trying to override `hydra` configuration groups due to wrong override order.
+<<<<<<< HEAD
 - Fix certain anomalib models not loaded on the correct device.
+=======
+>>>>>>> dev
 
 ### [1.1.4]
 
