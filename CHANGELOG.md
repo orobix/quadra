@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
 
 - Fix failures when trying to override `hydra` configuration groups due to wrong override order.
 - Fix certain anomalib models not loaded on the correct device.
+- Fix quadra crash when launching an experiment inside a git repository not fully initialized (e.g. without a single commit).
 
 ### [1.1.4]
 

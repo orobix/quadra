@@ -179,11 +179,19 @@ def log_hyperparameters(
         )
         == 0
     ):
-        hparams["git/commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
-        hparams["git/branch"] = (
-            subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("ascii").strip()
-        )
-        hparams["git/remote"] = subprocess.check_output(["git", "remote", "get-url", "origin"]).decode("ascii").strip()
+        try:
+            hparams["git/commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
+            hparams["git/branch"] = (
+                subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("ascii").strip()
+            )
+            hparams["git/remote"] = (
+                subprocess.check_output(["git", "remote", "get-url", "origin"]).decode("ascii").strip()
+            )
+        except subprocess.CalledProcessError:
+            log.warning(
+                "Could not get git commit, branch or remote information, the repository might not have any commits yet "
+                "or it might be initialized wrongly."
+            )
     else:
         log.warning("Could not find git repository, skipping git commit and branch info")
 
