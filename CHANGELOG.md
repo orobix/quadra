@@ -16,6 +16,13 @@ All notable changes to this project will be documented in this file.
 #### Updated
 
 - Update anomalib library from version 0.4.0 to 0.7.0
+- Update mkdocs library from version 1.4.3 to 1.5.2
+- Update mkdocs-material library from version 9.1.18 to 9.2.8
+- Update mkdocstrings library by fixing the version to 0.23.0
+- Update mkdocs-material-extensions library by fixing the version to 1.1.1
+- Update mkdocs-autorefs library by fixing the version to 0.5.0
+- Update mkdocs-section-index library from version 0.3.5 to 0.3.6
+- Update mkdocstrings-python library from version 1.2.0 to 1.6.2
 
 #### Changed 
 
@@ -28,6 +35,9 @@ All notable changes to this project will be documented in this file.
 - Fix failures when trying to override `hydra` configuration groups due to wrong override order.
 - Fix certain anomalib models not loaded on the correct device.
 - Fix quadra crash when launching an experiment inside a git repository not fully initialized (e.g. without a single commit).
+- Fix documentation build failing due to wrong `mkdocstring` version.
+- Fix SSL docstrings 
+- Fix reference page URL to segmentation page in module management tutorial.
 
 ### [1.1.4]
 
