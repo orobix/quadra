@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Add `inference` configuration group to regulate inference parameters.
 - Add EfficientAD configuration for anomaly detection.
 - Add `acknowledgements` section to `README.md` file.
+- Add hashing parameters to datamodule configurations.
 
 #### Updated
 
@@ -24,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - Update mkdocs-autorefs library by fixing the version to 0.5.0
 - Update mkdocs-section-index library from version 0.3.5 to 0.3.6
 - Update mkdocstrings-python library from version 1.2.0 to 1.6.2
+- Update datamodule documentation for hashing.
 
 #### Changed 
 

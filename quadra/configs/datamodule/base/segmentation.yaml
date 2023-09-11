@@ -13,3 +13,6 @@ test_split_file:
 val_split_file:
 num_data_class:
 exclude_good: false
+enable_hashing: true
+hash_size: 64
+hash_type: content
