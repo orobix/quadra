@@ -32,7 +32,7 @@ trainer:
   gradient_clip_val: 0
   gradient_clip_algorithm: norm
   num_nodes: 1
-  devices: 1
+  devices: [0]
   enable_progress_bar: true
   overfit_batches: 0.0
   track_grad_norm: -1

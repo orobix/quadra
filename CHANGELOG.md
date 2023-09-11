@@ -2,6 +2,47 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.2.0]
+
+#### Added
+
+- Add plot_raw_outputs feature to class VisualizerCallback in anomaly detection, to save the raw images of the segmentation and heatmap output.
+- Add support for onnx exportation of trained models.
+- Add support for onnx model import in all evaluation tasks.
+- Add `export` configuration group to regulate exportation parameters.
+- Add `inference` configuration group to regulate inference parameters.
+- Add EfficientAD configuration for anomaly detection.
+- Add `acknowledgements` section to `README.md` file.
+- Add hashing parameters to datamodule configurations.
+
+#### Updated
+
+- Update anomalib library from version 0.4.0 to 0.7.0
+- Update mkdocs library from version 1.4.3 to 1.5.2
+- Update mkdocs-material library from version 9.1.18 to 9.2.8
+- Update mkdocstrings library by fixing the version to 0.23.0
+- Update mkdocs-material-extensions library by fixing the version to 1.1.1
+- Update mkdocs-autorefs library by fixing the version to 0.5.0
+- Update mkdocs-section-index library from version 0.3.5 to 0.3.6
+- Update mkdocstrings-python library from version 1.2.0 to 1.6.2
+- Update datamodule documentation for hashing.
+
+#### Changed 
+
+- Move `export_types` parameter from `task` configuration group to `export` configuration group under `types` parameter.
+- Refactor export model function to be more generic and be availble from the base task class.
+- Remove `save_backbone` parameter for scikit-learn based tasks.
+
+#### Fixed
+
+- Fix failures when trying to override `hydra` configuration groups due to wrong override order.
+- Fix certain anomalib models not loaded on the correct device.
+- Fix quadra crash when launching an experiment inside a git repository not fully initialized (e.g. without a single commit).
+- Fix documentation build failing due to wrong `mkdocstring` version.
+- Fix SSL docstrings 
+- Fix reference page URL to segmentation page in module management tutorial.
+- Fix `Makefile` command.
+
 ### [1.1.4]
 
 #### Fixed

@@ -3,7 +3,3 @@ report: true
 run_test: true
 module_function:
   _target_: anomalib.models.cflow.lightning_model.CflowLightning
-export_config:
-  types:
-    - torchscript
-  input_shapes: null

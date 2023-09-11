@@ -3,7 +3,3 @@ report: true
 run_test: true
 module_function:
   _target_: anomalib.models.csflow.lightning_model.CsflowLightning
-export_config:
-  types: [torchscript]
-  input_shapes: # Redefine the input shape if not automatically inferred
-

@@ -18,3 +18,6 @@ train_transform: ${transforms.train_transform}
 test_transform: ${transforms.test_transform}
 val_transform: ${transforms.val_transform}
 class_to_idx: null
+enable_hashing: true
+hash_size: 64
+hash_type: content

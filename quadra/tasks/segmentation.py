@@ -12,11 +12,12 @@ from torch.utils.data import DataLoader
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.datamodules import SegmentationDataModule, SegmentationMulticlassDataModule
 from quadra.models.base import ModelSignatureWrapper
+from quadra.models.evaluation import BaseEvaluationModel
 from quadra.modules.base import SegmentationModel
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
 from quadra.utils.evaluation import create_mask_report
-from quadra.utils.export import export_torchscript_model
+from quadra.utils.export import export_model
 
 log = utils.get_logger(__name__)
 
@@ -35,11 +36,6 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         run_test: If True, run test after training. Defaults to False.
         evaluate: Dict with evaluation parameters. Defaults to None.
         report: If True, create report after training. Defaults to False.
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
     def __init__(
@@ -50,14 +46,12 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         run_test: bool = False,
         evaluate: Optional[DictConfig] = None,
         report: bool = False,
-        export_config: Optional[DictConfig] = None,
     ):
         super().__init__(
             config=config,
             checkpoint_path=checkpoint_path,
             run_test=run_test,
             report=report,
-            export_config=export_config,
         )
         self.evaluate = evaluate
         self.num_viz_samples = num_viz_samples
@@ -65,18 +59,18 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         self.exported_model_path: Optional[str] = None
         if self.evaluate and any(self.evaluate.values()):
             if (
-                self.export_config is None
-                or len(self.export_config.types) == 0
-                or "torchscript" not in self.export_config.types
+                self.config.export is None
+                or len(self.config.export.types) == 0
+                or "torchscript" not in self.config.export.types
             ):
                 log.info(
                     "Evaluation is enabled, but training does not export a deployment model. Automatically export the "
                     "model as torchscript."
                 )
-                if self.export_config is None:
-                    self.export_config = DictConfig({"types": ["torchscript"]})
+                if self.config.export is None:
+                    self.config.export = DictConfig({"types": ["torchscript"]})
                 else:
-                    self.export_config.types.append("torchscript")
+                    self.config.export.types.append("torchscript")
 
             if not self.report:
                 log.info("Evaluation is enabled, but reporting is disabled. Enabling reporting automatically.")
@@ -126,59 +120,51 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         log.info("Exporting model ready for deployment")
         # Get best model!
         if self.trainer.checkpoint_callback is None:
-            raise ValueError("No checkpoint callback found in the trainer")
-        best_model_path = self.trainer.checkpoint_callback.best_model_path  # type: ignore[attr-defined]
-        log.info("Loaded best model from %s", best_model_path)
+            log.warning("No checkpoint callback found in the trainer, exporting the last model weights")
+            module = self.module
+        else:
+            best_model_path = self.trainer.checkpoint_callback.best_model_path  # type: ignore[attr-defined]
+            log.info("Loaded best model from %s", best_model_path)
 
-        module = self.module.load_from_checkpoint(
-            best_model_path,
-            model=self.module.model,
-            loss_fun=None,
-            optimizer=self.module.optimizer,
-            lr_scheduler=self.module.schedulers,
-        )
+            module = self.module.load_from_checkpoint(
+                best_model_path,
+                model=self.module.model,
+                loss_fun=None,
+                optimizer=self.module.optimizer,
+                lr_scheduler=self.module.schedulers,
+            )
 
         if "idx_to_class" not in self.config.datamodule:
             log.info("No idx_to_class key")
-            classes = {0: "good", 1: "bad"}
+            idx_to_class = {0: "good", 1: "bad"}  # TODO: Why is this the default value?
         else:
             log.info("idx_to_class is present")
-            classes = self.config.datamodule.idx_to_class
+            idx_to_class = self.config.datamodule.idx_to_class
 
-        if self.export_config is None:
+        if self.config.export is None:
             raise ValueError(
                 "No export type specified. This should not happen, please check if you have set "
                 "the export_type or assign it to a default value."
             )
 
-        input_shapes = self.export_config.input_shapes
+        half_precision = "16" in self.trainer.precision
 
-        half_precision = self.trainer.precision == 16
+        input_shapes = self.config.export.input_shapes
 
-        for export_type in self.export_config.types:
-            if export_type == "torchscript":
-                out = export_torchscript_model(
-                    model=module.model,
-                    input_shapes=input_shapes,
-                    output_path=self.export_folder,
-                    half_precision=half_precision,
-                )
+        model_json, export_paths = export_model(
+            config=self.config,
+            model=module.model,
+            export_folder=self.export_folder,
+            half_precision=half_precision,
+            input_shapes=input_shapes,
+            idx_to_class=idx_to_class,
+        )
 
-                if out is None:
-                    log.warning("Skipping torchscript export since the model is not supported")
-                    continue
+        if len(export_paths) == 0:
+            return
 
-                self.exported_model_path, input_shapes = out
-
-        if input_shapes is None:
-            log.warning("Not able to export the model in any format")
-
-        model_json = {
-            "input_size": input_shapes,
-            "classes": classes,
-            "mean": self.config.transforms.mean,
-            "std": self.config.transforms.std,
-        }
+        # Pick one model for evaluation, it should be independent of the export type as the model is wrapped
+        self.exported_model_path = next(iter(export_paths.values()))
 
         with open(os.path.join(self.export_folder, "model.json"), "w") as f:
             json.dump(model_json, f, cls=utils.HydraEncoder)
@@ -272,7 +258,7 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
 
     @torch.no_grad()
     def inference(
-        self, dataloader: DataLoader, deployment_model: torch.nn.Module, device: torch.device
+        self, dataloader: DataLoader, deployment_model: BaseEvaluationModel, device: torch.device
     ) -> Dict[str, torch.Tensor]:
         """Run inference on the dataloader and return the output.
 

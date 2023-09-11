@@ -7,33 +7,33 @@ name = "quadra"
 version = "1.1.4"
 description = "Deep Learning experiment orchestration library"
 authors = [
-  {name = "Alessandro Polidori", email = "alessandro.polidori@orobix.com"},
-  {name = "Federico Belotti", email = "federico.belotti@orobix.com"},
-  {name = "Lorenzo Mammana", email = "lorenzo.mammana@orobix.com"},
-  {name = "Refik Can Malli", email = "refikcan.malli@orobix.com"},
-  {name = "Silvia Bianchetti", email = "silvia.bianchetti@orobix.com"},
+  { name = "Alessandro Polidori", email = "alessandro.polidori@orobix.com" },
+  { name = "Federico Belotti", email = "federico.belotti@orobix.com" },
+  { name = "Lorenzo Mammana", email = "lorenzo.mammana@orobix.com" },
+  { name = "Refik Can Malli", email = "refikcan.malli@orobix.com" },
+  { name = "Silvia Bianchetti", email = "silvia.bianchetti@orobix.com" },
 ]
 keywords = ["deep learning", "experiment", "lightning", "hydra-core"]
-license = {file = "LICENSE"}
-readme = {file = "README.md", content-type = "text/markdown"}
+license = { file = "LICENSE" }
+readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.8,<3.10"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Education",
-    "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Software Development",
-    "Topic :: Software Development :: Libraries",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "License :: OSI Approved :: Apache Software License",
 ]
 
 dependencies = [
   # --------- pytorch --------- #
   "torch==1.13.1",
   "torchvision==0.14.1",
-  "torchmetrics==0.10.*", # constrained by anomalib
+  "torchmetrics==0.10.*",           # constrained by anomalib
   "torchsummary==1.5.*",
   "pytorch-lightning>=1.9.1,<1.10",
   # --------- hydra --------- #
@@ -42,11 +42,11 @@ dependencies = [
   "hydra-optuna-sweeper==1.2.*",
   # --------- loggers --------- #
   "mlflow==2.3.1",
-  "boto3==1.26.*", # needed for artifact storage
-  "minio==7.1.*", # needed for artifact storage
+  "boto3==1.26.*",       # needed for artifact storage
+  "minio==7.1.*",        # needed for artifact storage
   "tensorboard==2.11.*",
   # --------- others --------- #
-  "Pillow==9.3.0", # required by label-studio-converter
+  "Pillow==9.3.0",                                                        # required by label-studio-converter
   "pandas==1.1.*",
   "opencv-python-headless==4.7.0.*",
   "python-dotenv==0.21.*",
@@ -61,45 +61,46 @@ dependencies = [
   "scikit-multilearn==0.2.*",
   "tripy==1.0.*",
   "h5py==3.8.*",
-  "timm==0.6.12", # required by smp
+  "timm==0.6.12",                                                         # required by smp
   "segmentation-models-pytorch==0.3.*",
-  "anomalib@git+https://github.com/orobix/anomalib.git@v0.4.0+obx.1.0.1",
+  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.0",
   "xxhash==3.2.*",
 ]
 
 [project.optional-dependencies]
-test = [
-    "pytest==7.2.*",
-    "pytest-cov==4.0.*",
-]
+test = ["pytest==7.2.*", "pytest-cov==4.0.*", "pytest-lazy-fixture==0.6.*"]
 
 dev = [
-    "interrogate==1.5.*",
-    "black==22.12.*",
-    "isort==5.11.*",
-    "pre-commit==3.0.*",
-    "pylint==2.16.*",
-    "bump2version==1.0.*",
-    "types-PyYAML==6.0.12.*",
-    "mypy==1.0.*",
-    "ruff==0.0.257",
-    "pandas-stubs==1.5.3.*",
-    "bumpver==2023.1124",
-    "twine==4.0.*",
-    "build==0.10.*"
-
+  "interrogate==1.5.*",
+  "black==22.12.*",
+  "isort==5.11.*",
+  "pre-commit==3.0.*",
+  "pylint==2.16.*",
+  "bump2version==1.0.*",
+  "types-PyYAML==6.0.12.*",
+  "mypy==1.0.*",
+  "ruff==0.0.257",
+  "pandas-stubs==1.5.3.*",
+  "bumpver==2023.1124",
+  "twine==4.0.*",
+  "build==0.10.*",
 ]
 
 docs = [
-    "mkdocs==1.4.3",
-    "mkdocs-material==9.1.18",
-    "mkdocstrings-python==1.2.0",
-    "mkdocs-gen-files==0.5.0",
-    "mkdocs-literate-nav==0.6.0",
-    "mkdocs-section-index==0.3.5",
-    "mike==1.1.2",
-    "cairosvg==2.7.0"
+  "mkdocs==1.5.2",
+  "mkdocs-literate-nav==0.6.0",
+  "mkdocs-section-index==0.3.6",
+  "mkdocstrings==0.23.0",
+  "mkdocs-autorefs==0.5.0",
+  "mkdocs-gen-files==0.5.0",
+  "mkdocs-material==9.2.8",
+  "mkdocstrings-python==1.6.2",
+  "mkdocs-material-extensions==1.1.1",
+  "mike==1.1.2",
+  "cairosvg==2.7.0",
 ]
+
+onnx = ["onnx==1.14.0", "onnxsim==0.4.28", "onnxruntime-gpu==1.15.0"]
 
 [tool.setuptools]
 include-package-data = true
@@ -119,10 +120,10 @@ repository = "https://github.com/orobix/quadra"
 [tool.bumpver]
 current_version = "1.1.4"
 version_pattern = "MAJOR.MINOR.PATCH"
-commit_message  = "build: Bump version {old_version} -> {new_version}"
-commit          = true
-tag             = false
-push            = false
+commit_message = "build: Bump version {old_version} -> {new_version}"
+commit = true
+tag = false
+push = false
 
 [tool.bumpver.file_patterns]
 "pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
@@ -162,9 +163,7 @@ skip_gitignore = true
 testpaths = ["tests"]
 python_files = "test_*.py"
 addopts = "--strict-markers --disable-pytest-warnings"
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-]
+markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 
 # Pytest coverage
 [tool.coverage.run]
@@ -188,8 +187,8 @@ quiet = false
 whitelist_regex = []
 color = true
 ignore_regex = [
-  "^get$", 
-  "^mock_.*", 
+  "^get$",
+  "^mock_.*",
   ".*BaseClass.*",
   ".*on_train.*",
   ".*on_validation.*",
@@ -243,25 +242,20 @@ warn_return_any = false
 exclude = ["quadra/utils/tests", "tests"]
 
 [tool.ruff]
-select = [
-    "D",
-]
+select = ["D"]
 ignore = [
-    "D100",
-    # this is controlled by interrogate with exlude_regex
-    # we can skip it here
-    "D102", 
-    "D104",
-    "D105",
-    "D107",
-    # no blank line after summary line. This might be not required.
-    # usually we violate this rule
-    "D205"
+  "D100",
+  # this is controlled by interrogate with exlude_regex
+  # we can skip it here
+  "D102",
+  "D104",
+  "D105",
+  "D107",
+  # no blank line after summary line. This might be not required.
+  # usually we violate this rule
+  "D205",
 ]
-exclude = [
-    "Makefile",
-    ".gitignore",
-]
+exclude = ["Makefile", ".gitignore"]
 
 [tool.ruff.pydocstyle]
 convention = "google"

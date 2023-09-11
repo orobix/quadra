@@ -1,0 +1,13 @@
+types: [torchscript]
+input_shapes: # Redefine the input shape if not automatically inferred
+onnx:
+  # torch.onnx.export options
+  input_names: # If null automatically inferred
+  output_names: # If null automatically inferred
+  dynamic_axes: # If null automatically inferred
+  export_params: true
+  opset_version: 16
+  do_constant_folding: true
+  # Custom options
+  fixed_batch_size: # If not null export with fixed batch size (ignore dynamic axes)
+  simplify: true

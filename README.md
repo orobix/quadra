@@ -246,6 +246,21 @@ We rely on a combination of `Black`, `Pylint`, `Mypy`, `Ruff` and `Isort` to enf
 3. To run the webserver for real-time rendering and editing run `mkdocs serve` and visit `http://localhost:8000/`.
 4. If you want to export the static website to a specific folder  `mkdocs build -d <Destination Folder>`
 
+
+## Acknowledgements
+
+This project is based on many open-source libraries and frameworks, we would like to thank all the contributors for their work. Here is a list of the main libraries and frameworks we use:
+
+- [Pytorch](https://pytorch.org/) and [Pytorch Lightning](https://lightning.ai/) for training and deploying deep learning models. These two libraries are core part of training and testing tasks that allow us to run experiments on different devices in agile way.
+- Pretrained models are usually loaded from [Pytorch Hub](https://pytorch.org/hub/) or [Pytorch-image-models](https://github.com/huggingface/pytorch-image-models) (or called as `timm`).
+- Each specific task may rely on different libraries. For example, `segmentation` task uses [Segmentation_models.pytorch](https://github.com/qubvel/segmentation_models.pytorch) for loading backbones. The `anomaly detection` task uses a fork of [Anomalib](https://github.com/openvinotoolkit/anomalib) maintained by Orobix on [this repository](https://github.com/orobix/anomalib). We use light-weight ML models from [scikit-learn](https://scikit-learn.org/). We have also implementation of some SOTA models inside our library. 
+- Data processing and augmentation are done using [Albumentations](https://albumentations.ai/docs/) and [OpenCV](https://opencv.org/).
+- [Hydra](https://hydra.cc/docs/intro/) for composing configurations and running experiments. Hydra is a powerful framework that allows us to compose configurations from command line interface and run multiple experiments with different settings and hyperparameters. We have followed suggestions from `Configuring Experiments` section of [Hydra documentation](https://hydra.cc/docs/patterns/configuring_experiments/) and [lightning-hydra-template](https://github.com/ashleve/lightning-hydra-template) repository.
+- Documentation website is using [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) and [MkDocs](https://www.mkdocs.org/). For code documentation we are using [Mkdocstrings](https://mkdocstrings.github.io/). For releasing software versions we combine [Bumpver](https://github.com/mbarkhau/bumpver) and [Mike](https://github.com/jimporter/mike).
+- Models can be exported in different ways (`torchscript` or `torch` file). We have also added [ONNX](https://onnx.ai/) support for some models.
+- Testing framework is based on [Pytest](https://docs.pytest.org/en/) and related plug-ins.
+- Code quality is ensured by [pre-commit](https://pre-commit.com/) hooks. We are using [Black](https://github.com/psf/black) for formatting, [Pylint](https://www.pylint.org/) for linting, [Mypy](https://mypy.readthedocs.io/en/stable/) for type checking, [Isort](https://pycqa.github.io/isort/) for sorting imports, and [Ruff](https://github.com/astral-sh/ruff) for checking futher code and documentation quality.
+
 ## FAQ
 
 **How can I fix errors related to `GL` when I install full `opencv` package?**

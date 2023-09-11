@@ -14,8 +14,11 @@ from timm.models.layers import DropPath
 from timm.models.vision_transformer import Mlp
 from torch import nn
 
+from quadra.models.evaluation import BaseEvaluationModel, TorchEvaluationModel, TorchscriptEvaluationModel
 from quadra.utils import utils
 from quadra.utils.vit_explainability import VitAttentionGradRollout
+
+log = utils.get_logger(__name__)
 
 
 def net_hat(input_size: int, output_size: int) -> torch.nn.Sequential:
@@ -77,7 +80,7 @@ def init_weights(m):
 
 
 def get_feature(
-    feature_extractor: torch.nn.Module,
+    feature_extractor: Union[torch.nn.Module, BaseEvaluationModel],
     dl: torch.utils.data.DataLoader,
     iteration_over_training: int = 1,
     gradcam: bool = False,
@@ -101,11 +104,19 @@ def get_feature(
             labels: input_labels
             grayscale_cams: Gradcam output maps, None if gradcam arg is False
     """
+    if isinstance(feature_extractor, (TorchEvaluationModel, TorchscriptEvaluationModel)):
+        # If we are working with torch based evaluation models we need to extract the model
+        feature_extractor = feature_extractor.model
+    else:
+        gradcam = False
+
     feature_extractor.eval()
 
     # Setup gradcam
     if gradcam:
-        if isinstance(feature_extractor.features_extractor, timm.models.resnet.ResNet):
+        if not hasattr(feature_extractor, "features_extractor"):
+            gradcam = False
+        elif isinstance(feature_extractor.features_extractor, timm.models.resnet.ResNet):
             target_layers = [feature_extractor.features_extractor.layer4[-1]]
             cam = GradCAM(
                 model=feature_extractor,
@@ -121,22 +132,27 @@ def get_feature(
                 example_input=None if input_shape is None else torch.randn(1, *input_shape),
             )
         else:
-            log = utils.get_logger(__name__)
-            log.warning("Gradcam not implemented for this backbone, it will not be computed")
             gradcam = False
+
+        if not gradcam:
+            log.warning("Gradcam not implemented for this backbone, it will not be computed")
 
     # Extract features from data
 
     for iteration in range(iteration_over_training):
         for i, b in enumerate(tqdm.tqdm(dl)):
             x1, y1 = b
-            # Move input to the correct device
-            x1 = x1.to(next(feature_extractor.parameters()).device)
+
+            if hasattr(feature_extractor, "parameters"):
+                # Move input to the correct device
+                x1 = x1.to(next(feature_extractor.parameters()).device)
+
             if gradcam:
                 y_hat = cast(
                     Union[List[torch.Tensor], Tuple[torch.Tensor], torch.Tensor], feature_extractor(x1).detach()
                 )
-                if is_vision_transformer(feature_extractor.features_extractor):  # type: ignore[arg-type]
+                # mypy can't detect that gradcam is true only if we have a features_extractor
+                if is_vision_transformer(feature_extractor.features_extractor):  # type: ignore[union-attr, arg-type]
                     grayscale_cam_low_res = grad_rollout(
                         input_tensor=x1, targets_list=y1
                     )  # TODO: We are using labels (y1) but it would be better to use preds
@@ -146,9 +162,8 @@ def get_feature(
                     grayscale_cam = ndimage.zoom(grayscale_cam_low_res, zoom_factors, order=1)
                 else:
                     grayscale_cam = cam(input_tensor=x1, targets=None)
-                feature_extractor.zero_grad(set_to_none=True)
+                feature_extractor.zero_grad(set_to_none=True)  # type: ignore[union-attr]
                 torch.cuda.empty_cache()
-
             else:
                 with torch.no_grad():
                     y_hat = cast(Union[List[torch.Tensor], Tuple[torch.Tensor], torch.Tensor], feature_extractor(x1))

@@ -11,3 +11,6 @@ val_transform: ${transforms.val_transform}
 phase: train
 valid_area_mask:
 crop_area:
+enable_hashing: true
+hash_size: 64
+hash_type: content

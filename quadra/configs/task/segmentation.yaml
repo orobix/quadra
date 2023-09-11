@@ -7,6 +7,3 @@ evaluate:
   analysis: false
   control: false
   corruption: false
-export_config:
-  types: [torchscript]
-  input_shapes: # Redefine the input shape if not automatically inferred

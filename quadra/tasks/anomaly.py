@@ -24,7 +24,7 @@ from quadra.modules.base import ModelSignatureWrapper
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
 from quadra.utils.classification import get_results
-from quadra.utils.export import export_torchscript_model
+from quadra.utils.export import export_model
 
 log = utils.get_logger(__name__)
 
@@ -41,11 +41,6 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             Defaults to None.
         run_test: Whether to run the test after training. Defaults to False.
         report: Whether to report the results. Defaults to False.
-        export_config: Dictionary containing the export configuration, it should contain the following keys:
-
-            - `types`: List of types to export.
-            - `input_shapes`: Optional list of input shapes to use, they must be in the same order of the forward
-                arguments.
     """
 
     def __init__(
@@ -55,14 +50,12 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         checkpoint_path: Optional[str] = None,
         run_test: bool = True,
         report: bool = True,
-        export_config: Optional[DictConfig] = None,
     ):
         super().__init__(
             config=config,
             checkpoint_path=checkpoint_path,
             run_test=run_test,
             report=report,
-            export_config=export_config,
         )
         self._module: AnomalyModule
         self.module_function = module_function
@@ -112,43 +105,31 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
     def export(self) -> None:
         """Export model for production."""
-        if self.export_config is None or len(self.export_config.types) == 0:
-            log.info("No export type specified skipping export")
-            return
-
         if self.config.trainer.get("fast_dev_run"):
             log.warning("Skipping export since fast_dev_run is enabled")
             return
 
         model = self.module.model
 
-        input_shapes = self.export_config.input_shapes
+        input_shapes = self.config.export.input_shapes
 
-        half_precision = int(self.trainer.precision) == 16
+        half_precision = "16" in self.trainer.precision
 
-        for export_type in self.export_config.types:
-            if export_type == "torchscript":
-                out = export_torchscript_model(
-                    model=model,
-                    input_shapes=input_shapes,
-                    output_path=self.export_folder,
-                    half_precision=half_precision,
-                )
+        model_json, export_paths = export_model(
+            config=self.config,
+            model=model,
+            export_folder=self.export_folder,
+            half_precision=half_precision,
+            input_shapes=input_shapes,
+            idx_to_class={0: "good", 1: "defect"},
+        )
 
-                if out is None:
-                    log.warning("Skipping torchscript export since the model is not supported")
-                    continue
+        if len(export_paths) == 0:
+            return
 
-                _, input_shapes = out
-
-        model_json = {
-            "input_size": input_shapes,
-            "classes": {0: "good", 1: "defect"},
-            "mean": list(self.config.transforms.mean),
-            "std": list(self.config.transforms.std),
-            "image_threshold": np.round(self.module.image_threshold.value.item(), 3),
-            "pixel_threshold": np.round(self.module.pixel_threshold.value.item(), 3),
-        }
+        model_json["image_threshold"] = np.round(self.module.image_threshold.value.item(), 3)
+        model_json["pixel_threshold"] = np.round(self.module.pixel_threshold.value.item(), 3)
+        model_json["anomaly_method"] = self.config.model.model.name
 
         with open(os.path.join(self.export_folder, "model.json"), "w") as f:
             json.dump(model_json, f)
@@ -220,10 +201,12 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             if any(
                 isinstance(x, MinMaxNormalizationCallback) for x in self.trainer.callbacks  # type: ignore[attr-defined]
             )
-            else self.module.image_metrics.F1Score.threshold
+            else self.module.image_metrics.F1Score.threshold  # type: ignore[union-attr]
         )
 
-        plot_cumulative_histogram(good_scores, defect_scores, threshold.item(), self.report_path)
+        plot_cumulative_histogram(
+            good_scores, defect_scores, threshold.item(), self.report_path  # type: ignore[arg-type, operator]
+        )
 
         _, pd_cm, _ = get_results(np.array(gt_labels), np.array(pred_labels), idx_to_class)
         np_cm = np.array(pd_cm)
@@ -333,7 +316,7 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         self.datamodule.setup(stage="test")
         test_dataloader = self.datamodule.test_dataloader()
 
-        optimal_f1 = OptimalF1(num_classes=None, pos_label=1)
+        optimal_f1 = OptimalF1(num_classes=None, pos_label=1)  # type: ignore[arg-type]
 
         anomaly_scores = []
         anomaly_maps = []
@@ -346,7 +329,11 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 batch_labels = batch_item["label"]
                 image_labels.extend(batch_labels.tolist())
                 image_paths.extend(batch_item["image_path"])
-                anomaly_map, anomaly_score = self.deployment_model(batch_images.to(self.device))
+                if self.model_data.get("anomaly_method") == "efficientad":
+                    model_output = self.deployment_model(batch_images.to(self.device), None)
+                else:
+                    model_output = self.deployment_model(batch_images.to(self.device))
+                anomaly_map, anomaly_score = model_output[0], model_output[1]
                 anomaly_map = anomaly_map.cpu()
                 anomaly_score = anomaly_score.cpu()
                 known_labels = torch.where(batch_labels != -1)[0]

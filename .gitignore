@@ -68,3 +68,4 @@ docs/javascripts/images/*
 test-output.xml
 external/
 site/
+local/

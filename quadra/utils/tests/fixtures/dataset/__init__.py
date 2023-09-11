@@ -10,6 +10,7 @@ from .classification import (
     classification_patch_dataset,
     multilabel_classification_dataset,
 )
+from .imagenette import imagenette_dataset
 from .segmentation import (
     SegmentationDatasetArguments,
     base_binary_segmentation_dataset,
@@ -29,6 +30,7 @@ __all__ = [
     "multilabel_classification_dataset",
     "ClassificationMultilabelDatasetArguments",
     "base_anomaly_dataset",
+    "imagenette_dataset",
     "base_classification_dataset",
     "base_patch_classification_dataset",
     "base_binary_segmentation_dataset",
