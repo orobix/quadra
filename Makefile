@@ -5,12 +5,12 @@ DEVICE ?= cpu
 .PHONY: help
 help:
 	@echo "Commands:"
-	@echo "clean   		       : cleans all unnecessary files."
-	@echo "docs-serve          : serves the documentation."
-	@echo "docs-build          : builds the documentation."
-	@echo "style   		       : runs pre-commit."
-	@echo "units-tests:  	   : runs unit tests."
-	@echo "integration-tests:  : runs integration tests."
+	@echo "clean				: cleans all unnecessary files."
+	@echo "docs-serve			: serves the documentation."
+	@echo "docs-build			: builds the documentation."
+	@echo "style				: runs pre-commit."
+	@echo "unit-tests:			: runs unit tests."
+	@echo "integration-tests:	: runs integration tests."
 
 # Cleaning
 .PHONY: clean
@@ -36,7 +36,7 @@ docs-build:
 docs-serve:
 	mkdocs serve
 
-.PHONY: units-tests
-units-tests:
+.PHONY: unit-tests
+unit-tests:
 	@python -m pytest -v --disable-pytest-warnings --strict-markers --color=yes --device $(DEVICE)
 	

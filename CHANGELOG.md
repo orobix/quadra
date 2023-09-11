@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Add `export` configuration group to regulate exportation parameters.
 - Add `inference` configuration group to regulate inference parameters.
 - Add EfficientAD configuration for anomaly detection.
+- Add `acknowledgements` section to `README.md` file.
 
 #### Updated
 
@@ -38,6 +39,7 @@ All notable changes to this project will be documented in this file.
 - Fix documentation build failing due to wrong `mkdocstring` version.
 - Fix SSL docstrings 
 - Fix reference page URL to segmentation page in module management tutorial.
+- Fix `Makefile` command.
 
 ### [1.1.4]
 
