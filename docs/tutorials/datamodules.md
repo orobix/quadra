@@ -163,8 +163,8 @@ These are generally the required fields, different tasks may require additional 
 During `prepare_data` call of each datamodule we apply hashing algorithm for each sample of the dataset. This information helps developer to track not only the data path used for the experiment but also to track the data content. This is useful when the data is stored in a remote location and the developer wants to check if the data is the same as the one used for the experiment. [BaseDataModule][quadra.datamodules.base.BaseDataModule] class has following arguments to control the hashing process:
 
   - `enable_hashing`: If `True` the data will be hashed.
-  - `hashing_algorithm`: Size of the hash. Must be one of [32, 64, 128]. Defaults to 64.
-  - `hashing_chunk_size`: Type of hash to use, if content hash is used, the hash is computed on the file content, otherwise the hash is computed on the file size which is faster but less safe. Defaults to `content`.
+  - `hash_size`: Size of the hash. Must be one of [32, 64, 128]. Defaults to 64.
+  - `hash_type`: Type of hash to use, if content hash is used, the hash is computed on the file content, otherwise the hash is computed on the file size (`hash_type=size`) which is faster but less safe. Defaults to `content`.
 
 After the training is completed. The hash value of each sample used from given dataset will be saved under `hash` column inside `<experiment_folder>/data/dataset.csv` file.
 
