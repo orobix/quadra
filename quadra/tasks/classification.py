@@ -1000,6 +1000,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         test_dataloader = self.datamodule.test_dataloader()
 
         image_labels = []
+        probabilities = []
         predicted_classes = []
         grayscale_cams_list = []
 
@@ -1020,6 +1021,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
                 probs = torch.softmax(outputs, dim=1)
                 preds = torch.max(probs, dim=1).indices
 
+                probabilities.append(probs.tolist())
                 predicted_classes.append(preds.tolist())
                 image_labels.extend(target.tolist())
                 if self.gradcam and hasattr(self.deployment_model.model, "features_extractor"):
@@ -1043,6 +1045,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             grayscale_cams = torch.cat(grayscale_cams_list, dim=0)
 
         predicted_classes = [item for sublist in predicted_classes for item in sublist]
+        probabilities = [item for sublist in probabilities for item in sublist]
         if self.datamodule.class_to_idx is not None:
             idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
 
@@ -1057,6 +1060,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         self.metadata["test_confusion_matrix"] = pd_cm
         self.metadata["test_accuracy"] = test_accuracy
         self.metadata["test_results"] = predicted_classes
+        self.metadata["probabilities"] = probabilities
         self.metadata["test_labels"] = image_labels
         self.metadata["grayscale_cams"] = grayscale_cams
 
