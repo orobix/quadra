@@ -557,6 +557,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#acknowledgements" class="md-nav__link">
+    Acknowledgements
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#faq" class="md-nav__link">
     FAQ
   </a>
@@ -4141,6 +4148,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#acknowledgements" class="md-nav__link">
+    Acknowledgements
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#faq" class="md-nav__link">
     FAQ
   </a>
@@ -4335,6 +4349,19 @@ Again, modify the address if your Mlflow server is running on a different host o
 <li>To run the webserver for real-time rendering and editing run <code>mkdocs serve</code> and visit <code>http://localhost:8000/</code>.</li>
 <li>If you want to export the static website to a specific folder  <code>mkdocs build -d &lt;Destination Folder&gt;</code></li>
 </ol>
+<h2 id="acknowledgements">Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permanent link">&para;</a></h2>
+<p>This project is based on many open-source libraries and frameworks, we would like to thank all the contributors for their work. Here is a list of the main libraries and frameworks we use:</p>
+<ul>
+<li><a href="https://pytorch.org/">Pytorch</a> and <a href="https://lightning.ai/">Pytorch Lightning</a> for training and deploying deep learning models. These two libraries are core part of training and testing tasks that allow us to run experiments on different devices in agile way.</li>
+<li>Pretrained models are usually loaded from <a href="https://pytorch.org/hub/">Pytorch Hub</a> or <a href="https://github.com/huggingface/pytorch-image-models">Pytorch-image-models</a> (or called as <code>timm</code>).</li>
+<li>Each specific task may rely on different libraries. For example, <code>segmentation</code> task uses <a href="https://github.com/qubvel/segmentation_models.pytorch">Segmentation_models.pytorch</a> for loading backbones. The <code>anomaly detection</code> task uses a fork of <a href="https://github.com/openvinotoolkit/anomalib">Anomalib</a> maintained by Orobix on <a href="https://github.com/orobix/anomalib">this repository</a>. We use light-weight ML models from <a href="https://scikit-learn.org/">scikit-learn</a>. We have also implementation of some SOTA models inside our library. </li>
+<li>Data processing and augmentation are done using <a href="https://albumentations.ai/">Albumentations</a> and <a href="https://opencv.org/">OpenCV</a>.</li>
+<li><a href="https://hydra.cc/intro/">Hydra</a> for composing configurations and running experiments. Hydra is a powerful framework that allows us to compose configurations from command line interface and run multiple experiments with different settings and hyperparameters. We have followed suggestions from <code>Configuring Experiments</code> section of <a href="https://hydra.cc/patterns/configuring_experiments/">Hydra documentation</a> and <a href="https://github.com/ashleve/lightning-hydra-template">lightning-hydra-template</a> repository.</li>
+<li>Documentation website is using <a href="https://squidfunk.github.io/mkdocs-material/">Material for MkDocs</a> and <a href="https://www.mkdocs.org/">MkDocs</a>. For code documentation we are using <a href="https://mkdocstrings.github.io/">Mkdocstrings</a>. For releasing software versions we combine <a href="https://github.com/mbarkhau/bumpver">Bumpver</a> and <a href="https://github.com/jimporter/mike">Mike</a>.</li>
+<li>Models can be exported in different ways (<code>torchscript</code> or <code>torch</code> file). We have also added <a href="https://onnx.ai/">ONNX</a> support for some models.</li>
+<li>Testing framework is based on <a href="https://docs.pytest.org/en/">Pytest</a> and related plug-ins.</li>
+<li>Code quality is ensured by <a href="https://pre-commit.com/">pre-commit</a> hooks. We are using <a href="https://github.com/psf/black">Black</a> for formatting, <a href="https://www.pylint.org/">Pylint</a> for linting, <a href="https://mypy.readthedocs.io/en/stable/">Mypy</a> for type checking, <a href="https://pycqa.github.io/isort/">Isort</a> for sorting imports, and <a href="https://github.com/astral-sh/ruff">Ruff</a> for checking futher code and documentation quality.</li>
+</ul>
 <h2 id="faq">FAQ<a class="headerlink" href="#faq" title="Permanent link">&para;</a></h2>
 <p><strong>How can I fix errors related to <code>GL</code> when I install full <code>opencv</code> package?</strong></p>
 <p>If you are running on a remote server without a display and you are using <code>opencv-python</code> instead of <code>opencv-python-headless</code> you can run the following command to fix the issue:</p>
