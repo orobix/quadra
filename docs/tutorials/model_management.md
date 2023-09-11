@@ -19,7 +19,7 @@ By defining an abstract class, we establish a common interface that can be imple
 In this section, we will create example project for segmentation task and use [`MlflowModelManager`][quadra.utils.model_manager.MlflowModelManager] to manage the production model. `Quadra` provides a toy example where you can train a segmentation model for Oxford-IIIT Pet Dataset. 
 
 !!!note
-    You can find a detailed explanation for customizing the segmentation task under [Segmentation Example](/tutorials/examples/segmentation.md) section.
+    You can find a detailed explanation for customizing the segmentation task under [Segmentation Example](../tutorials/examples/segmentation.md) section.
 
 First of all, we need to run `Mlflow` server with artifact store. You can find the instructions for running `Mlflow` server [here](https://mlflow.org/docs/latest/tracking.html#mlflow-tracking-servers). Let's open a new terminal and run the following command:
 

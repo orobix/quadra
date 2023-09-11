@@ -135,10 +135,14 @@ class ClassificationModule(BaseLightningModule):
         """Instantiate gradcam handlers."""
         if isinstance(self.model.features_extractor, timm.models.resnet.ResNet):
             target_layers = [cast(BaseNetworkBuilder, self.model).features_extractor.layer4[-1]]  # type: ignore[index]
+
+            # Get model current device
+            device = next(self.model.parameters()).device
+
             self.cam = GradCAM(
                 model=self.model,
                 target_layers=target_layers,
-                use_cuda=torch.cuda.is_available(),
+                use_cuda=device.type == "cuda",
             )
             # Activating gradients
             for p in self.model.features_extractor.layer4[-1].parameters():

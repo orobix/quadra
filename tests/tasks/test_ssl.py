@@ -61,6 +61,7 @@ def test_dino(tmp_path: Path, base_classification_dataset: base_classification_d
         "loss.warmup_teacher_temp_epochs=1",
         "trainer.max_epochs=2",
     ]
+    overrides += setup_trainer_for_lightning()
 
     execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
 
