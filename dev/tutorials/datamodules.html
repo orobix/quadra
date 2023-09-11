@@ -3548,6 +3548,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#data-hashing" class="md-nav__link">
+    Data hashing
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -4045,6 +4052,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#data-hashing" class="md-nav__link">
+    Data hashing
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -4190,6 +4204,18 @@ Each split file should contain relative path to dataset root.</p>
 <li><code>split</code>: split of the image (train, test or val)</li>
 </ul>
 <p>These are generally the required fields, different tasks may require additional fields. For example, in the case of segmentation tasks, the <code>masks</code> field is required.</p>
+<h2 id="data-hashing">Data hashing<a class="headerlink" href="#data-hashing" title="Permanent link">&para;</a></h2>
+<p>During <code>prepare_data</code> call of each datamodule we apply hashing algorithm for each sample of the dataset. This information helps developer to track not only the data path used for the experiment but also to track the data content. This is useful when the data is stored in a remote location and the developer wants to check if the data is the same as the one used for the experiment. <a class="autorefs autorefs-internal" href="../reference/quadra/datamodules/base.html#quadra.datamodules.base.BaseDataModule">BaseDataModule</a> class has following arguments to control the hashing process:</p>
+<ul>
+<li><code>enable_hashing</code>: If <code>True</code> the data will be hashed.</li>
+<li><code>hash_size</code>: Size of the hash. Must be one of [32, 64, 128]. Defaults to 64.</li>
+<li><code>hash_type</code>: Type of hash to use, if content hash is used, the hash is computed on the file content, otherwise the hash is computed on the file size (<code>hash_type=size</code>) which is faster but less safe. Defaults to <code>content</code>.</li>
+</ul>
+<p>After the training is completed. The hash value of each sample used from given dataset will be saved under <code>hash</code> column inside <code>&lt;experiment_folder&gt;/data/dataset.csv</code> file.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+</div>
+<p>If the user wants to disable hashing from command line, it is possible to pass <code>datamodule.enable_hashing=False</code> as override argument.</p>
 
 
 
