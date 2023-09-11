@@ -16,3 +16,6 @@ name:
 dataset:
   _target_: hydra.utils.get_method
   path: quadra.datasets.classification.ClassificationDataset
+enable_hashing: true
+hash_size: 64
+hash_type: content

@@ -16,3 +16,6 @@ val_size: 0.3
 test_size: 0.1
 split_validation: true
 class_to_idx:
+enable_hashing: true
+hash_size: 64
+hash_type: content

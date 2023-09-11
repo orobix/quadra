@@ -15,3 +15,6 @@ val_split_file:
 exclude_good: false
 num_data_train:
 one_hot_encoding:
+enable_hashing: true
+hash_size: 64
+hash_type: content

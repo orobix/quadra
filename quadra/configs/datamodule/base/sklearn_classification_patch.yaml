@@ -12,3 +12,6 @@ test_transform: ${transforms.test_transform}
 val_transform: ${transforms.val_transform}
 balance_classes: false
 class_to_skip_training:
+enable_hashing: true
+hash_size: 64
+hash_type: content
