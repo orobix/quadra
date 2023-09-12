@@ -928,7 +928,9 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         """Instantiate the classifier from the config."""
         if "classifier" in model_config:
             log.info("Instantiating classifier <%s>", model_config.classifier["_target_"])
-            return hydra.utils.instantiate(model_config.classifier, _convert_="partial")
+            return hydra.utils.instantiate(
+                model_config.classifier, out_features=self.datamodule.num_classes, _convert_="partial"
+            )
 
         raise ValueError("A `classifier` definition must be specified in the config")
 
