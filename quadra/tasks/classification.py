@@ -966,9 +966,8 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
 
     def prepare(self) -> None:
         """Prepare the evaluation."""
-        super().prepare()
         self.datamodule = self.config.datamodule
-        self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
+        super().prepare()
 
     def prepare_gradcam(self) -> None:
         """Initializing gradcam for the predictions."""
