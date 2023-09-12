@@ -204,7 +204,10 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
     def classifier(self, model_config: DictConfig) -> None:
         if "classifier" in model_config:
             log.info("Instantiating classifier <%s>", model_config.classifier["_target_"])
-            self._classifier = hydra.utils.instantiate(model_config.classifier, _convert_="partial")
+            print(self.datamodule.num_classes)
+            self._classifier = hydra.utils.instantiate(
+                model_config.classifier, out_features=self.datamodule.num_classes, _convert_="partial"
+            )
         else:
             raise ValueError("A `classifier` definition must be specified in the config")
 

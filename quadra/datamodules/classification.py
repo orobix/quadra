@@ -106,6 +106,8 @@ class ClassificationDataModule(BaseDataModule):
         self.test_split_file = test_split_file
         self.val_split_file = val_split_file
         self.class_to_idx = class_to_idx
+        _, self.class_to_idx = self._find_images_and_targets(self.data_path, class_to_idx=self.class_to_idx)
+        self.num_classes = len(self.class_to_idx)
 
     def _read_split(self, split_file: str) -> Tuple[List[str], List[str]]:
         """Reads split file.
