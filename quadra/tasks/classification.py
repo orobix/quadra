@@ -1049,7 +1049,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             grayscale_cams = torch.cat(grayscale_cams_list, dim=0)
 
         predicted_classes = [item for sublist in predicted_classes for item in sublist]
-        probabilities = [item for sublist in probabilities for item in sublist]
+        probabilities = [max(item) for sublist in probabilities for item in sublist]
         if self.datamodule.class_to_idx is not None:
             idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
 
@@ -1060,11 +1060,20 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         )
         log.info("Avg classification accuracy: %s", test_accuracy)
 
+        self.res = pd.DataFrame(
+            {
+                "sample": list(test_dataloader.dataset.x),  # type: ignore[attr-defined]
+                "real_label": image_labels,
+                "pred_label": predicted_classes,
+                "probability": probabilities,
+            }
+        )
+
         # save results
         self.metadata["test_confusion_matrix"] = pd_cm
         self.metadata["test_accuracy"] = test_accuracy
-        self.metadata["test_results"] = predicted_classes
-        self.metadata["probabilities"] = probabilities
+        self.metadata["predictions"] = predicted_classes
+        self.metadata["test_results"] = self.res
         self.metadata["test_labels"] = image_labels
         self.metadata["grayscale_cams"] = grayscale_cams
 
@@ -1073,17 +1082,8 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         log.info("Generating report!")
         os.makedirs(self.report_path, exist_ok=True)
 
-        test_dataset = cast(ImageClassificationListDataset, self.datamodule.test_dataloader().dataset)
-        res = pd.DataFrame(
-            {
-                "sample": list(test_dataset.x),
-                "real_label": self.metadata["test_labels"],
-                "pred_label": self.metadata["test_results"],
-            }
-        )
-        os.makedirs(self.report_path, exist_ok=True)
         save_classification_result(
-            results=res,
+            results=self.res,
             output_folder=self.report_path,
             confmat=self.metadata["test_confusion_matrix"],
             accuracy=self.metadata["test_accuracy"],
