@@ -1059,6 +1059,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             idx_to_labels=idx_to_class,
         )
         log.info("Avg classification accuracy: %s", test_accuracy)
+        log.warning("######################################")
 
         self.res = pd.DataFrame(
             {
