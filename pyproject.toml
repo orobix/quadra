@@ -16,7 +16,7 @@ authors = [
 keywords = ["deep learning", "experiment", "lightning", "hydra-core"]
 license = { file = "LICENSE" }
 readme = { file = "README.md", content-type = "text/markdown" }
-requires-python = ">=3.8,<3.10"
+requires-python = ">=3.9,<3.11"
 classifiers = [
   "Programming Language :: Python :: 3",
   "Intended Audience :: Developers",
@@ -52,6 +52,7 @@ dependencies = [
   "python-dotenv==0.21.*",
   "rich==13.2.*",
   "scikit-learn==1.2.*",
+  "pydantic==1.10.10",
   "grad-cam==1.4.6",
   "matplotlib==3.6.*",
   "seaborn==0.12.*",
@@ -61,8 +62,8 @@ dependencies = [
   "scikit-multilearn==0.2.*",
   "tripy==1.0.*",
   "h5py==3.8.*",
-  "timm==0.6.12", # required by smp
-  "segmentation-models-pytorch==0.3.*",
+  "timm==0.6.12",                                                         # required by smp
+  "segmentation-models-pytorch==0.3.2",
   "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.3",
   "xxhash==3.2.*",
 ]
