@@ -1058,6 +1058,16 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             pred_labels=predicted_classes,
             idx_to_labels=idx_to_class,
         )
+
+        res = pd.DataFrame(
+            {
+                "sample": list(test_dataloader.dataset.x),  # type: ignore[attr-defined]
+                "real_label": image_labels,
+                "pred_label": predicted_classes,
+                "probability": probabilities,
+            }
+        )
+
         log.info("Avg classification accuracy: %s", test_accuracy)
         log.warning("######################################")
 
@@ -1074,7 +1084,8 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         self.metadata["test_confusion_matrix"] = pd_cm
         self.metadata["test_accuracy"] = test_accuracy
         self.metadata["predictions"] = predicted_classes
-        self.metadata["test_results"] = self.res
+        self.metadata["test_results"] = res
+        self.metadata["probabilities"] = probabilities
         self.metadata["test_labels"] = image_labels
         self.metadata["grayscale_cams"] = grayscale_cams
 
@@ -1084,7 +1095,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         os.makedirs(self.report_path, exist_ok=True)
 
         save_classification_result(
-            results=self.res,
+            results=self.metadata["test_results"],
             output_folder=self.report_path,
             confmat=self.metadata["test_confusion_matrix"],
             accuracy=self.metadata["test_accuracy"],
