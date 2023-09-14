@@ -928,6 +928,8 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
     def get_classifier(self, model_config: DictConfig) -> nn.Module:
         """Instantiate the classifier from the config."""
         if "classifier" in model_config:
+            print("#############################")
+            print(self.datamodule.num_classes)
             log.info("Instantiating classifier <%s>", model_config.classifier["_target_"])
             return hydra.utils.instantiate(
                 model_config.classifier, out_features=self.datamodule.num_classes, _convert_="partial"
@@ -969,6 +971,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         """Prepare the evaluation."""
         self.datamodule = self.config.datamodule
         self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
+        self.datamodule.num_classes = len(self.datamodule.class_to_idx)
         super().prepare()
 
     def prepare_gradcam(self) -> None:
