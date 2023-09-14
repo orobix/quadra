@@ -204,7 +204,8 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
     def classifier(self, model_config: DictConfig) -> None:
         if "classifier" in model_config:
             log.info("Instantiating classifier <%s>", model_config.classifier["_target_"])
-            print(self.datamodule.num_classes)
+            if self.datamodule.num_classes is None or self.datamodule.num_classes < 2:
+                raise ValueError(f"Non compliant datamodule.num_classes : {self.datamodule.num_classes}")
             self._classifier = hydra.utils.instantiate(
                 model_config.classifier, out_features=self.datamodule.num_classes, _convert_="partial"
             )
