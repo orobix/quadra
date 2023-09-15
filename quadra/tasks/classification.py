@@ -945,8 +945,11 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         """Set the deployment model."""
         file_extension = os.path.splitext(model_path)[1]
 
-        self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
-        self.datamodule.num_classes = len(self.datamodule.class_to_idx)
+        if "classes" in self.model_data:
+            self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
+            self.datamodule.num_classes = len(self.datamodule.class_to_idx)
+        else:
+            raise ValueError("Field 'classes' is missing from json's model_data")
 
         model_architecture = None
         if file_extension == ".pth":
