@@ -109,6 +109,7 @@ class ClassificationDataModule(BaseDataModule):
 
         if class_to_idx is not None:
             self.class_to_idx = class_to_idx
+            self.num_classes = len(self.class_to_idx)
         else:
             self.class_to_idx = self._find_classes_from_data_path(self.data_path)
             if self.class_to_idx is None:
