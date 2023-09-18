@@ -169,7 +169,7 @@ class ClassificationDataModule(BaseDataModule):
                     ):
                         subdirectories.append(item)
             if len(subdirectories) > 0:
-                return {cl: idx for idx, cl in enumerate(subdirectories)}
+                return {cl: idx for idx, cl in enumerate(sorted(subdirectories))}
             return None
         return None
 
