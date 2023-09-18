@@ -14,7 +14,7 @@ model:
   normalization_method: min_max # options: [null, min_max, cdf]
   train_batch_size: 1 # ${datamodule.train_batch_size}
   pretrained_models_dir: ${oc.env:HOME}/.quadra/models/efficient_ad
-  imagenette_dir: ${oc.env:HOME}/.quadra/datasets/
+  imagenette_dir: ${oc.env:HOME}/.quadra/datasets/imagenette_efficientad
   pretrained_teacher_type: nelson
 
 metrics:
