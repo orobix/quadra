@@ -1,6 +1,7 @@
 import pytest
 import torch
 from anomalib.models.draem.torch_model import DraemModel
+from anomalib.models.efficient_ad.torch_model import EfficientAdModel
 from anomalib.models.padim.torch_model import PadimModel
 from anomalib.models.patchcore.torch_model import PatchcoreModel
 
@@ -67,3 +68,22 @@ def patchcore_resnet18():
 def draem():
     """Yield a draem model."""
     yield DraemModel()
+
+
+@pytest.fixture
+def efficient_ad_small():
+    """Yield a draem model."""
+
+    class EfficientAdForwardWrapper(EfficientAdModel):
+        """Wrap the forward method to avoid passing optional parameters."""
+
+        def forward(self, x):
+            return super().forward(x, None)
+
+    model = EfficientAdForwardWrapper(
+        teacher_out_channels=384,
+        input_size=[256, 256],  # TODO: This is hardcoded may be not a good idea
+        pretrained_teacher_type="nelson",
+    )
+
+    yield model
