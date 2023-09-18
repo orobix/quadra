@@ -105,7 +105,18 @@ class ClassificationDataModule(BaseDataModule):
         self.train_split_file = train_split_file
         self.test_split_file = test_split_file
         self.val_split_file = val_split_file
-        self.class_to_idx = class_to_idx
+        self.class_to_idx: Optional[Dict[str, int]]
+
+        if class_to_idx is not None:
+            self.class_to_idx = class_to_idx
+            self.num_classes = len(self.class_to_idx)
+        else:
+            self.class_to_idx = self._find_classes_from_data_path(self.data_path)
+            if self.class_to_idx is None:
+                log.warning("Could not build a class_to_idx from the data_path subdirectories")
+                self.num_classes = 0
+            else:
+                self.num_classes = len(self.class_to_idx)
 
     def _read_split(self, split_file: str) -> Tuple[List[str], List[str]]:
         """Reads split file.
@@ -131,6 +142,36 @@ class ClassificationDataModule(BaseDataModule):
                 continue
                 # log.warning(f"{sample_path} does not exist")
         return samples, targets
+
+    def _find_classes_from_data_path(self, data_path: str) -> Optional[Dict[str, int]]:
+        """Given a data_path, build a random class_to_idx from the subdirectories.
+
+        Args:
+            data_path: Path to the data main folder.
+
+        Returns:
+            class_to_idx dictionary.
+        """
+        subdirectories = []
+
+        # Check if the directory exists
+        if os.path.exists(data_path) and os.path.isdir(data_path):
+            # Iterate through the items in the directory
+            for item in os.listdir(data_path):
+                item_path = os.path.join(data_path, item)
+
+                # Check if it's a directory and not starting with "."
+                if os.path.isdir(item_path) and not item.startswith("."):
+                    # Check if there's at least one image file in the subdirectory
+                    if any(
+                        os.path.splitext(file)[1].lower().endswith(tuple(utils.IMAGE_EXTENSIONS))
+                        for file in os.listdir(item_path)
+                    ):
+                        subdirectories.append(item)
+            if len(subdirectories) > 0:
+                return {cl: idx for idx, cl in enumerate(sorted(subdirectories))}
+            return None
+        return None
 
     @staticmethod
     def _find_images_and_targets(

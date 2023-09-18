@@ -2,6 +2,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.2.1]
+
+#### Added
+
+- Add automatic num_classes computation in Classification Task.
+
+#### Changed 
+
+- Align Classification `test_results` format to the SklearnClassification one (dataframe).
+
 ### [1.2.0]
 
 #### Added

@@ -32,7 +32,6 @@ The standard datamodule configuration for classification is found under `configs
 ```yaml
 _target_: quadra.datamodules.classification.ClassificationDataModule
 data_path: ???
-num_classes: ${model.num_classes}
 exclude_filter: [".ipynb_checkpoints"]
 include_filter:
 seed: ${core.seed}
@@ -57,7 +56,6 @@ dataset:
 We give a small description for each tweakable parameter inside the base datamodule config:
 
 - `data_path`: Path to root_folder. "???" denotes mandatory parameters.
-- `num_classes`: Number of classes. It is automatically resolved from the model configuration parameter
 - `exclude_filter`: If an image path contains one of the strings in this list, it will be ignored.
 - `include_filter`: If an image path does not contain one of the strings in this list, it will be ignored.
 - `seed`: Seed for experiment reproducibility (if training is on gpu, complete reproducibility can not be ensured).
@@ -103,7 +101,6 @@ datamodule:
 print_config: true
 
 model:
-  num_classes: ???
   module:
     lr_scheduler_interval: "epoch"
 
@@ -190,7 +187,6 @@ task:
 
    
 model:
-  num_classes: 3 # This is very important
   module:
     lr_scheduler_interval: "epoch"
     
@@ -216,7 +212,7 @@ logger:
 
 !!! warning
 
-    Remember to set the mandatory parameters "num_classes" and "data_path".
+    Remember to set the mandatory parameter "data_path".
 
 ### Run
 
