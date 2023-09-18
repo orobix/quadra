@@ -204,7 +204,11 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
     def classifier(self, model_config: DictConfig) -> None:
         if "classifier" in model_config:
             log.info("Instantiating classifier <%s>", model_config.classifier["_target_"])
-            self._classifier = hydra.utils.instantiate(model_config.classifier, _convert_="partial")
+            if self.datamodule.num_classes is None or self.datamodule.num_classes < 2:
+                raise ValueError(f"Non compliant datamodule.num_classes : {self.datamodule.num_classes}")
+            self._classifier = hydra.utils.instantiate(
+                model_config.classifier, out_features=self.datamodule.num_classes, _convert_="partial"
+            )
         else:
             raise ValueError("A `classifier` definition must be specified in the config")
 
@@ -925,7 +929,9 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         """Instantiate the classifier from the config."""
         if "classifier" in model_config:
             log.info("Instantiating classifier <%s>", model_config.classifier["_target_"])
-            return hydra.utils.instantiate(model_config.classifier, _convert_="partial")
+            return hydra.utils.instantiate(
+                model_config.classifier, out_features=self.datamodule.num_classes, _convert_="partial"
+            )
 
         raise ValueError("A `classifier` definition must be specified in the config")
 
@@ -938,6 +944,12 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
     def deployment_model(self, model_path: str):
         """Set the deployment model."""
         file_extension = os.path.splitext(model_path)[1]
+
+        if "classes" in self.model_data:
+            self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
+            self.datamodule.num_classes = len(self.datamodule.class_to_idx)
+        else:
+            raise ValueError("Field 'classes' is missing from json's model_data")
 
         model_architecture = None
         if file_extension == ".pth":
@@ -961,9 +973,8 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
 
     def prepare(self) -> None:
         """Prepare the evaluation."""
-        super().prepare()
         self.datamodule = self.config.datamodule
-        self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
+        super().prepare()
 
     def prepare_gradcam(self) -> None:
         """Initializing gradcam for the predictions."""
@@ -1065,6 +1076,15 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         )
 
         log.info("Avg classification accuracy: %s", test_accuracy)
+
+        self.res = pd.DataFrame(
+            {
+                "sample": list(test_dataloader.dataset.x),  # type: ignore[attr-defined]
+                "real_label": image_labels,
+                "pred_label": predicted_classes,
+                "probability": probabilities,
+            }
+        )
 
         # save results
         self.metadata["test_confusion_matrix"] = pd_cm

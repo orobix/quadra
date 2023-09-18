@@ -20,7 +20,7 @@ datamodule:
 print_config: true
 
 model:
-  num_classes: ???
+  num_classes:
   module:
     lr_scheduler_interval: "epoch"
 
