@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quadra"
-version = "1.2.1"
+version = "1.2.2"
 description = "Deep Learning experiment orchestration library"
 authors = [
   { name = "Alessandro Polidori", email = "alessandro.polidori@orobix.com" },
@@ -33,7 +33,7 @@ dependencies = [
   # --------- pytorch --------- #
   "torch==1.13.1",
   "torchvision==0.14.1",
-  "torchmetrics==0.10.*",           # constrained by anomalib
+  "torchmetrics==0.10.*", # constrained by anomalib
   "torchsummary==1.5.*",
   "pytorch-lightning>=1.9.1,<1.10",
   # --------- hydra --------- #
@@ -42,8 +42,8 @@ dependencies = [
   "hydra-optuna-sweeper==1.2.*",
   # --------- loggers --------- #
   "mlflow==2.3.1",
-  "boto3==1.26.*",       # needed for artifact storage
-  "minio==7.1.*",        # needed for artifact storage
+  "boto3==1.26.*", # needed for artifact storage
+  "minio==7.1.*", # needed for artifact storage
   "tensorboard==2.11.*",
   # --------- others --------- #
   "Pillow==9.3.0",                                                        # required by label-studio-converter
@@ -61,9 +61,9 @@ dependencies = [
   "scikit-multilearn==0.2.*",
   "tripy==1.0.*",
   "h5py==3.8.*",
-  "timm==0.6.12",                                                         # required by smp
+  "timm==0.6.12", # required by smp
   "segmentation-models-pytorch==0.3.*",
-  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.0",
+  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.1",
   "xxhash==3.2.*",
 ]
 
@@ -118,7 +118,7 @@ repository = "https://github.com/orobix/quadra"
 
 # Adapted from https://realpython.com/pypi-publish-python-package/#version-your-package
 [tool.bumpver]
-current_version = "1.2.1"
+current_version = "1.2.2"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "build: Bump version {old_version} -> {new_version}"
 commit = true

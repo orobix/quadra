@@ -162,7 +162,7 @@ def test_efficientad(
         "transforms.input_width=256",
         "model.model.train_batch_size=1",
         "datamodule.test_batch_size=1",
-        "model.model.image_size=[256, 256]",
+        "model.model.input_size=[256, 256]",
         "trainer.check_val_every_n_epoch= ${trainer.max_epochs}",
         f"model.model.imagenette_dir= {imagenette_path}",
         f"model.dataset.task={task}",

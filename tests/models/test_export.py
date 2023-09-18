@@ -5,6 +5,7 @@ from typing import Any, Sequence
 
 import pytest
 import torch
+from anomalib.models.efficient_ad.torch_model import EfficientAdModel
 from omegaconf import DictConfig
 from torch import nn
 
@@ -13,6 +14,7 @@ from quadra.utils.tests.fixtures.models import (  # noqa
     dino_vitb8,
     dino_vits8,
     draem,
+    efficient_ad_small,
     padim_resnet18,
     patchcore_resnet18,
     resnet18,
@@ -132,11 +134,15 @@ def test_segmentation_models_export(tmp_path: Path, model: nn.Module):
         pytest.lazy_fixture("padim_resnet18"),
         pytest.lazy_fixture("patchcore_resnet18"),
         pytest.lazy_fixture("draem"),
+        pytest.lazy_fixture("efficient_ad_small"),
     ],
 )
 def test_anomaly_detection_models_export(tmp_path: Path, model: nn.Module):
     export_types = ["onnx", "torchscript"]
 
-    input_shapes = [(3, 224, 224)]
+    if isinstance(model, EfficientAdModel):
+        input_shapes = [(3, 256, 256)]
+    else:
+        input_shapes = [(3, 224, 224)]
 
     check_export_model_outputs(tmp_path=tmp_path, model=model, export_types=export_types, input_shapes=input_shapes)

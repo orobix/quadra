@@ -2,6 +2,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.2.2]
+
+#### Added
+
+- Add tests for efficient ad model export.
+#### Updated
+
+- Update `anomalib` library from version 0.7.0+obx.1.2.0 to 0.7.0+obx.1.2.1
+- Update default imagenette dir for efficient ad
+
 ### [1.2.1]
 
 #### Added
