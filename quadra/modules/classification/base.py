@@ -219,7 +219,7 @@ class ClassificationModule(BaseLightningModule):
                     grayscale_cam = ndimage.zoom(grayscale_cam_low_res, zoom_factors, order=1)
         else:
             grayscale_cam = None
-        return predicted_classes, grayscale_cam
+        return predicted_classes, grayscale_cam, torch.max(probs, dim=1)[0].tolist()
 
 
 class MultilabelClassificationModule(BaseLightningModule):

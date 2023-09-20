@@ -311,10 +311,12 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             log.warning("There is no prediction to generate the report. Skipping report generation.")
             return
         all_outputs = [x[0] for x in predictions_outputs]
-        if not all_outputs:
+        all_probs = [x[2] for x in predictions_outputs]
+        if not all_outputs or not all_probs:
             log.warning("There is no prediction to generate the report. Skipping report generation.")
             return
         all_outputs = [item for sublist in all_outputs for item in sublist]
+        all_probs = [item for sublist in all_probs for item in sublist]
         all_targets = [target.tolist() for im, target in self.datamodule.test_dataloader()]
         all_targets = [item for sublist in all_targets for item in sublist]
 
@@ -335,16 +337,17 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         output_folder_test = "test"
         test_dataloader = self.datamodule.test_dataloader()
         test_dataset = cast(ImageClassificationListDataset, test_dataloader.dataset)
-        res = pd.DataFrame(
+        self.res = pd.DataFrame(
             {
                 "sample": list(test_dataset.x),
                 "real_label": all_targets,
                 "pred_label": all_outputs,
+                "probability": all_probs,
             }
         )
         os.makedirs(output_folder_test, exist_ok=True)
         save_classification_result(
-            results=res,
+            results=self.res,
             output_folder=output_folder_test,
             confmat=self.report_confmat,
             accuracy=accuracy,
