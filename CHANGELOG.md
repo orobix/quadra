@@ -1,6 +1,11 @@
 
 # Changelog
 All notable changes to this project will be documented in this file.
+### [1.2.4]
+#### Add 
+
+- Return also probabilities in Classification's module predict step and add them to `self.res`.
+
 
 ### [1.2.3]
 
