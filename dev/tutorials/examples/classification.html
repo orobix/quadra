@@ -4101,7 +4101,6 @@
 <p>The standard datamodule configuration for classification is found under <code>configs/datamodule/base/classification.yaml</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">_target_</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quadra.datamodules.classification.ClassificationDataModule</span>
 <span class="nt">data_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">???</span>
-<span class="nt">num_classes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${model.num_classes}</span>
 <span class="nt">exclude_filter</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;.ipynb_checkpoints&quot;</span><span class="p p-Indicator">]</span>
 <span class="nt">include_filter</span><span class="p">:</span>
 <span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${core.seed}</span>
@@ -4125,7 +4124,6 @@
 <p>We give a small description for each tweakable parameter inside the base datamodule config:</p>
 <ul>
 <li><code>data_path</code>: Path to root_folder. "???" denotes mandatory parameters.</li>
-<li><code>num_classes</code>: Number of classes. It is automatically resolved from the model configuration parameter</li>
 <li><code>exclude_filter</code>: If an image path contains one of the strings in this list, it will be ignored.</li>
 <li><code>include_filter</code>: If an image path does not contain one of the strings in this list, it will be ignored.</li>
 <li><code>seed</code>: Seed for experiment reproducibility (if training is on gpu, complete reproducibility can not be ensured).</li>
@@ -4163,7 +4161,6 @@ images/abc_2.xyz,class_3
 <span class="nt">print_config</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 
 <span class="nt">model</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">num_classes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">???</span>
 <span class="w">  </span><span class="nt">module</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">lr_scheduler_interval</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;epoch&quot;</span>
 
@@ -4246,7 +4243,6 @@ images/abc_2.xyz,class_3
 
 
 <span class="nt">model</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">num_classes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w"> </span><span class="c1"># This is very important</span>
 <span class="w">  </span><span class="nt">module</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">lr_scheduler_interval</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;epoch&quot;</span>
 
@@ -4271,7 +4267,7 @@ images/abc_2.xyz,class_3
 </code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>Remember to set the mandatory parameters "num_classes" and "data_path".</p>
+<p>Remember to set the mandatory parameter "data_path".</p>
 </div>
 <h3 id="run">Run<a class="headerlink" href="#run" title="Permanent link">&para;</a></h3>
 <p>Assuming that you have created a virtual environment and installed the <code>quadra</code> library, you can run the experiment by running the following command:</p>

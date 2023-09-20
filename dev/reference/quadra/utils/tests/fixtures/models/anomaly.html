@@ -3253,6 +3253,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.models.anomaly.efficient_ad_small" class="md-nav__link">
+    efficient_ad_small()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#quadra.utils.tests.fixtures.models.anomaly.padim_resnet18" class="md-nav__link">
     padim_resnet18()
   </a>
@@ -3982,6 +3989,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.models.anomaly.efficient_ad_small" class="md-nav__link">
+    efficient_ad_small()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#quadra.utils.tests.fixtures.models.anomaly.padim_resnet18" class="md-nav__link">
     padim_resnet18()
   </a>
@@ -4052,13 +4066,70 @@
 
           <details class="quote">
             <summary>Source code in <code>quadra/utils/tests/fixtures/models/anomaly.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">66</span>
-<span class="normal">67</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">67</span>
 <span class="normal">68</span>
-<span class="normal">69</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="normal">69</span>
+<span class="normal">70</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <span class="k">def</span> <span class="nf">draem</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield a draem model.&quot;&quot;&quot;</span>
     <span class="k">yield</span> <span class="n">DraemModel</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h3 id="quadra.utils.tests.fixtures.models.anomaly.efficient_ad_small" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">efficient_ad_small</span><span class="p">()</span></code>
+
+<a href="#quadra.utils.tests.fixtures.models.anomaly.efficient_ad_small" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Yield a draem model.</p>
+
+          <details class="quote">
+            <summary>Source code in <code>quadra/utils/tests/fixtures/models/anomaly.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">efficient_ad_small</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield a draem model.&quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">EfficientAdForwardWrapper</span><span class="p">(</span><span class="n">EfficientAdModel</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrap the forward method to avoid passing optional parameters.&quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">EfficientAdForwardWrapper</span><span class="p">(</span>
+        <span class="n">teacher_out_channels</span><span class="o">=</span><span class="mi">384</span><span class="p">,</span>
+        <span class="n">input_size</span><span class="o">=</span><span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span>  <span class="c1"># TODO: This is hardcoded may be not a good idea</span>
+        <span class="n">pretrained_teacher_type</span><span class="o">=</span><span class="s2">&quot;nelson&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">yield</span> <span class="n">model</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
@@ -4083,8 +4154,7 @@
 
           <details class="quote">
             <summary>Source code in <code>quadra/utils/tests/fixtures/models/anomaly.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 8</span>
-<span class="normal"> 9</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 9</span>
 <span class="normal">10</span>
 <span class="normal">11</span>
 <span class="normal">12</span>
@@ -4093,7 +4163,8 @@
 <span class="normal">15</span>
 <span class="normal">16</span>
 <span class="normal">17</span>
-<span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <span class="k">def</span> <span class="nf">padim_resnet18</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield a padim model with resnet18 encoder.&quot;&quot;&quot;</span>
     <span class="k">yield</span> <span class="n">PadimModel</span><span class="p">(</span>
@@ -4128,8 +4199,7 @@
 
           <details class="quote">
             <summary>Source code in <code>quadra/utils/tests/fixtures/models/anomaly.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">53</span>
-<span class="normal">54</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">54</span>
 <span class="normal">55</span>
 <span class="normal">56</span>
 <span class="normal">57</span>
@@ -4138,7 +4208,8 @@
 <span class="normal">60</span>
 <span class="normal">61</span>
 <span class="normal">62</span>
-<span class="normal">63</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="normal">63</span>
+<span class="normal">64</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <span class="k">def</span> <span class="nf">patchcore_resnet18</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield a patchcore model with resnet18 encoder.&quot;&quot;&quot;</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">PatchcoreModel</span><span class="p">(</span>
