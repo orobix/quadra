@@ -139,6 +139,8 @@ def compute_patch_metrics(
         if mask_path is not None and os.path.exists(mask_path):
             gt_img = cv2.imread(mask_path, 0)
             if test_img.shape[0:2] != gt_img.shape:
+                # Ensure that the mask has the same size as the image by padding it with zeros
+                log.warning("Found mask with different size than the image, padding it with zeros!")
                 gt_img = np.pad(
                     gt_img, ((0, test_img.shape[0] - gt_img.shape[0]), (0, test_img.shape[1] - gt_img.shape[1]))
                 )
