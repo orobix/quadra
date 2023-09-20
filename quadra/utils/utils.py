@@ -84,6 +84,7 @@ def extras(config: DictConfig) -> None:
 def print_config(
     config: DictConfig,
     fields: Sequence[str] = (
+        "task",
         "trainer",
         "model",
         "datamodule",
