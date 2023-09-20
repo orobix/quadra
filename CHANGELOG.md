@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.2.3]
+
+#### Fixed
+
+- Fix patch datamodule error when only a single image is available for validation or test.
+
 ### [1.2.2]
 
 #### Added
