@@ -10,11 +10,7 @@ from skimage.measure import label, regionprops
 from tqdm import tqdm
 
 from quadra.utils import utils
-from quadra.utils.patch.dataset import (
-    PatchDatasetFileFormat,
-    compute_patch_info,
-    compute_patch_info_from_patch_dim,
-)
+from quadra.utils.patch.dataset import PatchDatasetFileFormat, compute_patch_info, compute_patch_info_from_patch_dim
 
 log = utils.get_logger(__name__)
 
@@ -143,8 +139,6 @@ def compute_patch_metrics(
         if mask_path is not None and os.path.exists(mask_path):
             gt_img = cv2.imread(mask_path, 0)
             if test_img.shape[0:2] != gt_img.shape:
-                # TODO: This is a patch to handle a bug in the backend code of ai-go-aml
-                #  and must be removed in the future
                 gt_img = np.pad(
                     gt_img, ((0, test_img.shape[0] - gt_img.shape[0]), (0, test_img.shape[1] - gt_img.shape[1]))
                 )
