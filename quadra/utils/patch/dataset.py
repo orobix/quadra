@@ -10,7 +10,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
 from multiprocessing import Pool
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import cv2
 import h5py
@@ -644,6 +644,8 @@ def multilabel_stratification(
         else:
             y = np.concatenate([y, one_hot])
 
+    x_test: Union[List[Any], np.ndarray]
+
     if empty_test_size > test_size:
         warnings.warn(
             (
@@ -663,17 +665,20 @@ def multilabel_stratification(
         if x_remaining.shape[0] == 1:
             if test_size == 0:
                 x_val = x_remaining
+                x_test = np.array([])
             elif val_size == 0:
                 x_test = x_remaining
+                x_val = np.array([])
             else:
                 log.warning("Not enough data to create the test split, only a validation set of size 1 will be created")
                 x_val = x_remaining
+                x_test = np.array([])
         else:
             x_val, _, x_test, _ = iterative_train_test_split(
                 x_remaining, y_remaining, test_size / (val_size + test_size)
             )
         # Here x_test should be always a numpy array, but mypy does not recognize it
-        x_test = [q[0] for q in x_test.tolist()]  # type: ignore[attr-defined]
+        x_test = [q[0] for q in x_test.tolist()]  # type: ignore[union-attr]
         x_test.extend([q["base_name"] for q in test_data_dictionary])
 
     train_data_dictionary = list(filter(lambda q: q["base_name"] in x_train, data_dictionary))
