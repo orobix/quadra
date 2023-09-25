@@ -1,7 +1,15 @@
 
 # Changelog
 All notable changes to this project will be documented in this file.
+
+### [1.2.5]
+
+#### Fixed
+
+- Fix generic classification experiment crashing due to missing class to index configuration.
+
 ### [1.2.4]
+
 #### Added
 
 - Return also probabilities in Classification's module predict step and add them to `self.res`.
