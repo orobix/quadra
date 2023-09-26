@@ -4461,7 +4461,7 @@ Defaults to "epoch".</p>
                 <span class="n">grayscale_cam</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="n">grayscale_cam_low_res</span><span class="p">,</span> <span class="n">zoom_factors</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">grayscale_cam</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="n">predicted_classes</span><span class="p">,</span> <span class="n">grayscale_cam</span>
+    <span class="k">return</span> <span class="n">predicted_classes</span><span class="p">,</span> <span class="n">grayscale_cam</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
