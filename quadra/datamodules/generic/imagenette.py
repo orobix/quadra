@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Any
+from typing import Any, Dict, Optional
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -22,6 +22,8 @@ IMAGENETTE_LABEL_MAPPER = {
     "n03888257": "parachute",
 }
 
+DEFAULT_CLASS_TO_IDX = {cl: idx for idx, cl in enumerate(sorted(IMAGENETTE_LABEL_MAPPER.values()))}
+
 log = get_logger(__name__)
 
 
@@ -34,6 +36,7 @@ class ImagenetteClassificationDataModule(ClassificationDataModule):
         imagenette_version: Version of the Imagenette dataset. Can be 320 or 160 or full.
         force_download: If True, the dataset will be downloaded even if the data_path already exists. The data_path
             will be deleted and recreated.
+        class_to_idx: Dictionary mapping class names to class indices.
         **kwargs: Keyword arguments for the ClassificationDataModule.
     """
 
@@ -43,6 +46,7 @@ class ImagenetteClassificationDataModule(ClassificationDataModule):
         name: str = "imagenette_classification_datamodule",
         imagenette_version: str = "320",
         force_download: bool = False,
+        class_to_idx: Optional[Dict[str, int]] = None,
         **kwargs: Any,
     ):
         if imagenette_version not in ["320", "160", "full"]:
@@ -57,12 +61,16 @@ class ImagenetteClassificationDataModule(ClassificationDataModule):
         self.force_download = force_download
         self.imagenette_version = imagenette_version
 
+        if class_to_idx is None:
+            class_to_idx = DEFAULT_CLASS_TO_IDX
+
         super().__init__(
             data_path=data_path,
             name=name,
             test_split_file=None,
             train_split_file=None,
             val_size=None,
+            class_to_idx=class_to_idx,
             **kwargs,
         )
 
