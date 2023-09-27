@@ -362,9 +362,9 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 optimal_f1_score = optimal_f1.compute()
                 threshold = optimal_f1.threshold
         else:
-            log.warning("No ground truth available during evaluation, F1 score and threshold set to 0")
+            log.warning("No ground truth available during evaluation, use training threshold for reporting")
             optimal_f1_score = torch.tensor(0)
-            threshold = torch.tensor(0)
+            threshold = torch.tensor(float(self.model_data["image_threshold"]))
 
         log.info("Computed F1 score: %s", optimal_f1_score.item())
         self.metadata["anomaly_scores"] = anomaly_scores
