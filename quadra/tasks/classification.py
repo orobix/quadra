@@ -36,7 +36,7 @@ from quadra.modules.classification import ClassificationModule
 from quadra.tasks.base import Evaluation, LightningTask, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
-from quadra.utils.classification import get_results, save_classification_result
+from quadra.utils.classification import automatic_batch_size_computation, get_results, save_classification_result
 from quadra.utils.export import export_model, import_deployment_model
 from quadra.utils.models import get_feature, is_vision_transformer
 from quadra.utils.vit_explainability import VitAttentionGradRollout
@@ -420,6 +420,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         config: The experiment configuration
         device: The device to use. Defaults to None.
         output: Dictionary defining which kind of outputs to generate. Defaults to None.
+        automatic_batch_size: Whether to automatically find the largest batch size that fits in memory.
     """
 
     def __init__(
@@ -427,6 +428,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         config: DictConfig,
         output: DictConfig,
         device: str,
+        automatic_batch_size: DictConfig,
     ):
         super().__init__(config=config)
 
@@ -445,6 +447,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self.deploy_info_file = "model.json"
         self.train_dataloader_list: List[torch.utils.data.DataLoader] = []
         self.test_dataloader_list: List[torch.utils.data.DataLoader] = []
+        self.automatic_batch_size = automatic_batch_size
 
     @property
     def device(self) -> str:
@@ -460,6 +463,13 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         # prepare_data() must be explicitly called if the task does not include a lightining training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="fit")
+
+        if not self.automatic_batch_size.disable and self.device != "cpu":
+            self.datamodule.batch_size = automatic_batch_size_computation(
+                datamodule=self.datamodule,
+                backbone=self.backbone,
+                starting_batch_size=self.automatic_batch_size.starting_batch_size,
+            )
 
         self.train_dataloader_list = list(self.datamodule.train_dataloader())
         self.test_dataloader_list = list(self.datamodule.val_dataloader())

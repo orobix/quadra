@@ -1,18 +1,28 @@
+from __future__ import annotations
+
+import math
 import os
 import random
 import re
-from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Sequence, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import torch
 from omegaconf import DictConfig
 from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, classification_report, confusion_matrix
 from sklearn.model_selection import StratifiedKFold, StratifiedShuffleSplit
 from torch.utils.data import DataLoader
 
+from quadra.models.base import ModelSignatureWrapper
 from quadra.utils import utils
+from quadra.utils.models import get_feature
 from quadra.utils.visualization import UnNormalize, plot_classification_results
+
+if TYPE_CHECKING:
+    from quadra.datamodules.classification import SklearnClassificationDataModule
+    from quadra.datamodules.patch import PatchSklearnClassificationDataModule
 
 log = utils.get_logger(__name__)
 
@@ -550,3 +560,61 @@ def get_results(
             columns=[f"pred:{x}" for x in unique_labels],
         )
     return cl_rep, pd_cm, acc
+
+
+def automatic_batch_size_computation(
+    datamodule: SklearnClassificationDataModule | PatchSklearnClassificationDataModule,
+    backbone: ModelSignatureWrapper,
+    starting_batch_size: int,
+) -> int:
+    """Find the optimal batch size for feature extraction. This algorithm works from the largest batch size possible
+    and divide by 2 until it finds the largest batch size that fits in memory.
+
+    Args:
+        datamodule: Datamodule used for feature extraction
+        backbone: Backbone used for feature extraction
+        starting_batch_size: Starting batch size to use for the search
+
+    Returns:
+        Optimal batch size
+    """
+    log.info("Finding optimal batch size...")
+    optimal = False
+    batch_size = starting_batch_size
+
+    while not optimal:
+        datamodule.batch_size = batch_size
+        base_dataloader = datamodule.train_dataloader()
+
+        if isinstance(base_dataloader, Sequence):
+            base_dataloader = base_dataloader[0]
+
+        if len(base_dataloader) == 1:
+            # If it fits in memory this is the largest batch size possible
+            # If it crashes restart with the previous batch size // 2
+            datamodule.batch_size = len(base_dataloader.dataset)  # type: ignore[arg-type]
+            # New restarting batch size is the largest closest power of 2 to the dataset size, it will be divided by 2
+            batch_size = 2 ** math.ceil(math.log2(datamodule.batch_size))
+            base_dataloader = datamodule.train_dataloader()
+            if isinstance(base_dataloader, Sequence):
+                base_dataloader = base_dataloader[0]
+            optimal = True
+
+        try:
+            log.info("Trying batch size: %d", datamodule.batch_size)
+            _ = get_feature(feature_extractor=backbone, dl=base_dataloader, iteration_over_training=1, limit_batches=1)
+        except RuntimeError as e:
+            if "CUDA out of memory" in str(e):
+                batch_size = batch_size // 2
+                optimal = False
+                continue
+
+            raise e
+
+        log.info("Found optimal batch size: %d", datamodule.batch_size)
+        optimal = True
+
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+    return datamodule.batch_size
