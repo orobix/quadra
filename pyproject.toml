@@ -63,12 +63,12 @@ dependencies = [
   "h5py==3.8.*",
   "timm==0.6.12", # required by smp
   "segmentation-models-pytorch==0.3.*",
-  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.1",
+  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.2",
   "xxhash==3.2.*",
 ]
 
 [project.optional-dependencies]
-test = ["pytest==7.2.*", "pytest-cov==4.0.*", "pytest-lazy-fixture==0.6.*"]
+test = ["pytest==7.2.*", "pytest-cov==4.0.*", "pytest-lazy-fixture==0.6.*", "pytest-mock==3.11.*"]
 
 dev = [
   "interrogate==1.5.*",
