@@ -211,6 +211,7 @@ def test_classification(
     shutil.rmtree(tmp_path)
 
 
+@pytest.mark.usefixtures("mock_training")
 def test_multilabel_classification(
     tmp_path: Path, base_multilabel_classification_dataset: base_multilabel_classification_dataset
 ):
