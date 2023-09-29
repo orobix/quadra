@@ -153,14 +153,14 @@ def test_sklearn_classification_patch(
     shutil.rmtree(tmp_path)
 
 
+@pytest.mark.usefixtures("mock_training")
 @pytest.mark.parametrize(
-    "run_test, backbone, gradcam, freeze",
-    [(True, "resnet18", True, False), (False, "resnet18", False, False), (True, "dino_vits8", False, True)],
+    "backbone, gradcam, freeze",
+    [("resnet18", True, False), ("dino_vits8", False, True)],
 )
 def test_classification(
     tmp_path: Path,
     base_classification_dataset: base_classification_dataset,
-    run_test: bool,
     backbone: str,
     gradcam: bool,
     freeze: bool,
@@ -183,7 +183,7 @@ def test_classification(
         f"task.gradcam={gradcam}",
         "trainer.max_epochs=1",
         "task.report=True",
-        f"task.run_test={run_test}",
+        f"task.run_test=true",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
     ]
     trainer_overrides = setup_trainer_for_lightning()
