@@ -2,12 +2,14 @@
 import os
 import shutil
 from pathlib import Path
-from typing import List
+from typing import Callable, Generator, List
 
 import pytest
+from pytest_mock import MockerFixture
 
 from quadra.utils.export import get_export_extension
 from quadra.utils.tests.fixtures import base_anomaly_dataset, imagenette_dataset
+from quadra.utils.tests.fixtures.models.anomaly import _initialize_patchcore_model
 from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, setup_trainer_for_lightning
 
 try:
@@ -110,7 +112,16 @@ def test_padim(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
     shutil.rmtree(tmp_path)
 
 
-@pytest.mark.usefixtures("mock_training")
+@pytest.fixture
+def mock_patchcore_training(pytestconfig: pytest.Config, mocker: Callable[..., Generator[MockerFixture, None, None]]):
+    def setup_patchcore_model(self):
+        self.module.model = _initialize_patchcore_model(self.module.model)
+
+    if pytestconfig.getoption("mock_training"):
+        mocker.patch("quadra.tasks.base.LightningTask.train", setup_patchcore_model)
+
+
+@pytest.mark.usefixtures("mock_patchcore_training")
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_patchcore(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
     """Test the training and evaluation of the PatchCore model."""
@@ -168,6 +179,7 @@ def test_efficientad(
         f"model.model.imagenette_dir= {imagenette_path}",
         f"model.dataset.task={task}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
+        f"export.input_shapes=[[3,256,256],[3,256,256]]",
     ]
     trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
