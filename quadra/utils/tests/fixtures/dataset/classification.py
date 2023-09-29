@@ -376,8 +376,8 @@ def classification_patch_dataset(
             **{
                 "samples": [5, 5, 5],
                 "classes": ["bg", "a", "b"],
-                "patch_size": [16, 20],
-                "overlap": 0.6,
+                "patch_number": [2, 2],
+                "overlap": 0,
                 "val_size": 0.1,
                 "test_size": 0.1,
             }
