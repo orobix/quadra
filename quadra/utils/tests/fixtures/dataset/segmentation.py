@@ -109,9 +109,9 @@ def base_binary_segmentation_dataset(
     tmp_path: Path, request: Any
 ) -> Tuple[str, SegmentationDatasetArguments, Dict[str, int]]:
     """Generate a base binary segmentation dataset with the following structure:
-        - 10 good and 10 bad samples in train set
-        - 10 good and 10 bad samples in validation set
-        - 10 good and 10 bad samples in test set
+        - 3 good and 2 bad samples in train set
+        - 2 good and 2 bad samples in validation set
+        - 11 good and 1 bad sample in test set
         - 2 classes: good and bad.
 
     Args:
@@ -142,9 +142,9 @@ def base_multiclass_segmentation_dataset(
     tmp_path: Path, request: Any
 ) -> Tuple[str, SegmentationDatasetArguments, Dict[str, int]]:
     """Generate a base binary segmentation dataset with the following structure:
-        - 10 good, 15 defect_1 and 20 defect_2 samples in train set
-        - 5 good, 10 defect_1 and 15 defect_2 samples in validation set
-        - 10 good, 10 defect_1 and 10 defect_2 samples in test set
+        - 2 good, 2 defect_1 and 2 defect_2 samples in train set
+        - 2 good, 2 defect_1 and 2 defect_2 samples in validation set
+        - 1 good, 1 defect_1 and 1 defect_2 sample in test set
         - 3 classes: good, defect_1 and defect_2.
 
     Args:

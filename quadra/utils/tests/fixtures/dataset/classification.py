@@ -390,8 +390,8 @@ def base_patch_classification_dataset(
     """Generate a classification patch dataset with the following parameters:
         - 3 classes named bg, a and b
         - 5, 5 and 5 samples for each class
-        - patch size of 16x20
-        - 60% overlap
+        - 2 horizontal patches and 2 vertical patches
+        - 0% overlap
         - 10% validation set
         - 10% test set.
 
