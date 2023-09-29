@@ -16,7 +16,7 @@ from quadra.models.evaluation import BaseEvaluationModel
 from quadra.modules.base import SegmentationModel
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
-from quadra.utils.evaluation import create_mask_report
+from quadra.utils.evaluation import automatic_datamodule_batch_size, create_mask_report
 from quadra.utils.export import export_model
 
 log = utils.get_logger(__name__)
@@ -306,14 +306,20 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
     def train(self) -> None:
         """Skip training."""
 
+    def prepare(self) -> None:
+        """Prepare the evaluation task."""
+        super().prepare()
+        self.datamodule.setup(stage="fit")
+        self.datamodule.setup(stage="test")
+
+    @automatic_datamodule_batch_size(batch_size_attribute_name="batch_size")
     def test(self) -> None:
         """Run testing."""
         log.info("Starting testing")
 
         stages: List[str] = []
         dataloaders: List[torch.utils.data.DataLoader] = []
-        self.datamodule.setup(stage="fit")
-        self.datamodule.setup(stage="test")
+
         if self.datamodule.train_dataset_available:
             stages.append("train")
             dataloaders.append(self.datamodule.train_dataloader())

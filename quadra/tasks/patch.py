@@ -17,6 +17,7 @@ from quadra.tasks.base import Evaluation, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
 from quadra.utils.classification import automatic_batch_size_computation
+from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model, import_deployment_model
 from quadra.utils.patch import RleEncoder, compute_patch_metrics, save_classification_result
 from quadra.utils.patch.dataset import PatchDatasetFileFormat
@@ -315,11 +316,13 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
         # Configure trainer
         self.trainer = self.config.trainer
 
-    def test(self) -> None:
-        """Run the test."""
         # prepare_data() must be explicitly called because there is no lightning training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
+
+    @automatic_datamodule_batch_size(batch_size_attribute_name="batch_size")
+    def test(self) -> None:
+        """Run the test."""
         test_dataloader = self.datamodule.test_dataloader()
 
         self.class_to_skip = self.model_data["class_to_skip"] if hasattr(self.model_data, "class_to_skip") else None
