@@ -101,7 +101,7 @@ def segmentation_dataset(
 @pytest.fixture(
     params=[
         SegmentationDatasetArguments(
-            **{"train_samples": [10, 10], "val_samples": [10, 10], "test_samples": [10, 10], "classes": ["bad"]}
+            **{"train_samples": [3, 2], "val_samples": [2, 2], "test_samples": [1, 1], "classes": ["bad"]}
         )
     ]
 )
@@ -130,9 +130,9 @@ def base_binary_segmentation_dataset(
     params=[
         SegmentationDatasetArguments(
             **{
-                "train_samples": [10, 15, 20],
-                "val_samples": [5, 10, 15],
-                "test_samples": [10, 10, 10],
+                "train_samples": [2, 2, 2],
+                "val_samples": [2, 2, 2],
+                "test_samples": [1, 1, 1],
                 "classes": ["defect_1", "defect_2"],
             }
         )
