@@ -945,7 +945,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         if "classifier" in model_config:
             log.info("Instantiating classifier <%s>", model_config.classifier["_target_"])
             return hydra.utils.instantiate(
-                model_config.classifier, out_features=self.datamodule.num_classes, _convert_="partial"
+                model_config.classifier, out_features=len(self.model_data["classes"]), _convert_="partial"
             )
 
         raise ValueError("A `classifier` definition must be specified in the config")
@@ -959,13 +959,6 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
     def deployment_model(self, model_path: str):
         """Set the deployment model."""
         file_extension = os.path.splitext(model_path)[1]
-
-        if "classes" in self.model_data:
-            self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
-            self.datamodule.num_classes = len(self.datamodule.class_to_idx)
-        else:
-            raise ValueError("Field 'classes' is missing from json's model_data")
-
         model_architecture = None
         if file_extension == ".pth":
             model_config = OmegaConf.load(os.path.join(Path(model_path).parent, "model_config.yaml"))
@@ -990,6 +983,9 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         """Prepare the evaluation."""
         super().prepare()
         self.datamodule = self.config.datamodule
+        self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
+        self.datamodule.num_classes = len(self.datamodule.class_to_idx)
+
         # prepare_data() must be explicitly called because there is no training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
