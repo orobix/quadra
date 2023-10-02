@@ -147,6 +147,9 @@ datamodule:
 
 task:
   device: cuda:0
+  automatic_batch_size:
+    starting_batch_size: 1024
+    disable: true
   output:
     folder: classification_experiment
     report: true
@@ -156,6 +159,8 @@ task:
 
 This will train a logistic regression classifier using a resnet18 backbone, resizing the images to 224x224 and using a 5-fold cross validation. The `class_to_idx` parameter is used to map the class names to indexes, the indexes will be used to train the classifier. The `output` parameter is used to specify the output folder and the type of output to save. The `export.types` parameter can be used to export the model in different formats, at the moment `torchscript`, `onnx` and `pytorch` are supported.
 The backbone (in torchscript and pytorch format) will be saved along with the classifier. `test_full_data` is used to specify if a final test should be performed on all the data (after training on the training and validation datasets).
+
+Optionally it's possible to enable the automatic batch size finder by setting `automatic_batch_size.disable` to `false`. This will try to find the maximum batch size that can be used on the given device without running out of memory. The `starting_batch_size` parameter is used to specify the starting batch size to use for the search, the algorithm will start from this value and will try to divide it by two until it doesn't run out of memory.
 
 ### Run
 
