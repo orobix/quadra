@@ -4377,8 +4377,10 @@ The dataset structure is the same as to the one used for training, but only the 
 <span class="nt">task</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">model_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">???</span>
 <span class="w">  </span><span class="nt">use_training_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">training_threshold_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image</span>
 </code></pre></div>
-<p>By default, the inference will recompute the threshold based on test data to maximize the F1-score, if you want to use the threshold from the training phase you can set the <code>use_training_threshold</code> parameter to true.</p>
+<p>By default, the inference will recompute the threshold based on test data to maximize the F1-score, if you want to use the threshold from the training phase you can set the <code>use_training_threshold</code> parameter to true.
+The <code>training_threshold_type</code> can be used to specify which training threshold to use, it can be either <code>image</code> or <code>pixel</code>, if not specified the <code>image</code> threshold will be used.</p>
 <p>The model path is the path to an exported model, at the moment <code>torchscript</code> and <code>onnx</code> models are supported (exported automatically after a training experiment). Right now only the <code>CFLOW</code> model is not supported for inference as it's not compatible with botyh torchscript and onnx.</p>
 <p>An inference configuration using the mnist dataset is found under <code>configs/experiment/generic/mnist/anomaly/inference.yaml</code>.</p>
 <h3 id="run_1">Run<a class="headerlink" href="#run_1" title="Permanent link">&para;</a></h3>
