@@ -2,7 +2,7 @@ import glob
 import json
 import os
 from collections import Counter
-from typing import Dict, Generic, List, Optional, TypeVar, Union, cast
+from typing import Dict, Generic, List, Literal, Optional, TypeVar, Union, cast
 
 import cv2
 import hydra
@@ -298,11 +298,25 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
     """
 
     def __init__(
-        self, config: DictConfig, model_path: str, use_training_threshold: bool = False, device: Optional[str] = None
+        self,
+        config: DictConfig,
+        model_path: str,
+        use_training_threshold: bool = False,
+        device: Optional[str] = None,
+        training_threshold_type: Optional[Literal["image", "pixel"]] = None,
     ):
         super().__init__(config=config, model_path=model_path, device=device)
 
         self.use_training_threshold = use_training_threshold
+
+        if training_threshold_type is not None and training_threshold_type not in ["image", "pixel"]:
+            raise ValueError("Training threshold type must be either image or pixel")
+
+        if training_threshold_type is None and use_training_threshold:
+            log.warning("Using training threshold but no training threshold type is provided, defaulting to image")
+            training_threshold_type = "image"
+
+        self.training_threshold_type = training_threshold_type
 
     def prepare(self) -> None:
         """Prepare the evaluation."""
@@ -351,7 +365,7 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         if any(x != -1 for x in image_labels):
             if self.use_training_threshold:
                 _image_labels = torch.tensor(image_labels)
-                threshold = torch.tensor(float(self.model_data["image_threshold"]))
+                threshold = torch.tensor(float(self.model_data[f"{self.training_threshold_type}_threshold"]))
                 known_labels = torch.where(_image_labels != -1)[0]
 
                 _image_labels = _image_labels[known_labels]
@@ -364,9 +378,9 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 optimal_f1_score = optimal_f1.compute()
                 threshold = optimal_f1.threshold
         else:
-            log.warning("No ground truth available during evaluation, F1 score and threshold set to 0")
+            log.warning("No ground truth available during evaluation, use training image threshold for reporting")
             optimal_f1_score = torch.tensor(0)
-            threshold = torch.tensor(0)
+            threshold = torch.tensor(float(self.model_data["image_threshold"]))
 
         log.info("Computed F1 score: %s", optimal_f1_score.item())
         self.metadata["anomaly_scores"] = anomaly_scores

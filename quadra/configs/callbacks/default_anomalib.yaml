@@ -55,5 +55,13 @@ progress_bar:
 lightning_trainer_setup:
   _target_: quadra.callbacks.lightning.LightningTrainerBaseSetup
   log_every_n_steps: 1
+batch_size_finder:
+  _target_: pytorch_lightning.callbacks.BatchSizeFinder
+  mode: power
+  steps_per_trial: 3
+  init_val: 2
+  max_trials: 5 # Max 64
+  batch_arg_name: batch_size
+  disable: true
 #gpu_stats: TODO: This is not working with the current PL version
 #  _target_: nvitop.callbacks.lightning.GpuStatsLogger
