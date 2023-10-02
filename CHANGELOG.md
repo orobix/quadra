@@ -2,6 +2,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.2.6]
+
+#### Added
+
+- Add optional `training_threshold_type` for anomaly detection inference task.
+#### Changed
+
+- Compute results using the training image threshold instead of zero when running anomaly inference with no labelled data.
+
 ### [1.2.5]
 
 #### Fixed

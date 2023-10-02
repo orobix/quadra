@@ -18,3 +18,4 @@ datamodule:
 task:
   model_path: ???
   use_training_threshold: false
+  training_threshold_type: image

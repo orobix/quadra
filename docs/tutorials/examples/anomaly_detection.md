@@ -290,9 +290,11 @@ datamodule:
 task:
   model_path: ???
   use_training_threshold: false
+  training_threshold_type: image
 ```
 
 By default, the inference will recompute the threshold based on test data to maximize the F1-score, if you want to use the threshold from the training phase you can set the `use_training_threshold` parameter to true.
+The `training_threshold_type` can be used to specify which training threshold to use, it can be either `image` or `pixel`, if not specified the `image` threshold will be used.
 
 The model path is the path to an exported model, at the moment `torchscript` and `onnx` models are supported (exported automatically after a training experiment). Right now only the `CFLOW` model is not supported for inference as it's not compatible with botyh torchscript and onnx.
 
