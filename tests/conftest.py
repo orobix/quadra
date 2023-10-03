@@ -38,12 +38,11 @@ def device(pytestconfig: pytest.Config):
 @pytest.fixture(autouse=True)
 def limit_cpu_resources():
     """Limit the number of threads used by numpy and pytorch to 4."""
-    os.environ["OMP_NUM_THREADS"] = "4"
-    os.environ["MKL_NUM_THREADS"] = "4"
     os.environ["NUMEXPR_NUM_THREADS"] = "4"
     os.environ["OPENBLAS_NUM_THREADS"] = "4"
     os.environ["VECLIB_MAXIMUM_THREADS"] = "4"
     os.environ["NUMBA_NUM_THREADS"] = "4"
+    torch.set_num_threads(4)
 
 
 @pytest.fixture(autouse=True)
