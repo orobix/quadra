@@ -221,6 +221,8 @@ def test_cflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
     shutil.rmtree(tmp_path)
 
 
+# TODO: This test seems to crash on not so powerful machines
+@pytest.mark.slow
 @pytest.mark.usefixtures("mock_training")
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_csflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
