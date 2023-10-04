@@ -1,6 +1,8 @@
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import Callback
+from pytorch_lightning.callbacks.batch_size_finder import BatchSizeFinder as LightningBatchSizeFinder
 from pytorch_lightning.utilities import rank_zero_only
+from torch import nn
 
 from quadra.utils.utils import get_logger
 
@@ -35,3 +37,77 @@ class LightningTrainerBaseSetup(Callback):
                     self.log_every_n_steps,
                     len_train_dataloader,
                 )
+
+
+class BatchSizeFinder(LightningBatchSizeFinder):
+    """Batch size finder setting the proper model training status as the current one from lightning seems bugged.
+    It also allows to skip some batch size finding steps.
+
+    Args:
+        find_train_batch_size: Whether to find the training batch size.
+        find_validation_batch_size: Whether to find the validation batch size.
+        find_test_batch_size: Whether to find the test batch size.
+        find_predict_batch_size: Whether to find the predict batch size.
+        mode: The mode to use for batch size finding. See `pytorch_lightning.callbacks.BatchSizeFinder` for more
+            details.
+        steps_per_trial: The number of steps per trial. See `pytorch_lightning.callbacks.BatchSizeFinder` for more
+            details.
+        init_val: The initial value for batch size. See `pytorch_lightning.callbacks.BatchSizeFinder` for more details.
+        max_trials: The maximum number of trials. See `pytorch_lightning.callbacks.BatchSizeFinder` for more details.
+        batch_arg_name: The name of the batch size argument. See `pytorch_lightning.callbacks.BatchSizeFinder` for more
+            details.
+    """
+
+    def __init__(
+        self,
+        find_train_batch_size: bool = True,
+        find_validation_batch_size: bool = False,
+        find_test_batch_size: bool = False,
+        find_predict_batch_size: bool = False,
+        mode: str = "power",
+        steps_per_trial: int = 3,
+        init_val: int = 2,
+        max_trials: int = 25,
+        batch_arg_name: str = "batch_size",
+    ) -> None:
+        super().__init__(mode, steps_per_trial, init_val, max_trials, batch_arg_name)
+        self.find_train_batch_size = find_train_batch_size
+        self.find_validation_batch_size = find_validation_batch_size
+        self.find_test_batch_size = find_test_batch_size
+        self.find_predict_batch_size = find_predict_batch_size
+
+    def on_train_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+        if not self.find_train_batch_size:
+            return None
+
+        if not isinstance(pl_module.model, nn.Module):
+            raise ValueError("The model must be a nn.Module")
+        pl_module.model.train()
+        return super().on_train_epoch_start(trainer, pl_module)
+
+    def on_validation_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+        if not self.find_validation_batch_size:
+            return None
+
+        if not isinstance(pl_module.model, nn.Module):
+            raise ValueError("The model must be a nn.Module")
+        pl_module.model.eval()
+        return super().on_validation_epoch_start(trainer, pl_module)
+
+    def on_test_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+        if not self.find_test_batch_size:
+            return None
+
+        if not isinstance(pl_module.model, nn.Module):
+            raise ValueError("The model must be a nn.Module")
+        pl_module.model.eval()
+        return super().on_test_epoch_start(trainer, pl_module)
+
+    def on_predict_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+        if not self.find_predict_batch_size:
+            return None
+
+        if not isinstance(pl_module.model, nn.Module):
+            raise ValueError("The model must be a nn.Module")
+        pl_module.model.eval()
+        return super().on_predict_epoch_start(trainer, pl_module)

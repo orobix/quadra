@@ -86,6 +86,7 @@ def get_feature(
     gradcam: bool = False,
     classifier: Optional[ClassifierMixin] = None,
     input_shape: Optional[Tuple[int, int, int]] = None,
+    limit_batches: Optional[int] = None,
 ) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
     """Given a dataloader and a PyTorch model, extract features with the model and return features and labels.
 
@@ -97,6 +98,7 @@ def get_feature(
         gradcam: Whether to compute gradcams. Notice that it will slow the function
         classifier: Scikit-learn classifier
         input_shape: [H,W,C], backbone input shape, needed by classifier's pytorch wrapper
+        limit_batches: Limit the number of batches to be processed
 
     Returns:
         Tuple containing:
@@ -163,7 +165,6 @@ def get_feature(
                 else:
                     grayscale_cam = cam(input_tensor=x1, targets=None)
                 feature_extractor.zero_grad(set_to_none=True)  # type: ignore[union-attr]
-                torch.cuda.empty_cache()
             else:
                 with torch.no_grad():
                     y_hat = cast(Union[List[torch.Tensor], Tuple[torch.Tensor], torch.Tensor], feature_extractor(x1))
@@ -173,6 +174,9 @@ def get_feature(
                 y_hat = y_hat[0].cpu()
             else:
                 y_hat = y_hat.cpu()
+
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
             if i == 0 and iteration == 0:
                 features = torch.cat([y_hat], dim=0)
@@ -184,6 +188,9 @@ def get_feature(
                 labels = np.concatenate([labels, y1], axis=0)
                 if gradcam:
                     grayscale_cams = np.concatenate([grayscale_cams, grayscale_cam], axis=0)
+
+            if limit_batches is not None and (i + 1) >= limit_batches:
+                break
 
     return features.detach().numpy(), labels, grayscale_cams
 

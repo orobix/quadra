@@ -1,7 +1,10 @@
 _target_: quadra.tasks.SklearnClassification
-device: "cuda:0"
+device: cuda:0
+automatic_batch_size:
+  starting_batch_size: 1024
+  disable: true
 output:
-  folder: "classification_experiment"
+  folder: classification_experiment
   report: true
   example: true
   test_full_data: true

@@ -24,6 +24,7 @@ from quadra.modules.base import ModelSignatureWrapper
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
 from quadra.utils.classification import get_results
+from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model
 
 log = utils.get_logger(__name__)
@@ -321,13 +322,14 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         """Prepare the evaluation."""
         super().prepare()
         self.datamodule = self.config.datamodule
-
-    def test(self) -> None:
-        """Perform test."""
-        log.info("Running test")
         # prepare_data() must be explicitly called because there is no lightning training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
+
+    @automatic_datamodule_batch_size(batch_size_attribute_name="test_batch_size")
+    def test(self) -> None:
+        """Perform test."""
+        log.info("Running test")
         test_dataloader = self.datamodule.test_dataloader()
 
         optimal_f1 = OptimalF1(num_classes=None, pos_label=1)  # type: ignore[arg-type]

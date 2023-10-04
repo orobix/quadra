@@ -223,6 +223,9 @@ datamodule:
 
 task:
   device: cuda:2
+  automatic_batch_size:
+    starting_batch_size: 1024
+    disable: true
   output:
     folder: classification_patch_experiment
     report: true

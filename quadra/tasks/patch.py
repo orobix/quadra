@@ -16,6 +16,8 @@ from quadra.models.evaluation import BaseEvaluationModel
 from quadra.tasks.base import Evaluation, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
+from quadra.utils.classification import automatic_batch_size_computation
+from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model, import_deployment_model
 from quadra.utils.patch import RleEncoder, compute_patch_metrics, save_classification_result
 from quadra.utils.patch.dataset import PatchDatasetFileFormat
@@ -30,6 +32,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         config: The experiment configuration
         device: The device to use
         output: Dictionary defining which kind of outputs to generate. Defaults to None.
+        automatic_batch_size: Whether to automatically find the largest batch size that fits in memory.
     """
 
     def __init__(
@@ -37,13 +40,14 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         config: DictConfig,
         output: DictConfig,
         device: str,
+        automatic_batch_size: DictConfig,
     ):
         super().__init__(config=config)
         self.device: str = device
         self.output: DictConfig = output
         self.return_polygon: bool = True
         self.reconstruction_results: Dict[str, Any]
-        self._backbone: torch.nn.Module
+        self._backbone: ModelSignatureWrapper
         self._trainer: SklearnClassificationTrainer
         self._model: ClassifierMixin
         self.metadata: Dict[str, Any] = {
@@ -53,6 +57,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
             "test_labels": [],
         }
         self.export_folder: str = "deployment_model"
+        self.automatic_batch_size = automatic_batch_size
 
     @property
     def model(self) -> ClassifierMixin:
@@ -66,7 +71,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         self._model = hydra.utils.instantiate(model_config)
 
     @property
-    def backbone(self) -> torch.nn.Module:
+    def backbone(self) -> ModelSignatureWrapper:
         """Backbone: The backbone."""
         return self._backbone
 
@@ -89,6 +94,13 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         self.datamodule = self.config.datamodule
         self.backbone = self.config.backbone
         self.model = self.config.model
+
+        if not self.automatic_batch_size.disable and self.device != "cpu":
+            self.datamodule.batch_size = automatic_batch_size_computation(
+                datamodule=self.datamodule,
+                backbone=self.backbone,
+                starting_batch_size=self.automatic_batch_size.starting_batch_size,
+            )
 
         self.trainer = self.config.trainer
 
@@ -304,11 +316,13 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
         # Configure trainer
         self.trainer = self.config.trainer
 
-    def test(self) -> None:
-        """Run the test."""
         # prepare_data() must be explicitly called because there is no lightning training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
+
+    @automatic_datamodule_batch_size(batch_size_attribute_name="batch_size")
+    def test(self) -> None:
+        """Run the test."""
         test_dataloader = self.datamodule.test_dataloader()
 
         self.class_to_skip = self.model_data["class_to_skip"] if hasattr(self.model_data, "class_to_skip") else None

@@ -36,7 +36,8 @@ from quadra.modules.classification import ClassificationModule
 from quadra.tasks.base import Evaluation, LightningTask, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
-from quadra.utils.classification import get_results, save_classification_result
+from quadra.utils.classification import automatic_batch_size_computation, get_results, save_classification_result
+from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model, import_deployment_model
 from quadra.utils.models import get_feature, is_vision_transformer
 from quadra.utils.vit_explainability import VitAttentionGradRollout
@@ -420,6 +421,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         config: The experiment configuration
         device: The device to use. Defaults to None.
         output: Dictionary defining which kind of outputs to generate. Defaults to None.
+        automatic_batch_size: Whether to automatically find the largest batch size that fits in memory.
     """
 
     def __init__(
@@ -427,6 +429,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         config: DictConfig,
         output: DictConfig,
         device: str,
+        automatic_batch_size: DictConfig,
     ):
         super().__init__(config=config)
 
@@ -445,6 +448,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self.deploy_info_file = "model.json"
         self.train_dataloader_list: List[torch.utils.data.DataLoader] = []
         self.test_dataloader_list: List[torch.utils.data.DataLoader] = []
+        self.automatic_batch_size = automatic_batch_size
 
     @property
     def device(self) -> str:
@@ -460,6 +464,13 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         # prepare_data() must be explicitly called if the task does not include a lightining training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="fit")
+
+        if not self.automatic_batch_size.disable and self.device != "cpu":
+            self.datamodule.batch_size = automatic_batch_size_computation(
+                datamodule=self.datamodule,
+                backbone=self.backbone,
+                starting_batch_size=self.automatic_batch_size.starting_batch_size,
+            )
 
         self.train_dataloader_list = list(self.datamodule.train_dataloader())
         self.test_dataloader_list = list(self.datamodule.val_dataloader())
@@ -759,8 +770,6 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="test")
 
-        self.test_dataloader = self.datamodule.test_dataloader()
-
         # Configure trainer
         self.trainer = self.config.trainer
 
@@ -836,8 +845,11 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
         trainer = hydra.utils.instantiate(trainer_config, backbone=self.backbone, classifier=self.classifier)
         self._trainer = trainer
 
+    @automatic_datamodule_batch_size(batch_size_attribute_name="batch_size")
     def test(self) -> None:
         """Run the test."""
+        self.test_dataloader = self.datamodule.test_dataloader()
+
         _, pd_cm, accuracy, res, cams = self.trainer.test(
             test_dataloader=self.test_dataloader,
             idx_to_class=self.idx_to_class,
@@ -933,7 +945,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         if "classifier" in model_config:
             log.info("Instantiating classifier <%s>", model_config.classifier["_target_"])
             return hydra.utils.instantiate(
-                model_config.classifier, out_features=self.datamodule.num_classes, _convert_="partial"
+                model_config.classifier, out_features=len(self.model_data["classes"]), _convert_="partial"
             )
 
         raise ValueError("A `classifier` definition must be specified in the config")
@@ -947,13 +959,6 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
     def deployment_model(self, model_path: str):
         """Set the deployment model."""
         file_extension = os.path.splitext(model_path)[1]
-
-        if "classes" in self.model_data:
-            self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
-            self.datamodule.num_classes = len(self.datamodule.class_to_idx)
-        else:
-            raise ValueError("Field 'classes' is missing from json's model_data")
-
         model_architecture = None
         if file_extension == ".pth":
             model_config = OmegaConf.load(os.path.join(Path(model_path).parent, "model_config.yaml"))
@@ -976,8 +981,14 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
 
     def prepare(self) -> None:
         """Prepare the evaluation."""
-        self.datamodule = self.config.datamodule
         super().prepare()
+        self.datamodule = self.config.datamodule
+        self.datamodule.class_to_idx = {v: int(k) for k, v in self.model_data["classes"].items()}
+        self.datamodule.num_classes = len(self.datamodule.class_to_idx)
+
+        # prepare_data() must be explicitly called because there is no training
+        self.datamodule.prepare_data()
+        self.datamodule.setup(stage="test")
 
     def prepare_gradcam(self) -> None:
         """Initializing gradcam for the predictions."""
@@ -1005,12 +1016,10 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             log.warning("Gradcam not implemented for this backbone, it will not be computed")
             self.gradcam = False
 
+    @automatic_datamodule_batch_size(batch_size_attribute_name="batch_size")
     def test(self) -> None:
         """Perform test."""
         log.info("Running test")
-        # prepare_data() must be explicitly called because there is no training
-        self.datamodule.prepare_data()
-        self.datamodule.setup(stage="test")
         test_dataloader = self.datamodule.test_dataloader()
 
         image_labels = []
