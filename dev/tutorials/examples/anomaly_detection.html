@@ -4240,7 +4240,19 @@ under <code>experiment/base/anomaly</code>.</p>
 <span class="w">    </span><span class="nt">disable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">plot_only_wrong</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">    </span><span class="nt">plot_raw_outputs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">batch_size_finder</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">_target_</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quadra.callbacks.lightning.BatchSizeFinder</span>
+<span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">power</span>
+<span class="w">    </span><span class="nt">steps_per_trial</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="w">    </span><span class="nt">init_val</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">    </span><span class="nt">max_trials</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"> </span><span class="c1"># Max 64</span>
+<span class="w">    </span><span class="nt">batch_arg_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">train_batch_size</span>
+<span class="w">    </span><span class="nt">disable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </code></pre></div></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>By default lightning batch_size_finder callback is disabled. This callback will automatically try to infer the maximum batch size that can be used for training without running out of memory. We've experimented runtime errors with this callback on some machines due to a Pytorch/CUDNN incompatibility so be careful when using it.</p>
+</div>
 <p>The min_max_normalization callback is used to normalize the anomaly maps to the range [0, 1] such that the threshold will become 0.5. </p>
 <p>The threshold_type can be either "image" or "pixel" and it indicates which threshold to use to normalize the pixel level threshold, if no masks are available for segmentation this should always be "image", otherwise the normalization will use the threshold computed without masks which would result in wrong segmentations.</p>
 <p>The post processing configuration allow to specify the method used to compute the threshold, methods and manual metrics are generally specified in the model configuration and should not be changed here.</p>

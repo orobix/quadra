@@ -4206,6 +4206,9 @@ It will also export the model in two formats, "torchscript" and "pytorch".</p>
 
 <span class="nt">task</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cuda:0</span>
+<span class="w">  </span><span class="nt">automatic_batch_size</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">starting_batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1024</span>
+<span class="w">    </span><span class="nt">disable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">  </span><span class="nt">output</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">classification_experiment</span>
 <span class="w">    </span><span class="nt">report</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
@@ -4214,6 +4217,7 @@ It will also export the model in two formats, "torchscript" and "pytorch".</p>
 </code></pre></div>
 <p>This will train a logistic regression classifier using a resnet18 backbone, resizing the images to 224x224 and using a 5-fold cross validation. The <code>class_to_idx</code> parameter is used to map the class names to indexes, the indexes will be used to train the classifier. The <code>output</code> parameter is used to specify the output folder and the type of output to save. The <code>export.types</code> parameter can be used to export the model in different formats, at the moment <code>torchscript</code>, <code>onnx</code> and <code>pytorch</code> are supported.
 The backbone (in torchscript and pytorch format) will be saved along with the classifier. <code>test_full_data</code> is used to specify if a final test should be performed on all the data (after training on the training and validation datasets).</p>
+<p>Optionally it's possible to enable the automatic batch size finder by setting <code>automatic_batch_size.disable</code> to <code>false</code>. This will try to find the maximum batch size that can be used on the given device without running out of memory. The <code>starting_batch_size</code> parameter is used to specify the starting batch size to use for the search, the algorithm will start from this value and will try to divide it by two until it doesn't run out of memory.</p>
 <h3 id="run">Run<a class="headerlink" href="#run" title="Permanent link">&para;</a></h3>
 <p>Assuming that you have created a virtual environment and installed the <code>quadra</code> library, you can run the experiment by running the following command:</p>
 <div class="highlight"><pre><span></span><code>quadra<span class="w"> </span><span class="nv">experiment</span><span class="o">=</span>custom_experiment/sklearn_classification

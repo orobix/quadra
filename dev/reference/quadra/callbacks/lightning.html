@@ -624,6 +624,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#quadra.callbacks.lightning.BatchSizeFinder" class="md-nav__link">
+    BatchSizeFinder
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#quadra.callbacks.lightning.LightningTrainerBaseSetup" class="md-nav__link">
     LightningTrainerBaseSetup
   </a>
@@ -3968,6 +3975,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#quadra.callbacks.lightning.BatchSizeFinder" class="md-nav__link">
+    BatchSizeFinder
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#quadra.callbacks.lightning.LightningTrainerBaseSetup" class="md-nav__link">
     LightningTrainerBaseSetup
   </a>
@@ -4030,6 +4044,182 @@
 
 
 
+<h3 id="quadra.callbacks.lightning.BatchSizeFinder" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">BatchSizeFinder</span><span class="p">(</span><span class="n">find_train_batch_size</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">find_validation_batch_size</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">find_test_batch_size</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">find_predict_batch_size</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;power&#39;</span><span class="p">,</span> <span class="n">steps_per_trial</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">init_val</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_trials</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">batch_arg_name</span><span class="o">=</span><span class="s1">&#39;batch_size&#39;</span><span class="p">)</span></code>
+
+<a href="#quadra.callbacks.lightning.BatchSizeFinder" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+  <div class="doc doc-contents ">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="pytorch_lightning.callbacks.batch_size_finder.BatchSizeFinder">BatchSizeFinder</span></code></p>
+
+  
+      <p>Batch size finder setting the proper model training status as the current one from lightning seems bugged.
+It also allows to skip some batch size finding steps.</p>
+
+
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b>find_train_batch_size</b>
+            (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                <code>True</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Whether to find the training batch size.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b>find_validation_batch_size</b>
+            (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                <code>False</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Whether to find the validation batch size.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b>find_test_batch_size</b>
+            (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                <code>False</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Whether to find the test batch size.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b>find_predict_batch_size</b>
+            (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                <code>False</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Whether to find the predict batch size.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b>mode</b>
+            (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                <code>&#39;power&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>The mode to use for batch size finding. See <code>pytorch_lightning.callbacks.BatchSizeFinder</code> for more
+details.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b>steps_per_trial</b>
+            (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                <code>3</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>The number of steps per trial. See <code>pytorch_lightning.callbacks.BatchSizeFinder</code> for more
+details.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b>init_val</b>
+            (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                <code>2</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>The initial value for batch size. See <code>pytorch_lightning.callbacks.BatchSizeFinder</code> for more details.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b>max_trials</b>
+            (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                <code>25</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>The maximum number of trials. See <code>pytorch_lightning.callbacks.BatchSizeFinder</code> for more details.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b>batch_arg_name</b>
+            (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                <code>&#39;batch_size&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>The name of the batch size argument. See <code>pytorch_lightning.callbacks.BatchSizeFinder</code> for more
+details.</p>
+        </div>
+      </li>
+  </ul>
+
+              <details class="quote">
+                <summary>Source code in <code>quadra/callbacks/lightning.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">find_train_batch_size</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">find_validation_batch_size</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">find_test_batch_size</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">find_predict_batch_size</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;power&quot;</span><span class="p">,</span>
+    <span class="n">steps_per_trial</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">init_val</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">max_trials</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span>
+    <span class="n">batch_arg_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;batch_size&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">steps_per_trial</span><span class="p">,</span> <span class="n">init_val</span><span class="p">,</span> <span class="n">max_trials</span><span class="p">,</span> <span class="n">batch_arg_name</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">find_train_batch_size</span> <span class="o">=</span> <span class="n">find_train_batch_size</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">find_validation_batch_size</span> <span class="o">=</span> <span class="n">find_validation_batch_size</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">find_test_batch_size</span> <span class="o">=</span> <span class="n">find_test_batch_size</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">find_predict_batch_size</span> <span class="o">=</span> <span class="n">find_predict_batch_size</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+
 <h3 id="quadra.callbacks.lightning.LightningTrainerBaseSetup" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">LightningTrainerBaseSetup</span><span class="p">(</span><span class="n">log_every_n_steps</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></code>
 
@@ -4061,8 +4251,8 @@
 
               <details class="quote">
                 <summary>Source code in <code>quadra/callbacks/lightning.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">17</span>
-<span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_every_n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">19</span>
+<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_every_n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">log_every_n_steps</span> <span class="o">=</span> <span class="n">log_every_n_steps</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -4097,9 +4287,7 @@
 
           <details class="quote">
             <summary>Source code in <code>quadra/callbacks/lightning.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">22</span>
 <span class="normal">23</span>
 <span class="normal">24</span>
 <span class="normal">25</span>
@@ -4114,7 +4302,9 @@
 <span class="normal">34</span>
 <span class="normal">35</span>
 <span class="normal">36</span>
-<span class="normal">37</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@rank_zero_only</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@rank_zero_only</span>
 <span class="k">def</span> <span class="nf">on_fit_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainer</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Trainer</span><span class="p">,</span> <span class="n">pl_module</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Called on every stage.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">trainer</span><span class="p">,</span> <span class="s2">&quot;datamodule&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">trainer</span><span class="p">,</span> <span class="s2">&quot;log_every_n_steps&quot;</span><span class="p">):</span>
