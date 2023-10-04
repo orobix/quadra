@@ -132,7 +132,7 @@ callbacks:
     steps_per_trial: 3
     init_val: 2
     max_trials: 5 # Max 64
-    batch_arg_name: batch_size
+    batch_arg_name: train_batch_size
     disable: true
 ```
 
