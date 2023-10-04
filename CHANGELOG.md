@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.2.7]
+
+#### Fixed
+
+- Fix test classification task crash when only images with no labels are used.
+
 ### [1.2.6]
 
 #### Added

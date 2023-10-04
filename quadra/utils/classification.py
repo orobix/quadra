@@ -400,11 +400,11 @@ def get_split(
 def save_classification_result(
     results: pd.DataFrame,
     output_folder: str,
-    confmat: pd.DataFrame,
-    accuracy: float,
     test_dataloader: DataLoader,
     config: DictConfig,
     output: DictConfig,
+    accuracy: Optional[float] = None,
+    confmat: Optional[pd.DataFrame] = None,
     grayscale_cams: Optional[np.ndarray] = None,
 ):
     """Save csv results, confusion matrix and example images.
@@ -412,8 +412,8 @@ def save_classification_result(
     Args:
         results: Dataframe containing the results
         output_folder: Path to the output folder
-        confmat: Confusion matrix in a pandas dataframe
-        accuracy: Accuracy of the model
+        confmat: Confusion matrix in a pandas dataframe, may be None if all test labels are unknown
+        accuracy: Accuracy of the model, is None if all test labels are unknown
         test_dataloader: Dataloader used for testing
         config: Configuration file
         output: Output configuration
@@ -429,20 +429,21 @@ def save_classification_result(
         log.info("Plotting original and gradcam examples")
         save_gradcams = True
 
-    # Save confusion matrix
-    disp = ConfusionMatrixDisplay(
-        confusion_matrix=np.array(confmat),
-        display_labels=[x.replace("pred:", "") for x in confmat.columns.to_list()],
-    )
-    disp.plot(include_values=True, cmap=plt.cm.Greens, ax=None, colorbar=False, xticks_rotation=90)
-    plt.title(f"Confusion Matrix (Accuracy: {(accuracy * 100):.2f}%)")
-    plt.savefig(
-        os.path.join(output_folder, "test_confusion_matrix.png"),
-        bbox_inches="tight",
-        pad_inches=0,
-        dpi=300,
-    )
-    plt.close()
+    if confmat is not None and accuracy is not None:
+        # Save confusion matrix
+        disp = ConfusionMatrixDisplay(
+            confusion_matrix=np.array(confmat),
+            display_labels=[x.replace("pred:", "") for x in confmat.columns.to_list()],
+        )
+        disp.plot(include_values=True, cmap=plt.cm.Greens, ax=None, colorbar=False, xticks_rotation=90)
+        plt.title(f"Confusion Matrix (Accuracy: {(accuracy * 100):.2f}%)")
+        plt.savefig(
+            os.path.join(output_folder, "test_confusion_matrix.png"),
+            bbox_inches="tight",
+            pad_inches=0,
+            dpi=300,
+        )
+        plt.close()
 
     if output is not None and output.example:
         log.info("Saving discordant/concordant examples in test folder")
@@ -462,7 +463,7 @@ def save_classification_result(
                 os.makedirs(gradcam_folder)
 
         for v in np.unique([results["real_label"], results["pred_label"]]):
-            if np.isnan(v):
+            if np.isnan(v) or v == -1:
                 continue
 
             k = idx_to_class[v]
