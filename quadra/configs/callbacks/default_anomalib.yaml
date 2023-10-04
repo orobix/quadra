@@ -56,7 +56,7 @@ lightning_trainer_setup:
   _target_: quadra.callbacks.lightning.LightningTrainerBaseSetup
   log_every_n_steps: 1
 batch_size_finder:
-  _target_: pytorch_lightning.callbacks.BatchSizeFinder
+  _target_: quadra.callbacks.lightning.BatchSizeFinder
   mode: power
   steps_per_trial: 3
   init_val: 2
