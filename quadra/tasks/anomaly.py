@@ -133,7 +133,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         model_json["anomaly_method"] = self.config.model.model.name
 
         with open(os.path.join(self.export_folder, "model.json"), "w") as f:
-            json.dump(model_json, f)
+            json.dump(model_json, f, cls=utils.HydraEncoder)
 
     def _generate_report(self) -> None:
         """Generate a report for the task."""

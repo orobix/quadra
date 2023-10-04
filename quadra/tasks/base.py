@@ -257,6 +257,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             self.trainer.checkpoint_callback is not None
             and hasattr(self.trainer.checkpoint_callback, "best_model_path")
             and self.trainer.checkpoint_callback.best_model_path is not None
+            and len(self.trainer.checkpoint_callback.best_model_path) > 0
         ):
             best_model = self.trainer.checkpoint_callback.best_model_path
 

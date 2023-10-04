@@ -127,12 +127,12 @@ callbacks:
     plot_only_wrong: false
     plot_raw_outputs: false
   batch_size_finder:
-    _target_: pytorch_lightning.callbacks.BatchSizeFinder
+    _target_: quadra.callbacks.lightning.BatchSizeFinder
     mode: power
     steps_per_trial: 3
     init_val: 2
     max_trials: 5 # Max 64
-    batch_arg_name: batch_size
+    batch_arg_name: train_batch_size
     disable: true
 ```
 

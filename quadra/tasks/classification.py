@@ -98,6 +98,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         self.export_folder: str = "deployment_model"
         self.deploy_info_file: str = "model.json"
         self.report_confmat: pd.DataFrame
+        self.best_model_path: Optional[str] = None
 
     @property
     def optimizer(self) -> torch.optim.Optimizer:
@@ -236,15 +237,23 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         self.scheduler = self.config.scheduler
         self.module = self.config.model.module
 
+    def train(self):
+        """Train the model."""
+        super().train()
+        if (
+            self.trainer.checkpoint_callback is not None
+            and hasattr(self.trainer.checkpoint_callback, "best_model_path")
+            and self.trainer.checkpoint_callback.best_model_path is not None
+            and len(self.trainer.checkpoint_callback.best_model_path) > 0
+        ):
+            self.best_model_path = self.trainer.checkpoint_callback.best_model_path
+            log.info("Loading best epoch weights...")
+
     def test(self) -> None:
         """Test the model."""
         if not self.config.trainer.get("fast_dev_run"):
-            if self.trainer.checkpoint_callback is None:
-                raise ValueError("Checkpoint callback is not defined!")
             log.info("Starting testing!")
-            self.datamodule.setup(stage="test")
-            log.info("Using best epoch's weights for testing.")
-            self.trainer.test(datamodule=self.datamodule, model=self.module, ckpt_path="best")
+            self.trainer.test(datamodule=self.datamodule, model=self.module, ckpt_path=self.best_model_path)
 
     def export(self) -> None:
         """Generate deployment models for the task."""
@@ -256,20 +265,21 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         else:
             idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
 
-        if self.trainer.checkpoint_callback is None:
-            log.warning("No checkpoint callback found in the trainer, exporting the last model weights")
-        else:
-            best_model_path = self.trainer.checkpoint_callback.best_model_path  # type: ignore[attr-defined]
-            log.info("Saving deployment model for %s checkpoint", best_model_path)
+        # Get best model!
+        if self.best_model_path is not None:
+            log.info("Saving deployment model for %s checkpoint", self.best_model_path)
 
             module = self.module.load_from_checkpoint(
-                best_model_path,
+                self.best_model_path,
                 model=self.module.model,
                 optimizer=self.optimizer,
                 lr_scheduler=self.scheduler,
                 criterion=self.module.criterion,
                 gradcam=False,
             )
+        else:
+            log.warning("No checkpoint callback found in the trainer, exporting the last model weights")
+            module = self.module
 
         input_shapes = self.config.export.input_shapes
 
@@ -304,9 +314,9 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         log.info("Generating report!")
         if not self.run_test or self.config.trainer.get("fast_dev_run"):
             self.datamodule.setup(stage="test")
-        best_model_path = self.trainer.checkpoint_callback.best_model_path  # type: ignore[union-attr]
+
         predictions_outputs = self.trainer.predict(
-            model=self.module, datamodule=self.datamodule, ckpt_path=best_model_path
+            model=self.module, datamodule=self.datamodule, ckpt_path=self.best_model_path
         )
         if not predictions_outputs:
             log.warning("There is no prediction to generate the report. Skipping report generation.")

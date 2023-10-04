@@ -70,7 +70,17 @@ def check_export_model_outputs(tmp_path: Path, model: nn.Module, export_types: l
             onnx_model_path, input_shapes = out
             exported_models[export_type] = onnx_model_path
 
-    inference_config = DictConfig({"onnx": {}, "torchscript": {}})
+    inference_config = DictConfig(
+        {
+            "onnx": {
+                "session_options": {
+                    "inter_op_num_threads": 4,
+                    "intra_op_num_threads": 4,
+                }
+            },
+            "torchscript": {},
+        }
+    )
 
     models = []
     for export_type, model_path in exported_models.items():
