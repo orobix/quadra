@@ -193,7 +193,6 @@ ignore_regex = [
   ".*on_train.*",
   ".*on_validation.*",
   ".*on_test.*",
-  ".*on_predict.*",
   ".*forward.*",
   ".*backward.*",
   ".*training_step.*",
