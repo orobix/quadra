@@ -4903,8 +4903,7 @@ Returns:
 
           <details class="quote">
             <summary>Source code in <code>quadra/utils/classification.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">509</span>
-<span class="normal">510</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">510</span>
 <span class="normal">511</span>
 <span class="normal">512</span>
 <span class="normal">513</span>
@@ -4946,7 +4945,8 @@ Returns:
 <span class="normal">549</span>
 <span class="normal">550</span>
 <span class="normal">551</span>
-<span class="normal">552</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_results</span><span class="p">(</span>
+<span class="normal">552</span>
+<span class="normal">553</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_results</span><span class="p">(</span>
     <span class="n">test_labels</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
     <span class="n">pred_labels</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
     <span class="n">idx_to_labels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -5533,7 +5533,7 @@ If None all files will be considered and a custom conversion is created.</p>
 
 
 <h3 id="quadra.utils.classification.save_classification_result" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">save_classification_result</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">output_folder</span><span class="p">,</span> <span class="n">confmat</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">,</span> <span class="n">test_dataloader</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">grayscale_cams</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+          <code class="highlight language-python"><span class="n">save_classification_result</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">output_folder</span><span class="p">,</span> <span class="n">test_dataloader</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">confmat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grayscale_cams</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#quadra.utils.classification.save_classification_result" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -5564,18 +5564,22 @@ If None all files will be considered and a custom conversion is created.</p>
       </li>
       <li class="field-body">
         <b>confmat</b>
-            (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+            (<code><a class="autorefs autorefs-external" title="typing.Optional" href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<span title="pandas.DataFrame">DataFrame</span>]</code>, default:
+                <code>None</code>
+)
         –
         <div class="doc-md-description">
-          <p>Confusion matrix in a pandas dataframe</p>
+          <p>Confusion matrix in a pandas dataframe, may be None if all test labels are unknown</p>
         </div>
       </li>
       <li class="field-body">
         <b>accuracy</b>
-            (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
+            (<code><a class="autorefs autorefs-external" title="typing.Optional" href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>, default:
+                <code>None</code>
+)
         –
         <div class="doc-md-description">
-          <p>Accuracy of the model</p>
+          <p>Accuracy of the model, is None if all test labels are unknown</p>
         </div>
       </li>
       <li class="field-body">
@@ -5722,14 +5726,15 @@ If None all files will be considered and a custom conversion is created.</p>
 <span class="normal">503</span>
 <span class="normal">504</span>
 <span class="normal">505</span>
-<span class="normal">506</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save_classification_result</span><span class="p">(</span>
+<span class="normal">506</span>
+<span class="normal">507</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save_classification_result</span><span class="p">(</span>
     <span class="n">results</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">output_folder</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">confmat</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-    <span class="n">accuracy</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">test_dataloader</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">,</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span>
     <span class="n">output</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span>
+    <span class="n">accuracy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">confmat</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">grayscale_cams</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Save csv results, confusion matrix and example images.</span>
@@ -5737,8 +5742,8 @@ If None all files will be considered and a custom conversion is created.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        results: Dataframe containing the results</span>
 <span class="sd">        output_folder: Path to the output folder</span>
-<span class="sd">        confmat: Confusion matrix in a pandas dataframe</span>
-<span class="sd">        accuracy: Accuracy of the model</span>
+<span class="sd">        confmat: Confusion matrix in a pandas dataframe, may be None if all test labels are unknown</span>
+<span class="sd">        accuracy: Accuracy of the model, is None if all test labels are unknown</span>
 <span class="sd">        test_dataloader: Dataloader used for testing</span>
 <span class="sd">        config: Configuration file</span>
 <span class="sd">        output: Output configuration</span>
@@ -5754,20 +5759,21 @@ If None all files will be considered and a custom conversion is created.</p>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Plotting original and gradcam examples&quot;</span><span class="p">)</span>
         <span class="n">save_gradcams</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="c1"># Save confusion matrix</span>
-    <span class="n">disp</span> <span class="o">=</span> <span class="n">ConfusionMatrixDisplay</span><span class="p">(</span>
-        <span class="n">confusion_matrix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">confmat</span><span class="p">),</span>
-        <span class="n">display_labels</span><span class="o">=</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;pred:&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">confmat</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()],</span>
-    <span class="p">)</span>
-    <span class="n">disp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">include_values</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Greens</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">xticks_rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Confusion Matrix (Accuracy: </span><span class="si">{</span><span class="p">(</span><span class="n">accuracy</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="s2">&quot;test_confusion_matrix.png&quot;</span><span class="p">),</span>
-        <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
-        <span class="n">pad_inches</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">confmat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">accuracy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Save confusion matrix</span>
+        <span class="n">disp</span> <span class="o">=</span> <span class="n">ConfusionMatrixDisplay</span><span class="p">(</span>
+            <span class="n">confusion_matrix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">confmat</span><span class="p">),</span>
+            <span class="n">display_labels</span><span class="o">=</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;pred:&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">confmat</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()],</span>
+        <span class="p">)</span>
+        <span class="n">disp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">include_values</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Greens</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">xticks_rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Confusion Matrix (Accuracy: </span><span class="si">{</span><span class="p">(</span><span class="n">accuracy</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="s2">&quot;test_confusion_matrix.png&quot;</span><span class="p">),</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">output</span><span class="o">.</span><span class="n">example</span><span class="p">:</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saving discordant/concordant examples in test folder&quot;</span><span class="p">)</span>
@@ -5787,7 +5793,7 @@ If None all files will be considered and a custom conversion is created.</p>
                 <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">gradcam_folder</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">([</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;real_label&quot;</span><span class="p">],</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;pred_label&quot;</span><span class="p">]]):</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">or</span> <span class="n">v</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
                 <span class="k">continue</span>
 
             <span class="n">k</span> <span class="o">=</span> <span class="n">idx_to_class</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
