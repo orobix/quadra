@@ -4219,13 +4219,13 @@
 <hr />
 <p><code>Quadra</code> aims to simplify deep learning experimenting process, allowing researchers or developers to compare, monitor, and share their experiments quickly. It provides a simple and flexible way to train and deploy deep learning models using YAML configuration files and open-source tools such as <a href="https://hydra.cc/intro/">Hydra</a>, <a href="https://www.pytorchlightning.ai/index.html">Lightning</a> framework, and <a href="https://pytorch.org/">Pytorch</a>. It lets you compose your experiment configurations from single command line interface, so you can conduct multiple experiments with different settings and hyperparameters. Every experiment can be logged using integrations provided by  <a href="https://www.pytorchlightning.ai/index.html">Lightning</a> framework such <a href="https://mlflow.org/">Mlflow</a>.</p>
 <h2 id="quick-start-guide">Quick Start Guide<a class="headerlink" href="#quick-start-guide" title="Permanent link">&para;</a></h2>
-<p>Currently we support installing from source since the library is not yet available on <code>PyPI</code> and currently supported Python version is <code>3.9</code>.</p>
+<p>Currently we support installing from source since the library is not yet available on <code>PyPI</code> and currently supported Python versions are <code>3.9</code> and <code>3.10</code>.</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/orobix/quadra.git
 </code></pre></div>
 <p>If you don't have virtual environment ready, Let's set up our environment for using the <code>quadra</code> library. We have two parts in this guide: Common setup and Environment-specific setup.</p>
 <h3 id="using-conda">Using Conda<a class="headerlink" href="#using-conda" title="Permanent link">&para;</a></h3>
 <p>Create and activate a new <code>Conda</code> environment. </p>
-<div class="highlight"><pre><span></span><code>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>myenv<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.9
+<div class="highlight"><pre><span></span><code>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>myenv<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
 conda<span class="w"> </span>activate<span class="w"> </span>myenv
 </code></pre></div>
 <h3 id="using-python-virtualenv">Using Python Virtualenv<a class="headerlink" href="#using-python-virtualenv" title="Permanent link">&para;</a></h3>
