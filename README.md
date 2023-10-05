@@ -46,7 +46,7 @@ ______________________________________________________________________
 
 ## Quick Start Guide
 
-Currently we support installing from source since the library is not yet available on `PyPI` and currently supported Python version is `3.9`.
+Currently we support installing from source since the library is not yet available on `PyPI` and currently supported Python versions are `3.9` and `3.10`.
 
 ```shell
 pip install git+https://github.com/orobix/quadra.git
@@ -59,7 +59,7 @@ If you don't have virtual environment ready, Let's set up our environment for us
 Create and activate a new `Conda` environment. 
 
 ```shell
-conda create -n myenv python=3.9
+conda create -n myenv python=3.10
 conda activate myenv
 ```
 
