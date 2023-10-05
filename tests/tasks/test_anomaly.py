@@ -284,6 +284,7 @@ def test_fastflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, ta
     shutil.rmtree(tmp_path)
 
 
+@pytest.mark.slow
 @pytest.mark.usefixtures("mock_training")
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_draem(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
