@@ -167,7 +167,7 @@ export:
 
 backbone:
   model:
-    classes: 4 # The total number of classes (background + foreground)
+    num_classes: 4 # The total number of classes (background + foreground)
 
 task:
   run_test: true # run test after training is completed
