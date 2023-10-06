@@ -1,5 +1,5 @@
 import os
-from typing import Any, Optional, Type
+from typing import Any, Dict, Optional, Type
 
 import albumentations
 import cv2
@@ -7,24 +7,26 @@ import numpy as np
 import pandas as pd
 from torchvision.datasets.utils import download_and_extract_archive
 
-from quadra.datamodules import SegmentationDataModule
-from quadra.datasets.segmentation import SegmentationDataset
+from quadra.datamodules import SegmentationMulticlassDataModule
+from quadra.datasets.segmentation import SegmentationDatasetMulticlass
 from quadra.utils import utils
 
 log = utils.get_logger(__name__)
 
 
-class OxfordPetSegmentationDataModule(SegmentationDataModule):
+class OxfordPetSegmentationDataModule(SegmentationMulticlassDataModule):
     """OxfordPetSegmentationDataModule.
 
     Args:
         data_path: path to the oxford pet dataset
-        test_size: Defaults to 0.3.
-        val_size:  Defaults to 0.3.
-        seed: Defaults to 42.
+        idx_to_class: dict with corrispondence btw mask index and classes: {1: class_1, 2: class_2, ..., N: class_N}
+            except background class which is 0.
         name: Defaults to "oxford_pet_segmentation_datamodule".
         dataset: Defaults to SegmentationDataset.
         batch_size:  batch size for training. Defaults to 32.
+        test_size: Defaults to 0.3.
+        val_size:  Defaults to 0.3.
+        seed: Defaults to 42.
         num_workers: number of workers for data loading. Defaults to 6.
         train_transform: Train transform. Defaults to None.
         test_transform: Test transform. Defaults to None.
@@ -34,12 +36,13 @@ class OxfordPetSegmentationDataModule(SegmentationDataModule):
     def __init__(
         self,
         data_path: str,
+        idx_to_class: Dict,
+        name: str = "oxford_pet_segmentation_datamodule",
+        dataset: Type[SegmentationDatasetMulticlass] = SegmentationDatasetMulticlass,
+        batch_size: int = 32,
         test_size: float = 0.3,
         val_size: float = 0.3,
         seed: int = 42,
-        name: str = "oxford_pet_segmentation_datamodule",
-        dataset: Type[SegmentationDataset] = SegmentationDataset,
-        batch_size: int = 32,
         num_workers: int = 6,
         train_transform: Optional[albumentations.Compose] = None,
         test_transform: Optional[albumentations.Compose] = None,
@@ -48,16 +51,17 @@ class OxfordPetSegmentationDataModule(SegmentationDataModule):
     ):
         super().__init__(
             data_path=data_path,
+            idx_to_class=idx_to_class,
+            name=name,
+            dataset=dataset,
+            batch_size=batch_size,
             test_size=test_size,
             val_size=val_size,
             seed=seed,
-            name=name,
-            dataset=dataset,
+            num_workers=num_workers,
             train_transform=train_transform,
             test_transform=test_transform,
             val_transform=val_transform,
-            batch_size=batch_size,
-            num_workers=num_workers,
             **kwargs,
         )
 
