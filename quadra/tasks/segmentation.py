@@ -321,7 +321,7 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
     @automatic_datamodule_batch_size(batch_size_attribute_name="batch_size")
     def test(self) -> None:
         """Run testing."""
-        log.info("Starting testing")
+        log.info("Starting inference for analysis.")
 
         stages: List[str] = []
         dataloaders: List[torch.utils.data.DataLoader] = []
@@ -336,6 +336,7 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
             stages.append("test")
             dataloaders.append(self.datamodule.test_dataloader())
         for stage, dataloader in zip(stages, dataloaders):
+            log.info("Running inference on %s set with batch size: %d", stage, dataloader.batch_size)
             image_list, mask_list, mask_pred_list, label_list = [], [], [], []
             for batch in dataloader:
                 images, masks, labels = batch
