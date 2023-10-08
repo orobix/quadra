@@ -3947,8 +3947,9 @@
 <li><strong>task_specific_outputs:</strong> These are auxiliary files that are used to store the results of the experiment, generally they are treated as artifacts so specific loggers can handle them</li>
 </ul>
 <div class="admonition note">
-<p class="admonition-title">Note<p>If the user specifies <code>core.upload_artifacts=True</code> in the config file, the artifacts will be uploaded to the logger artifact storage if possible.</p>
-</p>
+<p class="admonition-title">Note</p>
+<div class="highlight"><pre><span></span><code>If the user specifies `core.upload_artifacts=True` in the config file, the artifacts will be uploaded to the logger artifact storage if possible.
+</code></pre></div>
 </div>
 <p>Since all final configurations are written into <code>config_resolved.yaml</code> file, it is the single file enough to compare or replicate the experiment. However, we need to sync the codebase as the same it has been used to train the model. To do so, the quadra library also saves the git commit hash of the codebase as hyperparameter under <code>git/commit</code> tag. Using this hash, user can <code>git checkout &lt;commit-hash&gt;</code> the codebase and have the identical repository setup to run the same experiment.</p>
 
