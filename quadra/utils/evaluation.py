@@ -361,7 +361,12 @@ def create_mask_report(
         if len(area_graph["Defect Area Percentage"]) > 0:
             fn_area_path = os.path.join(report_path, f"{stage}_acc_area.png")
             fn_area_df = pd.DataFrame(area_graph)
-            ax = sns.boxplot(x="Defect Area Percentage", y="Accuracy", data=fn_area_df)
+            ax = sns.boxplot(
+                x="Defect Area Percentage",
+                y="Accuracy",
+                data=fn_area_df,
+                order=["Very Small <1%", "Small <10%", "Medium <25%", "Large >25%"],
+            )
             ax.set_facecolor("white")
             fig = ax.get_figure()
             fig.savefig(fn_area_path)

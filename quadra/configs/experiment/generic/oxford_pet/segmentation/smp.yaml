@@ -2,11 +2,17 @@
 defaults:
   - base/segmentation/smp # use smp file as default
   - override /datamodule: generic/oxford_pet/segmentation/base # update datamodule
+  - override /loss: smp_dice_multiclass
+  - override /model: smp_multiclass
   - _self_ # use this file as final config
 
 trainer:
   devices: [0]
   max_epochs: 10
+
+backbone:
+  model:
+    num_classes: 2 # The total number of classes (background + foreground)
 
 task:
   report: true

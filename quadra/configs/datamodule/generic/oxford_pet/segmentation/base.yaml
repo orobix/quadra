@@ -1,4 +1,6 @@
 _target_: quadra.datamodules.generic.oxford_pet.OxfordPetSegmentationDataModule
+idx_to_class:
+  1: cat_or_dog
 data_path: ${oc.env:HOME}/.quadra/datasets/oxford-pet
 test_size: 0.2
 val_size: 0.2
