@@ -1,5 +1,6 @@
 import os
 from ast import literal_eval
+from functools import wraps
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -14,7 +15,17 @@ from segmentation_models_pytorch.losses import DiceLoss
 from segmentation_models_pytorch.losses.constants import BINARY_MODE, MULTICLASS_MODE
 from skimage.measure import label, regionprops
 
+from quadra.utils.logger import get_logger
 from quadra.utils.visualization import UnNormalize, create_grid_figure
+
+try:
+    from onnxruntime.capi.onnxruntime_pybind11_state import RuntimeException  # noqa
+
+    ONNX_AVAILABLE = True
+except ImportError:
+    ONNX_AVAILABLE = False
+
+log = get_logger(__name__)
 
 
 def dice(
@@ -313,7 +324,6 @@ def create_mask_report(
         )
 
         if len(fg["image"]) > 0:
-
             if len(fg["image"]) > nb_samples:
                 for k, v in fg.items():
                     fg[k] = v[:nb_samples]
@@ -351,7 +361,12 @@ def create_mask_report(
         if len(area_graph["Defect Area Percentage"]) > 0:
             fn_area_path = os.path.join(report_path, f"{stage}_acc_area.png")
             fn_area_df = pd.DataFrame(area_graph)
-            ax = sns.boxplot(x="Defect Area Percentage", y="Accuracy", data=fn_area_df)
+            ax = sns.boxplot(
+                x="Defect Area Percentage",
+                y="Accuracy",
+                data=fn_area_df,
+                order=["Very Small <1%", "Small <10%", "Medium <25%", "Large >25%"],
+            )
             ax.set_facecolor("white")
             fig = ax.get_figure()
             fig.savefig(fn_area_path)
@@ -363,3 +378,50 @@ def create_mask_report(
         file_paths.append(analysis_file_path)
 
     return file_paths
+
+
+def automatic_datamodule_batch_size(batch_size_attribute_name: str = "batch_size"):
+    """Automatically scale the datamodule batch size if the given function goes out of memory.
+
+    Args:
+        batch_size_attribute_name: The name of the attribute to modify in the datamodule
+    """
+
+    def decorator(func: Callable):
+        """Decorator function."""
+
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            """Wrapper function."""
+            is_func_finished = False
+            while not is_func_finished:
+                valid_exceptions = (RuntimeError,)
+
+                if ONNX_AVAILABLE:
+                    valid_exceptions += (RuntimeException,)
+
+                try:
+                    func(self, *args, **kwargs)
+                except valid_exceptions as e:
+                    if "out of memory" in str(e) or "Failed to allocate memory" in str(e):
+                        current_batch_size = getattr(self.datamodule, batch_size_attribute_name)
+                        setattr(self.datamodule, batch_size_attribute_name, current_batch_size // 2)
+                        log.warning(
+                            "The function %s went out of memory, trying to reduce the batch size to %d",
+                            func.__name__,
+                            self.datamodule.batch_size,
+                        )
+
+                        if self.datamodule.batch_size == 0:
+                            raise RuntimeError(
+                                f"Unable to run {func.__name__} with batch size 1, the program will exit"
+                            ) from e
+                        continue
+
+                    raise e
+
+                is_func_finished = True
+
+        return wrapper
+
+    return decorator

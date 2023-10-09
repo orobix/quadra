@@ -126,7 +126,19 @@ callbacks:
     disable: true
     plot_only_wrong: false
     plot_raw_outputs: false
+  batch_size_finder:
+    _target_: quadra.callbacks.lightning.BatchSizeFinder
+    mode: power
+    steps_per_trial: 3
+    init_val: 2
+    max_trials: 5 # Max 64
+    batch_arg_name: train_batch_size
+    disable: true
 ```
+
+!!! warning
+
+    By default lightning batch_size_finder callback is disabled. This callback will automatically try to infer the maximum batch size that can be used for training without running out of memory. We've experimented runtime errors with this callback on some machines due to a Pytorch/CUDNN incompatibility so be careful when using it.
 
 The min_max_normalization callback is used to normalize the anomaly maps to the range [0, 1] such that the threshold will become 0.5. 
 

@@ -2,12 +2,14 @@
 import os
 import shutil
 from pathlib import Path
-from typing import List
+from typing import Callable, Generator, List
 
 import pytest
+from pytest_mock import MockerFixture
 
 from quadra.utils.export import get_export_extension
 from quadra.utils.tests.fixtures import base_anomaly_dataset, imagenette_dataset
+from quadra.utils.tests.fixtures.models.anomaly import _initialize_patchcore_model
 from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, setup_trainer_for_lightning
 
 try:
@@ -80,6 +82,7 @@ def run_inference_experiments(data_path: str, train_path: str, test_path: str, e
         os.chdir(cwd)
 
 
+@pytest.mark.usefixtures("mock_training")
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_padim(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
     """Test the training and evaluation of the PADIM model."""
@@ -98,10 +101,7 @@ def test_padim(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
     trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
     overrides += trainer_overrides
-
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
-
-    assert os.path.exists("checkpoints/final_model.ckpt")
 
     _check_report()
 
@@ -112,6 +112,16 @@ def test_padim(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
     shutil.rmtree(tmp_path)
 
 
+@pytest.fixture
+def mock_patchcore_training(pytestconfig: pytest.Config, mocker: Callable[..., Generator[MockerFixture, None, None]]):
+    def setup_patchcore_model(self):
+        self.module.model = _initialize_patchcore_model(self.module.model)
+
+    if pytestconfig.getoption("mock_training"):
+        mocker.patch("quadra.tasks.base.LightningTask.train", setup_patchcore_model)
+
+
+@pytest.mark.usefixtures("mock_patchcore_training")
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_patchcore(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
     """Test the training and evaluation of the PatchCore model."""
@@ -133,8 +143,6 @@ def test_patchcore(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, t
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
 
-    assert os.path.exists("checkpoints/final_model.ckpt")
-
     _check_report()
 
     run_inference_experiments(
@@ -144,9 +152,13 @@ def test_patchcore(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, t
     shutil.rmtree(tmp_path)
 
 
+@pytest.mark.usefixtures("mock_training")
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_efficientad(
-    tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, imagenette_dataset: imagenette_dataset, task: str
+    tmp_path: Path,
+    base_anomaly_dataset: base_anomaly_dataset,
+    imagenette_dataset: imagenette_dataset,
+    task: str,
 ):
     """Test the training and evaluation of the EfficientAD model."""
     data_path, _ = base_anomaly_dataset
@@ -167,14 +179,13 @@ def test_efficientad(
         f"model.model.imagenette_dir= {imagenette_path}",
         f"model.dataset.task={task}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
+        f"export.input_shapes=[[3,256,256],[3,256,256]]",
     ]
     trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
     overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
-
-    assert os.path.exists("checkpoints/final_model.ckpt")
 
     _check_report()
 
@@ -185,7 +196,7 @@ def test_efficientad(
     shutil.rmtree(tmp_path)
 
 
-@pytest.mark.slow
+@pytest.mark.usefixtures("mock_training")
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_cflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
     """Test the training and evaluation of the cflow model."""
@@ -204,15 +215,15 @@ def test_cflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
 
     execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
 
-    assert os.path.exists("checkpoints/final_model.ckpt")
-
     _check_report()
 
     # cflow does not support exporting to torchscript and onnx at the moment
     shutil.rmtree(tmp_path)
 
 
+# TODO: This test seems to crash on not so powerful machines
 @pytest.mark.slow
+@pytest.mark.usefixtures("mock_training")
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_csflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
     """Test the training and evaluation of the csflow model."""
@@ -232,8 +243,6 @@ def test_csflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
 
-    assert os.path.exists("checkpoints/final_model.ckpt")
-
     _check_report()
 
     run_inference_experiments(
@@ -243,7 +252,7 @@ def test_csflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task
     shutil.rmtree(tmp_path)
 
 
-@pytest.mark.slow
+@pytest.mark.usefixtures("mock_training")
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_fastflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
     """Test the training and evaluation of the fastflow model."""
@@ -266,8 +275,6 @@ def test_fastflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, ta
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
 
-    assert os.path.exists("checkpoints/final_model.ckpt")
-
     _check_report()
 
     run_inference_experiments(
@@ -278,6 +285,7 @@ def test_fastflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, ta
 
 
 @pytest.mark.slow
+@pytest.mark.usefixtures("mock_training")
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
 def test_draem(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task: str):
     """Test the training and evaluation of the draem model."""
@@ -296,8 +304,6 @@ def test_draem(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
     overrides += trainer_overrides
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
-
-    assert os.path.exists("checkpoints/final_model.ckpt")
 
     _check_report()
 

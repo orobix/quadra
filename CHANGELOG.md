@@ -2,6 +2,28 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.3.0]
+
+#### Added
+
+- Add batch_size_finder callback for lightning based models (disabled by default).
+- Add automatic_batch_size parameter to sklearn based training tasks (disabled by default).
+- Add automatic_batch_size decorator to automatically fix the batch size of test functions for evaluation tasks if any out of memory error occurs.
+- Add --mock-training flag for tests to skip running the actual training and just run the test.
+
+#### Fixed
+
+- Fix lightning based tasks not working properly when no checkpoint was provided.
+- Fix list and dict config not handled properly as input_shapes parameter.
+
+#### Updated 
+
+- Greatly reduce the dimension of test datasets to improve testing speed.
+
+#### Updated
+
+- Make `disable` a quadra reserved keyword for all callbacks, to disable a callback just set it to `disable: true` in the configuration file.
+
 ### [1.2.7]
 
 #### Fixed

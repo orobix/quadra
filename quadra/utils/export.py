@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, TypeVar,
 
 import torch
 from anomalib.models.cflow import CflowLightning
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, ListConfig, OmegaConf
 from torch import nn
 
 from quadra.models.base import ModelSignatureWrapper
@@ -38,6 +38,11 @@ def generate_torch_inputs(
     """Given a list of input shapes that can contain either lists, tuples or dicts, with tuples being the input shapes
     of the model, generate a list of torch tensors with the given device and dtype.
     """
+    inp = None
+
+    if isinstance(input_shapes, (ListConfig, DictConfig)):
+        input_shapes = OmegaConf.to_container(input_shapes)
+
     if isinstance(input_shapes, list):
         if any(isinstance(inp, (Sequence, dict)) for inp in input_shapes):
             return [generate_torch_inputs(inp, device, half_precision, dtype) for inp in input_shapes]
@@ -55,6 +60,9 @@ def generate_torch_inputs(
 
         # Base case
         inp = torch.randn((batch_size, *input_shapes), dtype=dtype, device=device)
+
+    if inp is None:
+        raise RuntimeError("Something went wrong during model export, unable to parse input shapes")
 
     if half_precision:
         inp = inp.half()

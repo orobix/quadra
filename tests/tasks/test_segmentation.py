@@ -65,6 +65,7 @@ def run_inference_experiments(
         os.chdir(cwd)
 
 
+@pytest.mark.usefixtures("mock_training")
 @pytest.mark.parametrize("generate_report", [True, False])
 def test_smp_binary(
     tmp_path: Path,
@@ -107,6 +108,7 @@ def test_smp_binary(
     shutil.rmtree(tmp_path)
 
 
+@pytest.mark.usefixtures("mock_training")
 def test_smp_multiclass(tmp_path: Path, base_multiclass_segmentation_dataset: base_multiclass_segmentation_dataset):
     data_path, _, class_to_idx = base_multiclass_segmentation_dataset
     idx_to_class = {v: k for k, v in class_to_idx.items()}
@@ -150,6 +152,7 @@ def test_smp_multiclass(tmp_path: Path, base_multiclass_segmentation_dataset: ba
     shutil.rmtree(tmp_path)
 
 
+@pytest.mark.usefixtures("mock_training")
 def test_smp_multiclass_with_binary_dataset(
     tmp_path: Path, base_binary_segmentation_dataset: base_binary_segmentation_dataset
 ):

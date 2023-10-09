@@ -102,7 +102,7 @@ def anomaly_dataset(tmp_path: Path, dataset_arguments: AnomalyDatasetArguments) 
 
 
 @pytest.fixture(
-    params=[AnomalyDatasetArguments(**{"train_samples": 10, "val_samples": (10, 10), "test_samples": (10, 10)})]
+    params=[AnomalyDatasetArguments(**{"train_samples": 10, "val_samples": (1, 1), "test_samples": (1, 1)})]
 )
 def base_anomaly_dataset(tmp_path: Path, request: Any) -> Tuple[str, AnomalyDatasetArguments]:
     """Generate base anomaly dataset with the following parameters:

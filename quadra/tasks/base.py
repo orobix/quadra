@@ -6,7 +6,7 @@ from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 import hydra
 import torch
 from hydra.core.hydra_config import HydraConfig
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, OmegaConf, open_dict
 from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.loggers import Logger, MLFlowLogger
 from pytorch_lightning.utilities.device_parser import parse_gpu_ids
@@ -173,6 +173,15 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         instatiated_callbacks = []
         for _, cb_conf in callbacks_config.items():
             if "_target_" in cb_conf:
+                # Disable is a reserved keyword for callbacks, hopefully no callback will use it
+                if "disable" in cb_conf:
+                    if cb_conf["disable"]:
+                        log.info("Skipping callback <%s> as it is disabled", cb_conf["_target_"])
+                        continue
+
+                    with open_dict(cb_conf):
+                        del cb_conf.disable
+
                 if not torch.cuda.is_available():
                     # Skip the gpu stats logger callback if no gpu is available to avoid errors
                     if cb_conf["_target_"] == "nvitop.callbacks.lightning.GpuStatsLogger":
@@ -248,6 +257,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             self.trainer.checkpoint_callback is not None
             and hasattr(self.trainer.checkpoint_callback, "best_model_path")
             and self.trainer.checkpoint_callback.best_model_path is not None
+            and len(self.trainer.checkpoint_callback.best_model_path) > 0
         ):
             best_model = self.trainer.checkpoint_callback.best_model_path
 

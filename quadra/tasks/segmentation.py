@@ -16,7 +16,7 @@ from quadra.models.evaluation import BaseEvaluationModel
 from quadra.modules.base import SegmentationModel
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
-from quadra.utils.evaluation import create_mask_report
+from quadra.utils.evaluation import automatic_datamodule_batch_size, create_mask_report
 from quadra.utils.export import export_model
 
 log = utils.get_logger(__name__)
@@ -118,12 +118,15 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
     def export(self) -> None:
         """Generate a deployment model for the task."""
         log.info("Exporting model ready for deployment")
+
         # Get best model!
-        if self.trainer.checkpoint_callback is None:
-            log.warning("No checkpoint callback found in the trainer, exporting the last model weights")
-            module = self.module
-        else:
-            best_model_path = self.trainer.checkpoint_callback.best_model_path  # type: ignore[attr-defined]
+        if (
+            self.trainer.checkpoint_callback is not None
+            and hasattr(self.trainer.checkpoint_callback, "best_model_path")
+            and self.trainer.checkpoint_callback.best_model_path is not None
+            and len(self.trainer.checkpoint_callback.best_model_path) > 0
+        ):
+            best_model_path = self.trainer.checkpoint_callback.best_model_path
             log.info("Loaded best model from %s", best_model_path)
 
             module = self.module.load_from_checkpoint(
@@ -133,6 +136,9 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
                 optimizer=self.module.optimizer,
                 lr_scheduler=self.module.schedulers,
             )
+        else:
+            log.warning("No checkpoint callback found in the trainer, exporting the last model weights")
+            module = self.module
 
         if "idx_to_class" not in self.config.datamodule:
             log.info("No idx_to_class key")
@@ -306,14 +312,20 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
     def train(self) -> None:
         """Skip training."""
 
+    def prepare(self) -> None:
+        """Prepare the evaluation task."""
+        super().prepare()
+        self.datamodule.setup(stage="fit")
+        self.datamodule.setup(stage="test")
+
+    @automatic_datamodule_batch_size(batch_size_attribute_name="batch_size")
     def test(self) -> None:
         """Run testing."""
-        log.info("Starting testing")
+        log.info("Starting inference for analysis.")
 
         stages: List[str] = []
         dataloaders: List[torch.utils.data.DataLoader] = []
-        self.datamodule.setup(stage="fit")
-        self.datamodule.setup(stage="test")
+
         if self.datamodule.train_dataset_available:
             stages.append("train")
             dataloaders.append(self.datamodule.train_dataloader())
@@ -324,6 +336,7 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
             stages.append("test")
             dataloaders.append(self.datamodule.test_dataloader())
         for stage, dataloader in zip(stages, dataloaders):
+            log.info("Running inference on %s set with batch size: %d", stage, dataloader.batch_size)
             image_list, mask_list, mask_pred_list, label_list = [], [], [], []
             for batch in dataloader:
                 images, masks, labels = batch
