@@ -15,6 +15,9 @@ from pytorch_lightning.utilities.types import STEP_OUTPUT
 from skimage.segmentation import mark_boundaries
 from tqdm import tqdm
 
+# This solves slowdown issues on some machines
+matplotlib.use("Agg")
+
 
 class Visualizer:
     """Anomaly Visualization.
@@ -47,7 +50,7 @@ class Visualizer:
 
     def generate(self):
         """Generate the image."""
-        num_cols = len(self.images)
+        num_cols = len(self.images)  # TODO: Why? Shouldn't be 5?
         figure_size = (num_cols * 3, 3)
         self.figure, self.axis = plt.subplots(1, num_cols, figsize=figure_size)
         self.figure.subplots_adjust(right=0.9)
@@ -168,11 +171,11 @@ class VisualizerCallback(Callback):
             normalize = True  # raw anomaly maps. Still need to normalize
 
         if self.threshold_type == "pixel":
-            threshold = pl_module.pixel_metrics.F1Score.threshold
+            threshold = pl_module.pixel_metrics.F1Score.threshold  # type: ignore[union-attr]
         else:
-            threshold = pl_module.image_metrics.F1Score.threshold
+            threshold = pl_module.image_metrics.F1Score.threshold  # type: ignore[union-attr]
 
-        for (filename, image, true_mask, anomaly_map, gt_label, pred_label, anomaly_score) in tqdm(
+        for filename, image, true_mask, anomaly_map, gt_label, pred_label, anomaly_score in tqdm(
             zip(
                 outputs["image_path"],
                 outputs["image"],
@@ -193,7 +196,7 @@ class VisualizerCallback(Callback):
                 continue
 
             heat_map = superimpose_anomaly_map(anomaly_map, image, normalize=normalize)
-            pred_mask = compute_mask(anomaly_map, threshold)
+            pred_mask = compute_mask(anomaly_map, threshold)  # type: ignore[arg-type]
             vis_img = mark_boundaries(image, pred_mask, color=(1, 0, 0), mode="thick")
             visualizer = Visualizer()
 
@@ -213,7 +216,6 @@ class VisualizerCallback(Callback):
                 else:
                     image_classified = add_normal_label(heat_map, 1 - anomaly_score)
                 visualizer.add_image(image=image_classified, title="Prediction")
-
             visualizer.generate()
             visualizer.figure.suptitle(
                 f"F1 threshold: {threshold}, Mask_max: {anomaly_map.max():.3f}, Anomaly_score: {anomaly_score:.3f}"
