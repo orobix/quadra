@@ -47,7 +47,7 @@ dependencies = [
   "tensorboard==2.11.*",
   # --------- others --------- #
   "Pillow==9.3.0",                                                        # required by label-studio-converter
-  "pandas==1.1.*",
+  "pandas<2.0.0",
   "opencv-python-headless==4.7.0.*",
   "python-dotenv==0.21.*",
   "rich==13.2.*",
@@ -64,7 +64,7 @@ dependencies = [
   "h5py==3.8.*",
   "timm==0.6.12", # required by smp
   "segmentation-models-pytorch==0.3.2",
-  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.3",
+  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.4",
   "xxhash==3.2.*",
 ]
 
