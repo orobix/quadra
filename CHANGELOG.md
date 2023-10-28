@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.3.1]
+
+#### Updated
+
+- Update pandas requirements to use a more recent version and avoid slow build time when python 3.10 is used.
+
 ### [1.3.0]
 
 #### Added
