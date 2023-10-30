@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quadra"
-version = "1.3.0"
+version = "1.3.1"
 description = "Deep Learning experiment orchestration library"
 authors = [
   { name = "Alessandro Polidori", email = "alessandro.polidori@orobix.com" },
@@ -47,7 +47,7 @@ dependencies = [
   "tensorboard==2.11.*",
   # --------- others --------- #
   "Pillow==9.3.0",                                                        # required by label-studio-converter
-  "pandas==1.1.*",
+  "pandas<2.0.0",
   "opencv-python-headless==4.7.0.*",
   "python-dotenv==0.21.*",
   "rich==13.2.*",
@@ -64,7 +64,7 @@ dependencies = [
   "h5py==3.8.*",
   "timm==0.6.12", # required by smp
   "segmentation-models-pytorch==0.3.2",
-  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.3",
+  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.4",
   "xxhash==3.2.*",
 ]
 
@@ -119,7 +119,7 @@ repository = "https://github.com/orobix/quadra"
 
 # Adapted from https://realpython.com/pypi-publish-python-package/#version-your-package
 [tool.bumpver]
-current_version = "1.3.0"
+current_version = "1.3.1"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "build: Bump version {old_version} -> {new_version}"
 commit = true
