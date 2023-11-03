@@ -42,11 +42,13 @@ dependencies = [
   "hydra-optuna-sweeper==1.2.*",
   # --------- loggers --------- #
   "mlflow==2.3.1",
+  "mlflow-skinny==2.3.1",
   "boto3==1.26.*", # needed for artifact storage
   "minio==7.1.*", # needed for artifact storage
   "tensorboard==2.11.*",
   # --------- others --------- #
-  "Pillow==9.3.0",                                                        # required by label-studio-converter
+  # required by label-studio-converter
+  "Pillow==9.3.0",                                                        
   "pandas<2.0.0",
   "opencv-python-headless==4.7.0.*",
   "python-dotenv==0.21.*",
