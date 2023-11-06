@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.3.2]
+
+#### Updated
+
+- Update `mlflow` requirements for `mlflow-skinny` package to align with the same version of main `mlflow` package.
+
 ### [1.3.1]
 
 #### Updated
