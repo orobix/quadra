@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quadra"
-version = "1.3.2"
+version = "1.3.3"
 description = "Deep Learning experiment orchestration library"
 authors = [
   { name = "Alessandro Polidori", email = "alessandro.polidori@orobix.com" },
@@ -71,7 +71,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest==7.2.*", "pytest-cov==4.0.*", "pytest-lazy-fixture==0.6.*", "pytest-mock==3.11.*"]
+test = ["pytest==7.*", "pytest-cov==4.0.*", "pytest-lazy-fixture==0.6.*", "pytest-mock==3.11.*", "pytest-env==1.1.*"]
 
 dev = [
   "interrogate==1.5.*",
@@ -121,7 +121,7 @@ repository = "https://github.com/orobix/quadra"
 
 # Adapted from https://realpython.com/pypi-publish-python-package/#version-your-package
 [tool.bumpver]
-current_version = "1.3.2"
+current_version = "1.3.3"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "build: Bump version {old_version} -> {new_version}"
 commit = true
@@ -263,3 +263,10 @@ exclude = ["Makefile", ".gitignore"]
 
 [tool.ruff.pydocstyle]
 convention = "google"
+
+[tool.pytest_env]
+OMP_NUM_THREADS = 4
+OPENBLAS_NUM_THREADS = 4
+MKL_NUM_THREADS = 4
+VECLIB_MAXIMUM_THREADS = 4
+NUMEXPR_NUM_THREADS = 4
