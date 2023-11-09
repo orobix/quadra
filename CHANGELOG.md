@@ -8,6 +8,13 @@ All notable changes to this project will be documented in this file.
 
 - Update anomalib to [v0.7.0+obx.1.2.5] (logical anomaly is now compatible with trainer.deterministic=True)
 
+### [1.3.3]
+
+#### Updated
+
+- Relax pytest version requirement to 7.x
+- Add pytest env variables and pytest-env requirement
+
 ### [1.3.2]
 
 #### Updated
