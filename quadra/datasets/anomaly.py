@@ -282,5 +282,4 @@ class AnomalyDataset(Dataset):
                 pre_processed = self.transform(image=image)
 
             item["image"] = pre_processed["image"]
-        print(image_path)
         return item
