@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.3.4]
+
+#### Updated
+
+- Update anomalib to [v0.7.0+obx.1.2.5] (logical anomaly is now compatible with trainer.deterministic=True)
+
 ### [1.3.3]
 
 #### Updated
