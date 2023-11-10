@@ -141,6 +141,8 @@ def make_anomaly_dataset(
     if len(samples_list) == 0:
         raise RuntimeError(f"Found 0 images in {path}")
 
+    samples_list.sort()
+
     data = pd.DataFrame(samples_list, columns=["path", "split", "targets", "samples"])
     data = data[data.split != "ground_truth"]
 
@@ -280,5 +282,4 @@ class AnomalyDataset(Dataset):
                 pre_processed = self.transform(image=image)
 
             item["image"] = pre_processed["image"]
-
         return item

@@ -148,7 +148,6 @@ class ClassificationDataset(ImageClassificationListDataset):
         random_padding: bool = False,
         circular_crop: bool = False,
     ):
-
         super().__init__(samples, targets, class_to_idx, resize, roi, transform, rgb, channel)
         if transform is None:
             self.transform = None
