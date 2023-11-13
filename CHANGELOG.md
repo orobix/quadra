@@ -2,6 +2,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.3.6]
+
+#### Fixed
+
+- Set single buffer size on gpu for deterministic trainings.
+
+#### Updated
+
+- Update anomalib to [v0.7.0+obx.1.2.6] (logical anomaly is now compatible with trainer.deterministic=True)
+
 ### [1.3.5]
 
 #### Fixed
