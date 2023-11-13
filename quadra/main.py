@@ -1,3 +1,4 @@
+import os
 import time
 
 import hydra
@@ -35,6 +36,9 @@ def main(config: DictConfig):
     # Set seed for random number generators in pytorch, numpy and python.random
     seed_everything(config.core.seed, workers=True)
     setup_opencv()
+    if config.get("trainer").get("deterministic"):
+        log.info("Set CUBLAS single size buffer to enable determinism")
+        os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:2"
 
     # Run specified task using the configuration composition
     task: Task = hydra.utils.instantiate(config.task, config, _recursive_=False)
