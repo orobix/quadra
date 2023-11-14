@@ -173,9 +173,13 @@ class VisualizerCallback(Callback):
         if self.threshold_type == "pixel":
             if hasattr(pl_module.pixel_metrics.F1Score, "threshold"):
                 threshold = pl_module.pixel_metrics.F1Score.threshold
+            else:
+                raise ValueError("Metric has no threshold attribute")
         else:
             if hasattr(pl_module.image_metrics.F1Score, "threshold"):
                 threshold = pl_module.image_metrics.F1Score.threshold
+            else:
+                raise ValueError("Metric has no threshold attribute")
 
         for filename, image, true_mask, anomaly_map, gt_label, pred_label, anomaly_score in tqdm(
             zip(
@@ -198,7 +202,10 @@ class VisualizerCallback(Callback):
                 continue
 
             heat_map = superimpose_anomaly_map(anomaly_map, image, normalize=normalize)
-            pred_mask = compute_mask(anomaly_map, threshold)  # type: ignore[arg-type]
+            if isinstance(threshold, float):
+                pred_mask = compute_mask(anomaly_map, threshold)
+            else:
+                raise ValueError("Threshold should be float")
             vis_img = mark_boundaries(image, pred_mask, color=(1, 0, 0), mode="thick")
             visualizer = Visualizer()
 
