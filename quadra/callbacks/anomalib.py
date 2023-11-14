@@ -15,6 +15,8 @@ from pytorch_lightning.utilities.types import STEP_OUTPUT
 from skimage.segmentation import mark_boundaries
 from tqdm import tqdm
 
+matplotlib.use("Agg")
+
 
 class Visualizer:
     """Anomaly Visualization.
@@ -168,11 +170,11 @@ class VisualizerCallback(Callback):
             normalize = True  # raw anomaly maps. Still need to normalize
 
         if self.threshold_type == "pixel":
-            threshold = pl_module.pixel_metrics.F1Score.threshold
+            threshold = pl_module.pixel_metrics.F1Score.threshold  # type: ignore[union-attr]
         else:
-            threshold = pl_module.image_metrics.F1Score.threshold
+            threshold = pl_module.image_metrics.F1Score.threshold  # type: ignore[union-attr]
 
-        for (filename, image, true_mask, anomaly_map, gt_label, pred_label, anomaly_score) in tqdm(
+        for filename, image, true_mask, anomaly_map, gt_label, pred_label, anomaly_score in tqdm(
             zip(
                 outputs["image_path"],
                 outputs["image"],
@@ -193,7 +195,7 @@ class VisualizerCallback(Callback):
                 continue
 
             heat_map = superimpose_anomaly_map(anomaly_map, image, normalize=normalize)
-            pred_mask = compute_mask(anomaly_map, threshold)
+            pred_mask = compute_mask(anomaly_map, threshold)  # type: ignore[arg-type]
             vis_img = mark_boundaries(image, pred_mask, color=(1, 0, 0), mode="thick")
             visualizer = Visualizer()
 
