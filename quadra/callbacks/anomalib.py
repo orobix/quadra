@@ -15,8 +15,6 @@ from pytorch_lightning.utilities.types import STEP_OUTPUT
 from skimage.segmentation import mark_boundaries
 from tqdm import tqdm
 
-matplotlib.use("Agg")
-
 
 class Visualizer:
     """Anomaly Visualization.
@@ -49,6 +47,8 @@ class Visualizer:
 
     def generate(self):
         """Generate the image."""
+        default_plt_backend = plt.get_backend()
+        plt.switch_backend("Agg")
         num_cols = len(self.images)
         figure_size = (num_cols * 3, 3)
         self.figure, self.axis = plt.subplots(1, num_cols, figsize=figure_size)
@@ -60,6 +60,7 @@ class Visualizer:
             axis.axes.yaxis.set_visible(False)
             axis.imshow(image_dict["image"], image_dict["color_map"], vmin=0, vmax=255)
             axis.title.set_text(image_dict["title"])
+        plt.switch_backend(default_plt_backend)
 
     def show(self):
         """Show image on a matplotlib figure."""
@@ -170,9 +171,11 @@ class VisualizerCallback(Callback):
             normalize = True  # raw anomaly maps. Still need to normalize
 
         if self.threshold_type == "pixel":
-            threshold = pl_module.pixel_metrics.F1Score.threshold  # type: ignore[union-attr]
+            if hasattr(pl_module.pixel_metrics.F1Score, "threshold"):
+                threshold = pl_module.pixel_metrics.F1Score.threshold
         else:
-            threshold = pl_module.image_metrics.F1Score.threshold  # type: ignore[union-attr]
+            if hasattr(pl_module.image_metrics.F1Score, "threshold"):
+                threshold = pl_module.image_metrics.F1Score.threshold
 
         for filename, image, true_mask, anomaly_map, gt_label, pred_label, anomaly_score in tqdm(
             zip(
