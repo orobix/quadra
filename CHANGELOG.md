@@ -2,6 +2,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.3.6]
+
+#### Fixed
+
+- Changed matplotlib backend in anomaly visualizer to solve slowdown on some devices
+
+#### Updated
+
+- Update anomalib to [v0.7.0+obx.1.2.6] (Efficient_ad now keeps maps always on gpu during forward)
+
 ### [1.3.5]
 
 #### Fixed

@@ -47,6 +47,8 @@ class Visualizer:
 
     def generate(self):
         """Generate the image."""
+        default_plt_backend = plt.get_backend()
+        plt.switch_backend("Agg")
         num_cols = len(self.images)
         figure_size = (num_cols * 3, 3)
         self.figure, self.axis = plt.subplots(1, num_cols, figsize=figure_size)
@@ -58,6 +60,7 @@ class Visualizer:
             axis.axes.yaxis.set_visible(False)
             axis.imshow(image_dict["image"], image_dict["color_map"], vmin=0, vmax=255)
             axis.title.set_text(image_dict["title"])
+        plt.switch_backend(default_plt_backend)
 
     def show(self):
         """Show image on a matplotlib figure."""
@@ -168,11 +171,17 @@ class VisualizerCallback(Callback):
             normalize = True  # raw anomaly maps. Still need to normalize
 
         if self.threshold_type == "pixel":
-            threshold = pl_module.pixel_metrics.F1Score.threshold
+            if hasattr(pl_module.pixel_metrics.F1Score, "threshold"):
+                threshold = pl_module.pixel_metrics.F1Score.threshold
+            else:
+                raise AttributeError("Metric has no threshold attribute")
         else:
-            threshold = pl_module.image_metrics.F1Score.threshold
+            if hasattr(pl_module.image_metrics.F1Score, "threshold"):
+                threshold = pl_module.image_metrics.F1Score.threshold
+            else:
+                raise AttributeError("Metric has no threshold attribute")
 
-        for (filename, image, true_mask, anomaly_map, gt_label, pred_label, anomaly_score) in tqdm(
+        for filename, image, true_mask, anomaly_map, gt_label, pred_label, anomaly_score in tqdm(
             zip(
                 outputs["image_path"],
                 outputs["image"],
@@ -193,7 +202,10 @@ class VisualizerCallback(Callback):
                 continue
 
             heat_map = superimpose_anomaly_map(anomaly_map, image, normalize=normalize)
-            pred_mask = compute_mask(anomaly_map, threshold)
+            if isinstance(threshold, float):
+                pred_mask = compute_mask(anomaly_map, threshold)
+            else:
+                raise TypeError("Threshold should be float")
             vis_img = mark_boundaries(image, pred_mask, color=(1, 0, 0), mode="thick")
             visualizer = Visualizer()
 
