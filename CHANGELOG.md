@@ -2,6 +2,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.3.7]
+
+#### Fixed
+
+- Fix BatchSizeFinder calling wrong super functions
+- Fix ModelManager get_latest_version calling an hardcoded model
+
 ### [1.3.6]
 
 #### Fixed
