@@ -76,14 +76,19 @@ class BatchSizeFinder(LightningBatchSizeFinder):
         self.find_test_batch_size = find_test_batch_size
         self.find_predict_batch_size = find_predict_batch_size
 
-    def on_train_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
-        if not self.find_train_batch_size:
+    def on_fit_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+        if not self.find_train_batch_size or trainer.state.stage is None:
+            # If called during validation skip it as it will be triggered during on_validation_start
+            return None
+
+        if trainer.state.stage.value != "train":
             return None
 
         if not isinstance(pl_module.model, nn.Module):
             raise ValueError("The model must be a nn.Module")
         pl_module.model.train()
-        return super().on_train_epoch_start(trainer, pl_module)
+
+        return super().on_fit_start(trainer, pl_module)
 
     def on_validation_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         if not self.find_validation_batch_size:
@@ -92,7 +97,8 @@ class BatchSizeFinder(LightningBatchSizeFinder):
         if not isinstance(pl_module.model, nn.Module):
             raise ValueError("The model must be a nn.Module")
         pl_module.model.eval()
-        return super().on_validation_epoch_start(trainer, pl_module)
+
+        return super().on_validation_start(trainer, pl_module)
 
     def on_test_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         if not self.find_test_batch_size:
@@ -101,7 +107,8 @@ class BatchSizeFinder(LightningBatchSizeFinder):
         if not isinstance(pl_module.model, nn.Module):
             raise ValueError("The model must be a nn.Module")
         pl_module.model.eval()
-        return super().on_test_epoch_start(trainer, pl_module)
+
+        return super().on_test_start(trainer, pl_module)
 
     def on_predict_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         if not self.find_predict_batch_size:
@@ -110,4 +117,5 @@ class BatchSizeFinder(LightningBatchSizeFinder):
         if not isinstance(pl_module.model, nn.Module):
             raise ValueError("The model must be a nn.Module")
         pl_module.model.eval()
-        return super().on_predict_epoch_start(trainer, pl_module)
+
+        return super().on_predict_start(trainer, pl_module)
