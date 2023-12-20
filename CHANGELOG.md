@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.3.8]
+
+#### Updated
+
+- Update anomalib to [v0.7.0+obx.1.2.6] (Efficient_ad pre_padding and smaller memory footprint during training)
+
 ### [1.3.7]
 
 #### Fixed
