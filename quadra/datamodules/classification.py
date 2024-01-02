@@ -9,7 +9,7 @@ import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 from skmultilearn.model_selection import iterative_train_test_split
-from timm.data.parsers.parser_image_folder import find_images_and_targets
+from timm.data.readers.reader_image_folder import find_images_and_targets
 from torch.utils.data import DataLoader
 
 from quadra.datamodules.base import BaseDataModule
