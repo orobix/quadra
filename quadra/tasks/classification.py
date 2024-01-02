@@ -629,6 +629,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             log.info("No test data, skipping test")
             return
 
+        # Put backbone on the correct device as it may be moved after export
+        self.backbone.to(self.device)
         _, pd_cm, accuracy, res, _ = self.trainer.test(
             test_dataloader=test_dataloader, idx_to_class=idx_to_class, predict_proba=True
         )
