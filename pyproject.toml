@@ -64,7 +64,7 @@ dependencies = [
   "scikit-multilearn==0.2.*",
   "tripy==1.0.*",
   "h5py==3.8.*",
-  "timm==0.6.12", # required by smp
+  "timm==0.9.12", # this requires an update version of smp which is not yet available
   "segmentation-models-pytorch==0.3.2",
   "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.7",
   "xxhash==3.2.*",
