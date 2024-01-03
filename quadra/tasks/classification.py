@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import glob
 import json
 import os
@@ -13,7 +15,7 @@ import pandas as pd
 import timm
 import torch
 from joblib import dump, load
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, ListConfig, OmegaConf
 from pytorch_grad_cam import GradCAM
 from scipy import ndimage
 from sklearn.base import ClassifierMixin
@@ -227,7 +229,21 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             model_config.model, classifier=self.classifier, pre_classifier=self.pre_classifier, _convert_="partial"
         )
         if getattr(self.config.backbone, "freeze_parameters_name", None) is not None:
-            self.freeze_layers(self.config.backbone.freeze_parameters_name)
+            self.freeze_layers_by_name(self.config.backbone.freeze_parameters_name)
+
+        if getattr(self.config.backbone, "freeze_parameters_index", None) is not None:
+            frozen_parameters_indices: list[int]
+            if isinstance(self.config.backbone.freeze_parameters_index, int):
+                # Freeze all layers up to the specified index
+                frozen_parameters_indices = list(range(self.config.backbone.freeze_parameters_index + 1))
+            elif isinstance(self.config.backbone.freeze_parameters_index, ListConfig):
+                frozen_parameters_indices = cast(
+                    list[int], OmegaConf.to_container(self.config.backbone.freeze_parameters_index, resolve=True)
+                )
+            else:
+                raise ValueError("freeze_parameters_index must be an int or a list of int")
+
+            self.freeze_layers_by_index(frozen_parameters_indices)
 
     def prepare(self) -> None:
         """Prepare the experiment."""
@@ -405,7 +421,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                         else:
                             utils.upload_file_tensorboard(a, tensorboard_logger)
 
-    def freeze_layers(self, freeze_parameters_name: List[str]):
+    def freeze_layers_by_name(self, freeze_parameters_name: List[str]):
         """Freeze layers specified in freeze_parameters_name.
 
         Args:
@@ -415,6 +431,24 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         count_frozen = 0
         for name, param in self.model.named_parameters():
             if any(x in name.split(".")[1] for x in freeze_parameters_name):
+                log.debug("Freezing layer %s", name)
+                param.requires_grad = False
+
+            if not param.requires_grad:
+                count_frozen += 1
+
+        log.info("Frozen %d parameters", count_frozen)
+
+    def freeze_layers_by_index(self, freeze_parameters_index: List[int]):
+        """Freeze layers specified in freeze_parameters_name.
+
+        Args:
+            freeze_parameters_index: Layers that will be frozen during training.
+
+        """
+        count_frozen = 0
+        for i, (name, param) in enumerate(self.model.named_parameters()):
+            if i in freeze_parameters_index:
                 log.debug("Freezing layer %s", name)
                 param.requires_grad = False
 
