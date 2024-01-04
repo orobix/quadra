@@ -1,6 +1,6 @@
 model:
   _target_: quadra.models.classification.TimmNetworkBuilder
-  model_name: resnet18
+  model_name: resnet18.tv_in1k # Use torchvision weights
   pretrained: true
   freeze: false
 metadata:
