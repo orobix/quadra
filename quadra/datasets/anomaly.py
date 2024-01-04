@@ -135,7 +135,9 @@ def make_anomaly_dataset(
     samples_list = [
         (str(path),) + filename.parts[-3:]
         for filename in path.glob("**/*")
-        if filename.is_file() and os.path.splitext(filename)[-1].lower() in IMAGE_EXTENSIONS
+        if filename.is_file()
+        and os.path.splitext(filename)[-1].lower() in IMAGE_EXTENSIONS
+        and ".ipynb_checkpoints" not in str(filename)
     ]
 
     if len(samples_list) == 0:
