@@ -199,7 +199,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         with open(csv_file, mode="w", newline="") as file:
             writer = csv.writer(file)
             # Write the header if needed
-            writer.writerow(["Image Path", "Predicted Label", "Ground Truth Label", "Predicted Score"])
+            writer.writerow(["image_path", "predicted_label", "ground_truth_label", "predicted_score"])
             # Write the rows
             writer.writerows(rows)
 
