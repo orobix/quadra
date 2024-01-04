@@ -1,3 +1,4 @@
+import csv
 import glob
 import json
 import os
@@ -155,6 +156,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
                     list_gatherer.extend(x[key])
                 all_output_flatten[key] = list_gatherer
 
+        image_paths = all_output_flatten["image_path"]
         named_labels = [x.split("/")[-2] for x in all_output_flatten["image_path"]]
 
         class_to_idx = {"good": 0}
@@ -189,6 +191,19 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             class_to_idx.pop("false_defect")
 
         anomaly_scores = all_output_flatten["pred_scores"]
+        # Zip the lists together to create rows for the CSV file
+        rows = zip(image_paths, pred_labels, gt_labels, anomaly_scores)
+        # Specify the CSV file name
+        csv_file = "test_results.csv"
+        # Write the data to the CSV file
+        with open(csv_file, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            # Write the header if needed
+            writer.writerow(["image_path", "predicted_label", "ground_truth_label", "predicted_score"])
+            # Write the rows
+            writer.writerows(rows)
+
+        log.info("CSV file %s has been created.", csv_file)
 
         if not isinstance(anomaly_scores, torch.Tensor):
             raise ValueError("Anoaly scores must be a tensor")
