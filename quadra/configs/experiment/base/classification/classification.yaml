@@ -49,7 +49,6 @@ backbone:
   freeze_parameters_name:
 
 trainer:
-  precision: 32
   max_epochs: 200
   check_val_every_n_epoch: 1
   log_every_n_steps: 1
