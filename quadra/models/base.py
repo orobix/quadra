@@ -46,7 +46,15 @@ class ModelSignatureWrapper(nn.Module):
 
     def to(self, *args, **kwargs):
         """Handle calls to to method returning the underlying model."""
-        return ModelSignatureWrapper(self.instance.to(*args, **kwargs))
+        self.instance = self.instance.to(*args, **kwargs)
+
+        return self
+
+    def half(self, *args, **kwargs):
+        """Handle calls to to method returning the underlying model."""
+        self.instance = self.instance.half(*args, **kwargs)
+
+        return self
 
     def _get_input_shapes(self, *args: Any, **kwargs: Any) -> list[Any]:
         """Retrieve the input shapes from the input. Inputs will be in the same order as the forward method
@@ -115,7 +123,16 @@ class ModelSignatureWrapper(nn.Module):
             setattr(self.instance, name, value)
 
     def __getattribute__(self, __name: str) -> Any:
-        if __name in ["instance", "input_shapes", "__dict__", "forward", "_get_input_shapes", "_get_input_shape", "to"]:
+        if __name in [
+            "instance",
+            "input_shapes",
+            "__dict__",
+            "forward",
+            "_get_input_shapes",
+            "_get_input_shape",
+            "to",
+            "half",
+        ]:
             return super().__getattribute__(__name)
 
         return getattr(self.instance, __name)

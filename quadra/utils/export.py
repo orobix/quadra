@@ -96,6 +96,7 @@ def extract_torch_model_inputs(
         return None
 
     if half_precision:
+        # TODO: This doesn't support bfloat16!!
         inp = generate_torch_inputs(
             input_shapes=input_shapes, device="cuda:0", half_precision=True, dtype=torch.float16, batch_size=batch_size
         )
