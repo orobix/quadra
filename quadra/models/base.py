@@ -5,11 +5,17 @@ from typing import Any, Sequence
 
 import torch
 from torch import nn
+from torchinfo import summary
+
+from quadra.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 
 class ModelSignatureWrapper(nn.Module):
     """Model wrapper used to retrieve input shape. It can be used as a decorator of nn.Module, the first call to the
     forward method will retrieve the input shape and store it in the input_shapes attribute.
+    It will also save the model summary in a file called model_summary.txt in the current working directory.
     """
 
     def __init__(self, model: nn.Module):
@@ -24,16 +30,13 @@ class ModelSignatureWrapper(nn.Module):
             self.instance = self.instance.instance
 
     def forward(self, *args: Any, **kwargs: Any) -> torch.Tensor:
-        """Retrieve the input shape and forward the model."""
+        """Retrieve the input shape and forward the model, if the input shape is already retrieved it will just forward
+        the model.
+        """
         if self.input_shapes is None and not self.disable:
             try:
                 self.input_shapes = self._get_input_shapes(*args, **kwargs)
             except Exception:
-                # Avoid circular import
-                # pylint: disable=import-outside-toplevel
-                from quadra.utils.utils import get_logger  # noqa
-
-                log = get_logger(__name__)
                 log.warning(
                     "Failed to retrieve input shapes after forward! To export the model you'll need to "
                     "provide the input shapes manually setting the config.export.input_shapes parameter! "
@@ -41,6 +44,34 @@ class ModelSignatureWrapper(nn.Module):
                     "(list, tuple, dict, tensors)."
                 )
                 self.disable = True
+
+            if not self.disable:
+                try:
+                    # TODO: I can't say for sure that this will work for every model
+                    # I put the summary here to be independent from lightning callbacks for a non lightning model
+                    # I don't like to put it here, but it's the cleanest solution to not touch all the tasks
+                    input_data = []
+                    if len(args) > 0:
+                        for arg in args:
+                            input_data.append(arg)
+                    if len(kwargs) > 0:
+                        input_data.append(kwargs)
+
+                    try:
+                        # TODO: Do we want to print the summary to the console as well?
+                        model_info = summary(self.instance, input_data=input_data, verbose=0)
+                    except Exception:
+                        log.warning(
+                            "Failed to retrieve model summary using input data information, retrieving only "
+                            "parameters information"
+                        )
+                        model_info = summary(self.instance, verbose=0)
+
+                    with open("model_summary.txt", "w") as f:
+                        f.write(str(model_info))
+                except Exception as e:
+                    # If for some reason the summary fails we don't want to stop the training
+                    log.warning("Failed to retrieve model summary: %s", e)
 
         return self.instance.forward(*args, **kwargs)
 
@@ -53,6 +84,12 @@ class ModelSignatureWrapper(nn.Module):
     def half(self, *args, **kwargs):
         """Handle calls to to method returning the underlying model."""
         self.instance = self.instance.half(*args, **kwargs)
+
+        return self
+
+    def cpu(self, *args, **kwargs):
+        """Handle calls to to method returning the underlying model."""
+        self.instance = self.instance.cpu(*args, **kwargs)
 
         return self
 
@@ -132,6 +169,7 @@ class ModelSignatureWrapper(nn.Module):
             "_get_input_shape",
             "to",
             "half",
+            "cpu",
         ]:
             return super().__getattribute__(__name)
 
