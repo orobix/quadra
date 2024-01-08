@@ -254,7 +254,7 @@ def finish(
         mlflow_logger = get_mlflow_logger(trainer=trainer)
         tensorboard_logger = get_tensorboard_logger(trainer=trainer)
         file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt", "data/dataset.csv"]
-        if config.trainer.get("precision") == 16:
+        if "16" in str(trainer.precision):
             index = parse_gpu_ids(config.trainer.devices, include_cuda=True)[0]
             device = "cuda:" + str(index)
             half_precision = True
