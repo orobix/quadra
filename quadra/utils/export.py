@@ -30,7 +30,7 @@ BaseDeploymentModelT = TypeVar("BaseDeploymentModelT", bound=BaseEvaluationModel
 
 def generate_torch_inputs(
     input_shapes: List[Any],
-    device: str,
+    device: Union[str, torch.device],
     half_precision: bool = False,
     dtype: torch.dtype = torch.float32,
     batch_size: int = 1,
@@ -424,7 +424,10 @@ def export_model(
 
 
 def import_deployment_model(
-    model_path: str, inference_config: DictConfig, device: str, model_architecture: Optional[nn.Module] = None
+    model_path: str,
+    inference_config: DictConfig,
+    device: str,
+    model_architecture: Optional[nn.Module] = None,
 ) -> BaseEvaluationModel:
     """Try to import a model for deployment, currently only supports torchscript .pt files and
     state dictionaries .pth files.
