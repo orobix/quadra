@@ -23,6 +23,7 @@ from hydra.utils import get_original_cwd
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities import rank_zero_only
+from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 
 import quadra
 import quadra.utils.export as quadra_export
@@ -249,11 +250,17 @@ def finish(
         export_folder: Folder where the deployment models are exported.
     """
     # pylint: disable=unused-argument
-
     if len(logger) > 0 and config.core.get("upload_artifacts"):
         mlflow_logger = get_mlflow_logger(trainer=trainer)
         tensorboard_logger = get_tensorboard_logger(trainer=trainer)
         file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt", "data/dataset.csv"]
+        if config.trainer.get("precision") == 16:
+            index = parse_gpu_ids(config.trainer.devices, include_cuda=True)[0]
+            device = "cuda:" + str(index)
+            half_precision = True
+        else:
+            device = "cpu"
+            half_precision = False
 
         if mlflow_logger is not None:
             config_paths = []
@@ -275,20 +282,21 @@ def finish(
                     model_json = json.load(json_file)
 
             if model_json is not None:
+                input_size = model_json["input_size"]
+                # Not a huge fan of this check
+                if not isinstance(input_size[0], list):
+                    # Input size is not a list of lists
+                    input_size = [input_size]
+                inputs = cast(
+                    List[Any],
+                    quadra_export.generate_torch_inputs(input_size, device=device, half_precision=half_precision),
+                )
                 for model_path in deployed_models:
                     if model_path.endswith(".pt"):
                         model = quadra_export.import_deployment_model(
-                            model_path, device="cpu", inference_config=config.inference
+                            model_path, device=device, inference_config=config.inference
                         ).model
 
-                        input_size = model_json["input_size"]
-
-                        # Not a huge fan of this check
-                        if not isinstance(input_size[0], list):
-                            # Input size is not a list of lists
-                            input_size = [input_size]
-
-                        inputs = cast(List[Any], quadra_export.generate_torch_inputs(input_size, device="cpu"))
                         signature = infer_signature_torch_model(model, inputs)
 
                         with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
