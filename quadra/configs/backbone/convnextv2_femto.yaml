@@ -1,0 +1,8 @@
+model:
+  _target_: quadra.models.classification.TimmNetworkBuilder
+  model_name: convnextv2_femto.fcmae
+  pretrained: true
+  freeze: false
+metadata:
+  input_size: 224
+  output_dim: 384

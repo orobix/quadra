@@ -1,0 +1,12 @@
+model:
+  _target_: quadra.models.classification.TorchHubNetworkBuilder
+  repo_or_dir: facebookresearch/dinov2
+  model_name: dinov2_vits14
+  pretrained: true
+  freeze: false
+  hyperspherical: false
+metadata:
+  input_size: 224
+  output_dim: 384
+  patch_size: 14
+  nb_heads: 6

@@ -1,0 +1,9 @@
+model:
+  _target_: quadra.models.classification.TimmNetworkBuilder
+  model_name: tiny_vit_21m_224.dist_in22k_ft_in1k
+  pretrained: true
+  freeze: false
+metadata:
+  input_size: 224
+  output_dim: 576
+  num_heads: 18 # Is it correct?

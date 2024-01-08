@@ -1,0 +1,8 @@
+model:
+  _target_: quadra.models.classification.TimmNetworkBuilder
+  model_name: tf_efficientnet_b2.ns_jft_in1k
+  pretrained: true
+  freeze: false
+metadata:
+  input_size: 260
+  output_dim: 1408
