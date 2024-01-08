@@ -5,7 +5,6 @@ from typing import Any, Sequence
 
 import torch
 from torch import nn
-from torchinfo import summary
 
 from quadra.utils.logger import get_logger
 
@@ -44,34 +43,6 @@ class ModelSignatureWrapper(nn.Module):
                     "(list, tuple, dict, tensors)."
                 )
                 self.disable = True
-
-            if not self.disable:
-                try:
-                    # TODO: I can't say for sure that this will work for every model
-                    # I put the summary here to be independent from lightning callbacks for a non lightning model
-                    # I don't like to put it here, but it's the cleanest solution to not touch all the tasks
-                    input_data = []
-                    if len(args) > 0:
-                        for arg in args:
-                            input_data.append(arg)
-                    if len(kwargs) > 0:
-                        input_data.append(kwargs)
-
-                    try:
-                        # TODO: Do we want to print the summary to the console as well?
-                        model_info = summary(self.instance, input_data=input_data, verbose=0)
-                    except Exception:
-                        log.warning(
-                            "Failed to retrieve model summary using input data information, retrieving only "
-                            "parameters information"
-                        )
-                        model_info = summary(self.instance, verbose=0)
-
-                    with open("model_summary.txt", "w") as f:
-                        f.write(str(model_info))
-                except Exception as e:
-                    # If for some reason the summary fails we don't want to stop the training
-                    log.warning("Failed to retrieve model summary: %s", e)
 
         return self.instance.forward(*args, **kwargs)
 

@@ -21,6 +21,7 @@ from scipy import ndimage
 from sklearn.base import ClassifierMixin
 from sklearn.metrics import ConfusionMatrixDisplay
 from torch import nn
+from torchinfo import summary
 from tqdm import tqdm
 
 from quadra.callbacks.mlflow import get_mlflow_logger
@@ -33,7 +34,7 @@ from quadra.datamodules import (
 from quadra.datasets.classification import ImageClassificationListDataset
 from quadra.models.base import ModelSignatureWrapper
 from quadra.models.classification import BaseNetworkBuilder
-from quadra.models.evaluation import BaseEvaluationModel, TorchEvaluationModel
+from quadra.models.evaluation import BaseEvaluationModel, TorchEvaluationModel, TorchscriptEvaluationModel
 from quadra.modules.classification import ClassificationModule
 from quadra.tasks.base import Evaluation, LightningTask, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
@@ -466,6 +467,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         device: The device to use. Defaults to None.
         output: Dictionary defining which kind of outputs to generate. Defaults to None.
         automatic_batch_size: Whether to automatically find the largest batch size that fits in memory.
+        save_model_summary: Whether to save a model_summary.txt file containing the model summary.
     """
 
     def __init__(
@@ -474,6 +476,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         output: DictConfig,
         device: str,
         automatic_batch_size: DictConfig,
+        save_model_summary: bool = False,
     ):
         super().__init__(config=config)
 
@@ -493,6 +496,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self.train_dataloader_list: List[torch.utils.data.DataLoader] = []
         self.test_dataloader_list: List[torch.utils.data.DataLoader] = []
         self.automatic_batch_size = automatic_batch_size
+        self.save_model_summary = save_model_summary
 
     @property
     def device(self) -> str:
@@ -505,6 +509,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self.backbone = self.config.backbone
 
         self.model = self.config.model
+
         # prepare_data() must be explicitly called if the task does not include a lightining training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="fit")
@@ -574,6 +579,9 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         if hasattr(self.datamodule, "class_to_keep_training") and self.datamodule.class_to_keep_training is not None:
             class_to_keep = self.datamodule.class_to_keep_training
 
+        if self.save_model_summary:
+            self.extract_model_summary(feature_extractor=self.backbone, dl=self.datamodule.full_dataloader())
+
         if hasattr(self.datamodule, "cache") and self.datamodule.cache:
             if self.config.trainer.iteration_over_training != 1:
                 raise AttributeError("Cache is only supported when iteration over training is set to 1")
@@ -636,6 +644,48 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                     for i in res["real_label"].unique().tolist()
                 ]
             )
+
+    def extract_model_summary(
+        self, feature_extractor: torch.nn.Module | BaseEvaluationModel, dl: torch.utils.data.DataLoader
+    ) -> None:
+        """Given a dataloader and a PyTorch model, use torchinfo to extract a summary of the model and save it
+        to a file.
+
+        Args:
+            dl: PyTorch dataloader
+            feature_extractor: PyTorch backbone
+        """
+        if isinstance(feature_extractor, (TorchEvaluationModel, TorchscriptEvaluationModel)):
+            # TODO: I'm not sure torchinfo supports torchscript models
+            # If we are working with torch based evaluation models we need to extract the model
+            feature_extractor = feature_extractor.model
+
+        for b in tqdm(dl):
+            x1, _ = b
+
+            if hasattr(feature_extractor, "parameters"):
+                # Move input to the correct device
+                x1 = x1.to(next(feature_extractor.parameters()).device)
+                x1 = x1[0].unsqueeze(0)  # Remove batch dimension
+
+                try:
+                    try:
+                        # TODO: Do we want to print the summary to the console as well?
+                        model_info = summary(feature_extractor, input_data=(x1), verbose=0)  # type: ignore[arg-type]
+                    except Exception:
+                        log.warning(
+                            "Failed to retrieve model summary using input data information, retrieving only "
+                            "parameters information"
+                        )
+                        model_info = summary(feature_extractor, verbose=0)  # type: ignore[arg-type]
+
+                        with open("model_summary.txt", "w") as f:
+                            f.write(str(model_info))
+                except Exception as e:
+                    # If for some reason the summary fails we don't want to stop the training
+                    log.warning("Failed to retrieve model summary: %s", e)
+
+            break
 
     def train_full_data(self):
         """Train the model on train + validation."""
