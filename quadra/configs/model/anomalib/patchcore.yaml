@@ -10,7 +10,7 @@ dataset:
 
 model:
   name: patchcore
-  backbone: wide_resnet50_2
+  backbone: resnet18.tv_in1k
   layers:
     - layer2
     - layer3
