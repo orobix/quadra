@@ -351,7 +351,6 @@ class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
         self.model_info_filename = "model.json"
         self.report_path = ""
         self.metadata = {"report_files": []}
-        self.half_precision: Optional[bool] = None
 
     @property
     def deployment_model(self) -> BaseEvaluationModel:
@@ -394,7 +393,3 @@ class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
                 self.config.transforms.input_width = input_size[2]
 
         self.deployment_model = self.model_path  # type: ignore[assignment]
-        if "16" in str(next(self.deployment_model.model.parameters()).dtype):
-            self.half_precision = True
-        else:
-            self.half_precision = False

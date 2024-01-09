@@ -341,10 +341,8 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
             for batch in dataloader:
                 images, masks, labels = batch
                 images = images.to(self.device)
-                if self.half_precision:
+                if "16" in str(self.deployment_model.model_dtype):
                     images = images.half()
-                elif self.half_precision is None:
-                    raise ValueError("Half_precision bool attribute has not been set. Check super class prepare()")
                 if len(masks.shape) == 3:  # BxHxW -> Bx1xHxW
                     masks = masks.unsqueeze(1)
                 with torch.no_grad():
