@@ -114,9 +114,9 @@ def calculate_mask_based_metrics(
     """
     masks = th_masks.cpu().numpy()
     preds = th_preds.squeeze(0).cpu().numpy()
-    th_thresh_preds = (th_preds > threshold).float()
-    thresh_preds = th_thresh_preds.squeeze(0).cpu().numpy()
-    dice_scores = metric(th_thresh_preds.cpu(), th_masks.cpu(), reduction=None).numpy()
+    th_thresh_preds = (th_preds > threshold).float().cpu()
+    thresh_preds = th_thresh_preds.squeeze(0).numpy()
+    dice_scores = metric(th_thresh_preds, th_masks, reduction=None).numpy()
     result = {}
     tp, fp, fn, tn = smp.metrics.get_stats(th_thresh_preds.long(), th_masks.long(), mode="binary")
     per_image_iou = smp.metrics.iou_score(tp, fp, fn, tn, reduction="micro-imagewise")
