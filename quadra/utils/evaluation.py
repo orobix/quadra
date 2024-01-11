@@ -112,11 +112,11 @@ def calculate_mask_based_metrics(
     Returns:
         dict: Dictionary with metrics.
     """
-    masks = th_masks.numpy()
-    preds = th_preds.squeeze(0).numpy()
-    th_thresh_preds = (th_preds > threshold).float()
+    masks = th_masks.cpu().numpy()
+    preds = th_preds.squeeze(0).cpu().numpy()
+    th_thresh_preds = (th_preds > threshold).float().cpu()
     thresh_preds = th_thresh_preds.squeeze(0).numpy()
-    dice_scores = metric(th_thresh_preds, th_masks, reduction=None).cpu().numpy()
+    dice_scores = metric(th_thresh_preds, th_masks, reduction=None).numpy()
     result = {}
     tp, fp, fn, tn = smp.metrics.get_stats(th_thresh_preds.long(), th_masks.long(), mode="binary")
     per_image_iou = smp.metrics.iou_score(tp, fp, fn, tn, reduction="micro-imagewise")
@@ -235,10 +235,10 @@ def create_mask_report(
     if not os.path.exists(report_path):
         os.makedirs(report_path)
 
-    th_images = output["image"].cpu()
-    th_masks = output["mask"].cpu()
-    th_preds = output["mask_pred"].cpu()
-    th_labels = output["label"].cpu()
+    th_images = output["image"]
+    th_masks = output["mask"]
+    th_preds = output["mask_pred"]
+    th_labels = output["label"]
 
     # TODO: Apply sigmoid is a wrong name now
     if apply_sigmoid:
@@ -256,13 +256,15 @@ def create_mask_report(
     std = np.asarray(std)
     unnormalize = UnNormalize(mean, std)
 
-    images = np.array([(unnormalize(image).numpy().transpose((1, 2, 0)) * 255).astype(np.uint8) for image in th_images])
-    masks = th_masks.numpy()
-    preds = th_preds.squeeze(0).numpy()
-    thresh_preds = th_thresh_preds.squeeze(0).numpy()
-    dice_scores = metric(th_thresh_preds, th_masks, reduction=None).cpu().numpy()
+    images = np.array(
+        [(unnormalize(image).cpu().numpy().transpose((1, 2, 0)) * 255).astype(np.uint8) for image in th_images]
+    )
+    masks = th_masks.cpu().numpy()
+    preds = th_preds.squeeze(0).cpu().numpy()
+    thresh_preds = th_thresh_preds.squeeze(0).cpu().numpy()
+    dice_scores = metric(th_thresh_preds.cpu(), th_masks.cpu(), reduction=None).numpy()
 
-    labels = th_labels.numpy()
+    labels = th_labels.cpu().numpy()
     binary_labels = labels == 0
 
     row_names = ["Input", "Mask", "Pred", f"Pred>{threshold}"]

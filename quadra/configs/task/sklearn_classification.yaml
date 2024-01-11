@@ -3,6 +3,7 @@ device: cuda:0
 automatic_batch_size:
   starting_batch_size: 1024
   disable: true
+save_model_summary: false
 output:
   folder: classification_experiment
   report: true

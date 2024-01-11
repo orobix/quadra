@@ -2,6 +2,25 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.4.0]
+
+#### Added
+
+- Add new backbones for classification
+- Add parameter to save a model summary for sklearn based classification tasks
+- Add results csv file for anomaly detection task
+- Add a way to freeze backbone layers by index for the finetuning task
+
+#### Updated
+
+- Update timm requirements to 0.9.12
+
+#### Fixed
+
+- Fix ModelSignatureWrapper not returing the correct instance when cpu, to and half functions are called
+- Fix failure in model logging on mlflow whe half precision is used
+
+
 ### [1.3.8]
 
 #### Updated

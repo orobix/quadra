@@ -1,8 +1,9 @@
+import csv
 import glob
 import json
 import os
 from collections import Counter
-from typing import Dict, Generic, List, Literal, Optional, TypeVar, Union, cast
+from typing import Any, Dict, Generic, List, Literal, Optional, TypeVar, Union, cast
 
 import cv2
 import hydra
@@ -62,6 +63,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         self.module_function = module_function
         self.export_folder = "deployment_model"
         self.report_path = ""
+        self.test_results: Optional[List[Dict]] = None
 
     @property
     def module(self) -> AnomalyModule:
@@ -135,10 +137,20 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         with open(os.path.join(self.export_folder, "model.json"), "w") as f:
             json.dump(model_json, f, cls=utils.HydraEncoder)
 
+    def test(self) -> Any:
+        """Lightning test."""
+        self.test_results = super().test()
+        return self.test_results
+
     def _generate_report(self) -> None:
         """Generate a report for the task."""
         if len(self.report_path) > 0:
             os.makedirs(self.report_path, exist_ok=True)
+
+        # Save json with test results
+        if self.test_results is not None:
+            with open(os.path.join(self.report_path, "test_results.json"), "w") as f:
+                json.dump(self.test_results[0], f)
 
         all_output = cast(
             List[Dict], self.trainer.predict(model=self.module, dataloaders=self.datamodule.test_dataloader())
@@ -155,6 +167,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
                     list_gatherer.extend(x[key])
                 all_output_flatten[key] = list_gatherer
 
+        image_paths = all_output_flatten["image_path"]
         named_labels = [x.split("/")[-2] for x in all_output_flatten["image_path"]]
 
         class_to_idx = {"good": 0}
@@ -189,6 +202,19 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             class_to_idx.pop("false_defect")
 
         anomaly_scores = all_output_flatten["pred_scores"]
+        # Zip the lists together to create rows for the CSV file
+        rows = zip(image_paths, pred_labels, gt_labels, anomaly_scores)
+        # Specify the CSV file name
+        csv_file = "test_predictions.csv"
+        # Write the data to the CSV file
+        with open(csv_file, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            # Write the header if needed
+            writer.writerow(["image_path", "predicted_label", "ground_truth_label", "predicted_score"])
+            # Write the rows
+            writer.writerows(rows)
+
+        log.info("CSV file %s has been created.", csv_file)
 
         if not isinstance(anomaly_scores, torch.Tensor):
             raise ValueError("Anoaly scores must be a tensor")

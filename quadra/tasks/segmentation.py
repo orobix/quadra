@@ -304,7 +304,7 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
         self,
         config: DictConfig,
         model_path: str,
-        device: Optional[str] = "cpu",
+        device: Optional[str] = None,
     ):
         super().__init__(config=config, model_path=model_path, device=device)
         self.test_output: Dict[str, Any] = {}
@@ -326,12 +326,13 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
         stages: List[str] = []
         dataloaders: List[torch.utils.data.DataLoader] = []
 
-        if self.datamodule.train_dataset_available:
-            stages.append("train")
-            dataloaders.append(self.datamodule.train_dataloader())
-            if self.datamodule.val_dataset_available:
-                stages.append("val")
-                dataloaders.append(self.datamodule.val_dataloader())
+        # if self.datamodule.train_dataset_available:
+        #     stages.append("train")
+        #     dataloaders.append(self.datamodule.train_dataloader())
+        #     if self.datamodule.val_dataset_available:
+        #         stages.append("val")
+        #         dataloaders.append(self.datamodule.val_dataloader())
+
         if self.datamodule.test_dataset_available:
             stages.append("test")
             dataloaders.append(self.datamodule.test_dataloader())
@@ -341,13 +342,16 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
             for batch in dataloader:
                 images, masks, labels = batch
                 images = images.to(self.device)
+                # TODO: This can be problematic for the future considering bfloat16 or float16-true.
+                if "16" in str(self.deployment_model.model_dtype):
+                    images = images.half()
                 if len(masks.shape) == 3:  # BxHxW -> Bx1xHxW
                     masks = masks.unsqueeze(1)
                 with torch.no_grad():
-                    image_list.append(images.cpu())
-                    mask_list.append(masks.cpu())
-                    mask_pred_list.append(self.deployment_model(images.to(self.device)).cpu())
-                    label_list.append(labels.cpu())
+                    image_list.append(images)
+                    mask_list.append(masks)
+                    mask_pred_list.append(self.deployment_model(images.to(self.device)))
+                    label_list.append(labels)
 
             output = {
                 "image": torch.cat(image_list, dim=0),

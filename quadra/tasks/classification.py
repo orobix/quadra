@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import glob
 import json
 import os
@@ -13,12 +15,13 @@ import pandas as pd
 import timm
 import torch
 from joblib import dump, load
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, ListConfig, OmegaConf
 from pytorch_grad_cam import GradCAM
 from scipy import ndimage
 from sklearn.base import ClassifierMixin
 from sklearn.metrics import ConfusionMatrixDisplay
 from torch import nn
+from torchinfo import summary
 from tqdm import tqdm
 
 from quadra.callbacks.mlflow import get_mlflow_logger
@@ -31,7 +34,7 @@ from quadra.datamodules import (
 from quadra.datasets.classification import ImageClassificationListDataset
 from quadra.models.base import ModelSignatureWrapper
 from quadra.models.classification import BaseNetworkBuilder
-from quadra.models.evaluation import BaseEvaluationModel, TorchEvaluationModel
+from quadra.models.evaluation import BaseEvaluationModel, TorchEvaluationModel, TorchscriptEvaluationModel
 from quadra.modules.classification import ClassificationModule
 from quadra.tasks.base import Evaluation, LightningTask, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
@@ -227,7 +230,21 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             model_config.model, classifier=self.classifier, pre_classifier=self.pre_classifier, _convert_="partial"
         )
         if getattr(self.config.backbone, "freeze_parameters_name", None) is not None:
-            self.freeze_layers(self.config.backbone.freeze_parameters_name)
+            self.freeze_layers_by_name(self.config.backbone.freeze_parameters_name)
+
+        if getattr(self.config.backbone, "freeze_parameters_index", None) is not None:
+            frozen_parameters_indices: list[int]
+            if isinstance(self.config.backbone.freeze_parameters_index, int):
+                # Freeze all layers up to the specified index
+                frozen_parameters_indices = list(range(self.config.backbone.freeze_parameters_index + 1))
+            elif isinstance(self.config.backbone.freeze_parameters_index, ListConfig):
+                frozen_parameters_indices = cast(
+                    list[int], OmegaConf.to_container(self.config.backbone.freeze_parameters_index, resolve=True)
+                )
+            else:
+                raise ValueError("freeze_parameters_index must be an int or a list of int")
+
+            self.freeze_parameters_by_index(frozen_parameters_indices)
 
     def prepare(self) -> None:
         """Prepare the experiment."""
@@ -405,7 +422,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                         else:
                             utils.upload_file_tensorboard(a, tensorboard_logger)
 
-    def freeze_layers(self, freeze_parameters_name: List[str]):
+    def freeze_layers_by_name(self, freeze_parameters_name: List[str]):
         """Freeze layers specified in freeze_parameters_name.
 
         Args:
@@ -423,6 +440,29 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
 
         log.info("Frozen %d parameters", count_frozen)
 
+    def freeze_parameters_by_index(self, freeze_parameters_index: List[int]):
+        """Freeze parameters specified in freeze_parameters_name.
+
+        Args:
+            freeze_parameters_index: Indices of parameters that will be frozen during training.
+
+        """
+        if getattr(self.config.backbone, "freeze_parameters_name", None) is not None:
+            log.warning(
+                "Please be aware that some of the model's parameters have already been frozen using \
+                the specified freeze_parameters_name. You are combining these two actions."
+            )
+        count_frozen = 0
+        for i, (name, param) in enumerate(self.model.named_parameters()):
+            if i in freeze_parameters_index:
+                log.debug("Freezing layer %s", name)
+                param.requires_grad = False
+
+            if not param.requires_grad:
+                count_frozen += 1
+
+        log.info("Frozen %d parameters", count_frozen)
+
 
 class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[SklearnClassificationDataModuleT]):
     """Sklearn classification task.
@@ -432,6 +472,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         device: The device to use. Defaults to None.
         output: Dictionary defining which kind of outputs to generate. Defaults to None.
         automatic_batch_size: Whether to automatically find the largest batch size that fits in memory.
+        save_model_summary: Whether to save a model_summary.txt file containing the model summary.
     """
 
     def __init__(
@@ -440,6 +481,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         output: DictConfig,
         device: str,
         automatic_batch_size: DictConfig,
+        save_model_summary: bool = False,
     ):
         super().__init__(config=config)
 
@@ -459,6 +501,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self.train_dataloader_list: List[torch.utils.data.DataLoader] = []
         self.test_dataloader_list: List[torch.utils.data.DataLoader] = []
         self.automatic_batch_size = automatic_batch_size
+        self.save_model_summary = save_model_summary
 
     @property
     def device(self) -> str:
@@ -471,6 +514,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self.backbone = self.config.backbone
 
         self.model = self.config.model
+
         # prepare_data() must be explicitly called if the task does not include a lightining training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="fit")
@@ -540,6 +584,9 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         if hasattr(self.datamodule, "class_to_keep_training") and self.datamodule.class_to_keep_training is not None:
             class_to_keep = self.datamodule.class_to_keep_training
 
+        if self.save_model_summary:
+            self.extract_model_summary(feature_extractor=self.backbone, dl=self.datamodule.full_dataloader())
+
         if hasattr(self.datamodule, "cache") and self.datamodule.cache:
             if self.config.trainer.iteration_over_training != 1:
                 raise AttributeError("Cache is only supported when iteration over training is set to 1")
@@ -603,6 +650,48 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                 ]
             )
 
+    def extract_model_summary(
+        self, feature_extractor: torch.nn.Module | BaseEvaluationModel, dl: torch.utils.data.DataLoader
+    ) -> None:
+        """Given a dataloader and a PyTorch model, use torchinfo to extract a summary of the model and save it
+        to a file.
+
+        Args:
+            dl: PyTorch dataloader
+            feature_extractor: PyTorch backbone
+        """
+        if isinstance(feature_extractor, (TorchEvaluationModel, TorchscriptEvaluationModel)):
+            # TODO: I'm not sure torchinfo supports torchscript models
+            # If we are working with torch based evaluation models we need to extract the model
+            feature_extractor = feature_extractor.model
+
+        for b in tqdm(dl):
+            x1, _ = b
+
+            if hasattr(feature_extractor, "parameters"):
+                # Move input to the correct device
+                x1 = x1.to(next(feature_extractor.parameters()).device)
+                x1 = x1[0].unsqueeze(0)  # Remove batch dimension
+
+                try:
+                    try:
+                        # TODO: Do we want to print the summary to the console as well?
+                        model_info = summary(feature_extractor, input_data=(x1), verbose=0)  # type: ignore[arg-type]
+                    except Exception:
+                        log.warning(
+                            "Failed to retrieve model summary using input data information, retrieving only "
+                            "parameters information"
+                        )
+                        model_info = summary(feature_extractor, verbose=0)  # type: ignore[arg-type]
+
+                        with open("model_summary.txt", "w") as f:
+                            f.write(str(model_info))
+                except Exception as e:
+                    # If for some reason the summary fails we don't want to stop the training
+                    log.warning("Failed to retrieve model summary: %s", e)
+
+            break
+
     def train_full_data(self):
         """Train the model on train + validation."""
         # Reinit classifier
@@ -629,6 +718,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             log.info("No test data, skipping test")
             return
 
+        # Put backbone on the correct device as it may be moved after export
+        self.backbone.to(self.device)
         _, pd_cm, accuracy, res, _ = self.trainer.test(
             test_dataloader=test_dataloader, idx_to_class=idx_to_class, predict_proba=True
         )

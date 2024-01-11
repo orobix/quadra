@@ -11,7 +11,7 @@ dataset:
 model:
   name: padim
   input_size: [224, 224]
-  backbone: resnet18
+  backbone: resnet18.tv_in1k
   layers:
     - layer1
     - layer2

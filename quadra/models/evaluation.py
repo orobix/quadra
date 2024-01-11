@@ -31,6 +31,8 @@ class BaseEvaluationModel(ABC):
         self.model_path: str | None
         self.device: str
         self.config = config
+        self.is_loaded = False
+        self.model_dtype: np.dtype | torch.dtype
 
     @abstractmethod
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
@@ -61,6 +63,19 @@ class BaseEvaluationModel(ABC):
         """Return whether model is in training mode."""
         return False
 
+    @property
+    def device(self) -> str:
+        """Return the device of the model."""
+        return self._device
+
+    @device.setter
+    def device(self, device: str):
+        """Set the device of the model."""
+        if device == "cuda" and not ":" in device:
+            device = f"{device}:0"
+
+        self._device = device
+
 
 class TorchscriptEvaluationModel(BaseEvaluationModel):
     """Wrapper for torchscript models."""
@@ -77,7 +92,14 @@ class TorchscriptEvaluationModel(BaseEvaluationModel):
         model.eval()
         model.to(self.device)
 
+        parameter_types = {param.dtype for param in model.parameters()}
+        if len(parameter_types) == 2:
+            # TODO: There could be models with mixed precision?
+            raise ValueError(f"Expected only one type of parameters, found {parameter_types}")
+
+        self.model_dtype = list(parameter_types)[0]
         self.model = model
+        self.is_loaded = True
 
     def to(self, device: str):
         """Move model to device."""
@@ -126,6 +148,30 @@ class TorchEvaluationModel(TorchscriptEvaluationModel):
         self.model.load_state_dict(torch.load(self.model_path))
         self.model.eval()
         self.model.to(self.device)
+
+        parameter_types = {param.dtype for param in self.model.parameters()}
+        if len(parameter_types) == 2:
+            # TODO: There could be models with mixed precision?
+            raise ValueError(f"Expected only one type of parameters, found {parameter_types}")
+
+        self.model_dtype = list(parameter_types)[0]
+        self.is_loaded = True
+
+
+onnx_to_torch_dtype_dict = {
+    "tensor(bool)": torch.bool,
+    "tensor(uint8)": torch.uint8,
+    "tensor(int8)": torch.int8,
+    "tensor(int16)": torch.int16,
+    "tensor(int32)": torch.int32,
+    "tensor(int64)": torch.int64,
+    "tensor(float16)": torch.float16,
+    "tensor(float32)": torch.float32,
+    "tensor(float)": torch.float32,
+    "tensor(float64)": torch.float64,
+    "tensor(complex64)": torch.complex64,
+    "tensor(complex128)": torch.complex128,
+}
 
 
 class ONNXEvaluationModel(BaseEvaluationModel):
@@ -231,6 +277,8 @@ class ONNXEvaluationModel(BaseEvaluationModel):
 
         ort_providers = self._get_providers(device)
         self.model = ort.InferenceSession(self.model_path, providers=ort_providers, sess_options=self.session_options)
+        self.model_dtype = self.cast_onnx_dtype(self.model.get_inputs()[0].type)
+        self.is_loaded = True
 
     def _get_providers(self, device: str) -> list[tuple[str, dict[str, Any]] | str]:
         """Return the providers for the ONNX model based on the device."""
@@ -266,3 +314,7 @@ class ONNXEvaluationModel(BaseEvaluationModel):
     def cpu(self):
         """Move model to cpu."""
         self.to("cpu")
+
+    def cast_onnx_dtype(self, onnx_dtype: str) -> torch.dtype | np.dtype:
+        """Cast ONNX dtype to numpy or pytorch dtype."""
+        return onnx_to_torch_dtype_dict[onnx_dtype]

@@ -150,6 +150,7 @@ task:
   automatic_batch_size:
     starting_batch_size: 1024
     disable: true
+  save_model_summary: false
   output:
     folder: classification_experiment
     report: true
@@ -161,6 +162,7 @@ This will train a logistic regression classifier using a resnet18 backbone, resi
 The backbone (in torchscript and pytorch format) will be saved along with the classifier. `test_full_data` is used to specify if a final test should be performed on all the data (after training on the training and validation datasets).
 
 Optionally it's possible to enable the automatic batch size finder by setting `automatic_batch_size.disable` to `false`. This will try to find the maximum batch size that can be used on the given device without running out of memory. The `starting_batch_size` parameter is used to specify the starting batch size to use for the search, the algorithm will start from this value and will try to divide it by two until it doesn't run out of memory.
+Finally, the `save_model_summary` parameter can be used to save the backbone information in a text file called `model_summary.txt` located in the root of the output folder.
 
 ### Run
 

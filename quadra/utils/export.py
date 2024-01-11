@@ -30,7 +30,7 @@ BaseDeploymentModelT = TypeVar("BaseDeploymentModelT", bound=BaseEvaluationModel
 
 def generate_torch_inputs(
     input_shapes: List[Any],
-    device: str,
+    device: Union[str, torch.device],
     half_precision: bool = False,
     dtype: torch.dtype = torch.float32,
     batch_size: int = 1,
@@ -96,6 +96,7 @@ def extract_torch_model_inputs(
         return None
 
     if half_precision:
+        # TODO: This doesn't support bfloat16!!
         inp = generate_torch_inputs(
             input_shapes=input_shapes, device="cuda:0", half_precision=True, dtype=torch.float16, batch_size=batch_size
         )
@@ -423,7 +424,10 @@ def export_model(
 
 
 def import_deployment_model(
-    model_path: str, inference_config: DictConfig, device: str, model_architecture: Optional[nn.Module] = None
+    model_path: str,
+    inference_config: DictConfig,
+    device: str,
+    model_architecture: Optional[nn.Module] = None,
 ) -> BaseEvaluationModel:
     """Try to import a model for deployment, currently only supports torchscript .pt files and
     state dictionaries .pth files.

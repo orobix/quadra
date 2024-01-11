@@ -22,7 +22,6 @@ NnModuleT = TypeVar("NnModuleT", bound=nn.Module)
 def infer_signature_torch_model(model: NnModuleT, data: list[Any]) -> ModelSignature | None:
     """Infer input and output signature for a PyTorch/Torchscript model."""
     model = model.eval()
-    model = model.cpu()
     model_output = model(*data)
 
     try:

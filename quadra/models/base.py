@@ -6,10 +6,15 @@ from typing import Any, Sequence
 import torch
 from torch import nn
 
+from quadra.utils.logger import get_logger
+
+log = get_logger(__name__)
+
 
 class ModelSignatureWrapper(nn.Module):
     """Model wrapper used to retrieve input shape. It can be used as a decorator of nn.Module, the first call to the
     forward method will retrieve the input shape and store it in the input_shapes attribute.
+    It will also save the model summary in a file called model_summary.txt in the current working directory.
     """
 
     def __init__(self, model: nn.Module):
@@ -24,16 +29,13 @@ class ModelSignatureWrapper(nn.Module):
             self.instance = self.instance.instance
 
     def forward(self, *args: Any, **kwargs: Any) -> torch.Tensor:
-        """Retrieve the input shape and forward the model."""
+        """Retrieve the input shape and forward the model, if the input shape is already retrieved it will just forward
+        the model.
+        """
         if self.input_shapes is None and not self.disable:
             try:
                 self.input_shapes = self._get_input_shapes(*args, **kwargs)
             except Exception:
-                # Avoid circular import
-                # pylint: disable=import-outside-toplevel
-                from quadra.utils.utils import get_logger  # noqa
-
-                log = get_logger(__name__)
                 log.warning(
                     "Failed to retrieve input shapes after forward! To export the model you'll need to "
                     "provide the input shapes manually setting the config.export.input_shapes parameter! "
@@ -46,7 +48,21 @@ class ModelSignatureWrapper(nn.Module):
 
     def to(self, *args, **kwargs):
         """Handle calls to to method returning the underlying model."""
-        return ModelSignatureWrapper(self.instance.to(*args, **kwargs))
+        self.instance = self.instance.to(*args, **kwargs)
+
+        return self
+
+    def half(self, *args, **kwargs):
+        """Handle calls to to method returning the underlying model."""
+        self.instance = self.instance.half(*args, **kwargs)
+
+        return self
+
+    def cpu(self, *args, **kwargs):
+        """Handle calls to to method returning the underlying model."""
+        self.instance = self.instance.cpu(*args, **kwargs)
+
+        return self
 
     def _get_input_shapes(self, *args: Any, **kwargs: Any) -> list[Any]:
         """Retrieve the input shapes from the input. Inputs will be in the same order as the forward method
@@ -115,7 +131,17 @@ class ModelSignatureWrapper(nn.Module):
             setattr(self.instance, name, value)
 
     def __getattribute__(self, __name: str) -> Any:
-        if __name in ["instance", "input_shapes", "__dict__", "forward", "_get_input_shapes", "_get_input_shape", "to"]:
+        if __name in [
+            "instance",
+            "input_shapes",
+            "__dict__",
+            "forward",
+            "_get_input_shapes",
+            "_get_input_shape",
+            "to",
+            "half",
+            "cpu",
+        ]:
             return super().__getattribute__(__name)
 
         return getattr(self.instance, __name)
