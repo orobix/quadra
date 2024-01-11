@@ -67,7 +67,7 @@ dependencies = [
   "timm==0.9.12",
   # Currently the only version of smp supporting timm 0.9.12 is the following
   "segmentation-models-pytorch@git+https://github.com/qubvel/segmentation_models.pytorch@7b381f899ed472a477a89d381689caf535b5d0a6",
-  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.9",
+  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.10",
   "xxhash==3.2.*",
   "torchinfo==1.8.*",
 ]
