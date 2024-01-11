@@ -447,6 +447,11 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             freeze_parameters_index: Layers that will be frozen during training.
 
         """
+        if getattr(self.config.backbone, "freeze_parameters_name", None) is not None:
+            log.warning(
+                "Please be aware that some of the model's parameters have already been frozen using \
+                the specified freeze_parameters_name. You are combining these two actions."
+            )
         count_frozen = 0
         for i, (name, param) in enumerate(self.model.named_parameters()):
             if i in freeze_parameters_index:
