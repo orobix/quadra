@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Change weights of resnet18 and wideresnet50 to old ones in anomaly model configs
 
+#### Updated
+
+- Update anomalib to [v0.7.0+obx.1.2.7] (added default padim n_features for resnets' old weights)
+
 ### [1.4.0]
 
 #### Added
