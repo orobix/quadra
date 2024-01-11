@@ -244,7 +244,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             else:
                 raise ValueError("freeze_parameters_index must be an int or a list of int")
 
-            self.freeze_layers_by_index(frozen_parameters_indices)
+            self.freeze_parameters_by_index(frozen_parameters_indices)
 
     def prepare(self) -> None:
         """Prepare the experiment."""
@@ -440,11 +440,11 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
 
         log.info("Frozen %d parameters", count_frozen)
 
-    def freeze_layers_by_index(self, freeze_parameters_index: List[int]):
-        """Freeze layers specified in freeze_parameters_name.
+    def freeze_parameters_by_index(self, freeze_parameters_index: List[int]):
+        """Freeze parameters specified in freeze_parameters_name.
 
         Args:
-            freeze_parameters_index: Layers that will be frozen during training.
+            freeze_parameters_index: Indices of parameters that will be frozen during training.
 
         """
         if getattr(self.config.backbone, "freeze_parameters_name", None) is not None:
