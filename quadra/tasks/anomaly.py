@@ -3,7 +3,7 @@ import glob
 import json
 import os
 from collections import Counter
-from typing import Dict, Generic, List, Literal, Optional, TypeVar, Union, cast
+from typing import Any, Dict, Generic, List, Literal, Optional, TypeVar, Union, cast
 
 import cv2
 import hydra
@@ -63,6 +63,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         self.module_function = module_function
         self.export_folder = "deployment_model"
         self.report_path = ""
+        self.test_results: Optional[List[Dict]] = None
 
     @property
     def module(self) -> AnomalyModule:
@@ -136,10 +137,20 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         with open(os.path.join(self.export_folder, "model.json"), "w") as f:
             json.dump(model_json, f, cls=utils.HydraEncoder)
 
+    def test(self) -> Any:
+        """Lightning test."""
+        self.test_results = super().test()
+        return self.test_results
+
     def _generate_report(self) -> None:
         """Generate a report for the task."""
         if len(self.report_path) > 0:
             os.makedirs(self.report_path, exist_ok=True)
+
+        # Save json with test results
+        if self.test_results is not None:
+            with open(os.path.join(self.report_path, "test_results.json"), "w") as f:
+                json.dump(self.test_results[0], f)
 
         all_output = cast(
             List[Dict], self.trainer.predict(model=self.module, dataloaders=self.datamodule.test_dataloader())
@@ -194,7 +205,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         # Zip the lists together to create rows for the CSV file
         rows = zip(image_paths, pred_labels, gt_labels, anomaly_scores)
         # Specify the CSV file name
-        csv_file = "test_results.csv"
+        csv_file = "test_predictions.csv"
         # Write the data to the CSV file
         with open(csv_file, mode="w", newline="") as file:
             writer = csv.writer(file)
