@@ -326,12 +326,13 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
         stages: List[str] = []
         dataloaders: List[torch.utils.data.DataLoader] = []
 
-        if self.datamodule.train_dataset_available:
-            stages.append("train")
-            dataloaders.append(self.datamodule.train_dataloader())
-            if self.datamodule.val_dataset_available:
-                stages.append("val")
-                dataloaders.append(self.datamodule.val_dataloader())
+        # if self.datamodule.train_dataset_available:
+        #     stages.append("train")
+        #     dataloaders.append(self.datamodule.train_dataloader())
+        #     if self.datamodule.val_dataset_available:
+        #         stages.append("val")
+        #         dataloaders.append(self.datamodule.val_dataloader())
+
         if self.datamodule.test_dataset_available:
             stages.append("test")
             dataloaders.append(self.datamodule.test_dataloader())
