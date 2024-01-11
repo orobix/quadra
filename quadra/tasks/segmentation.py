@@ -342,6 +342,7 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
             for batch in dataloader:
                 images, masks, labels = batch
                 images = images.to(self.device)
+                # TODO: This can be problematic for the future considering bfloat16 or float16-true.
                 if "16" in str(self.deployment_model.model_dtype):
                     images = images.half()
                 if len(masks.shape) == 3:  # BxHxW -> Bx1xHxW
