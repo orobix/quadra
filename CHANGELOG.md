@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 #### Updated
 
-- Update anomalib to [v0.7.0+obx.1.2.7] (added default padim n_features for resnets' old weights)
+- Update anomalib to [v0.7.0+obx.1.2.9] (added default padim n_features for resnets' old weights)
 
 ### [1.4.0]
 
