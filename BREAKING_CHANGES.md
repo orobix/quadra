@@ -5,4 +5,8 @@ All the breaking changes will be documented in this file.
 
 #### Changed
 
-- Starting from version 1.4.0, default weights for "resnet18" and "wideresnet_50" may vary from prior quadra versions due to the timm upgrade to version 0.9.12. To continue using the old torchvision weights for resnet18 and wideresnet, specify ".tv_in1k," which has already been set as the default in the model configurations. While this is applicable to any backbone, it's particularly emphasized for these two, as they are default choices for anomaly and classification fine-tuning tasks. If updating quadra to a version >= 1.4.0, it's advisable to verify if your timm's backbone maintains consistent weights.
+- In Quadra 1.4.0, we upgraded timm to version 0.9.12, resulting in potential variations in default weights for timm backbones compared to previous versions. To continue utilizing the previous weights for resnet18 and wide_resnet50, which are the default backbones for quadra anomaly and classification fine-tuning tasks, we have introduced ".tv_in1k" to the model_name inside Quadra configuration files.
+
+Although the timm upgrade might have very likely adjusted default weights also for other backbones, we have reinstated the old weights only for these two (some internal tests showed better performance of old weights, especially for classification fine-tuning).
+
+If you are updating quadra to a version >= 1.4.0 and you want to keep consistent results, it is recommended to verify whether your timm's backbone is sill using the same weights.
