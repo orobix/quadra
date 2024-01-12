@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quadra"
-version = "1.4.0"
+version = "1.4.1"
 description = "Deep Learning experiment orchestration library"
 authors = [
   { name = "Alessandro Polidori", email = "alessandro.polidori@orobix.com" },
@@ -67,7 +67,7 @@ dependencies = [
   "timm==0.9.12",
   # Currently the only version of smp supporting timm 0.9.12 is the following
   "segmentation-models-pytorch@git+https://github.com/qubvel/segmentation_models.pytorch@7b381f899ed472a477a89d381689caf535b5d0a6",
-  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.9",
+  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.10",
   "xxhash==3.2.*",
   "torchinfo==1.8.*",
 ]
@@ -123,7 +123,7 @@ repository = "https://github.com/orobix/quadra"
 
 # Adapted from https://realpython.com/pypi-publish-python-package/#version-your-package
 [tool.bumpver]
-current_version = "1.4.0"
+current_version = "1.4.1"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "build: Bump version {old_version} -> {new_version}"
 commit = true

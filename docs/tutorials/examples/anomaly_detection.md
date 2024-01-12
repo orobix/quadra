@@ -169,7 +169,7 @@ dataset:
 
 model:
   input_size: [224, 224]
-  backbone: resnet18
+  backbone: resnet18.tv_in1k
   layers:
     - layer1
     - layer2
@@ -190,7 +190,10 @@ metrics:
     manual_pixel: null
 ```
 What we are mostly interested about is the `model` section. In this section we can specify the backbone of the model
-(mainly resnet18 and wide_resnet50_2), which layers are used for feature extraction and the number of features used for dimensionality reduction (there are some default values for resnet18 and wide_resnet50_2).
+(mainly resnet18.tv_in1k and wide_resnet50_2.tv_in1k), which layers are used for feature extraction and the number of features used for dimensionality reduction (there are some default values for resnet18 and wide_resnet50_2).
+```
+Notice: ".tv_in1k" is an extension for timm backbones' model_name which refers to torchvision pretrained weights.
+```
 Generally we always compute an adaptive threshold based on the validation data, but it is possible to specify a manual threshold for both image and pixel as we may want a different tradeoff between false 
 positives and false negatives. The threshold specified must be the unnormalized one.
 

@@ -3,7 +3,7 @@ dataset:
 
 model:
   input_size: [224, 224]
-  backbone: resnet18
+  backbone: resnet18.tv_in1k
   gamma_c: 1
   gamma_d: 1
   num_nearest_neighbors: 3

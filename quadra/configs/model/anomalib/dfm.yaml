@@ -2,7 +2,7 @@ dataset:
   task: classification
 
 model:
-  backbone: wide_resnet50_2
+  backbone: wide_resnet50_2.tv_in1k
   pca_level: 0.97
   score_type: fre # nll: for Gaussian modeling, fre: pca feature reconstruction error
   threshold:
