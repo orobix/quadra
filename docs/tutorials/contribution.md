@@ -16,8 +16,8 @@ After setting up your environment you can install `Quadra` Library in different 
 !!!info
 
     - `poetry install -E dev` (for development) 
-    - `pip install -E docs` (for documentation)
-    - `pip install -E test` (for testing)
+    - `poetry install -E docs` (for documentation)
+    - `poetry install -E test` (for testing)
     
 
 ## Pre-commit Hooks
