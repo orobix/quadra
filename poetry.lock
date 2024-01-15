@@ -1326,7 +1326,7 @@ pgp = ["gpg"]
 name = "dunamai"
 version = "1.19.0"
 description = "Dynamic version generation"
-optional = false
+optional = true
 python-versions = ">=3.5,<4.0"
 files = [
     {file = "dunamai-1.19.0-py3-none-any.whl", hash = "sha256:1ed948676bbf0812bfaafe315a134634f8d6eb67138513c75aa66e747404b9c6"},
@@ -4061,9 +4061,9 @@ files = [
 [package.dependencies]
 numpy = [
     {version = ">=1.21.0", markers = "python_version == \"3.9\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
-    {version = ">=1.19.3", markers = "platform_system == \"Linux\" and platform_machine == \"aarch64\" and python_version >= \"3.8\" and python_version < \"3.10\" or python_version > \"3.9\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_system != \"Darwin\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
     {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\""},
     {version = ">=1.21.2", markers = "platform_system != \"Darwin\" and python_version >= \"3.10\""},
+    {version = ">=1.19.3", markers = "platform_system == \"Linux\" and platform_machine == \"aarch64\" and python_version >= \"3.8\" and python_version < \"3.10\" or python_version > \"3.9\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_system != \"Darwin\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
 ]
 
 [[package]]
@@ -4085,9 +4085,9 @@ files = [
 [package.dependencies]
 numpy = [
     {version = ">=1.21.0", markers = "python_version == \"3.9\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
-    {version = ">=1.19.3", markers = "platform_system == \"Linux\" and platform_machine == \"aarch64\" and python_version >= \"3.8\" and python_version < \"3.10\" or python_version > \"3.9\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_system != \"Darwin\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
     {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\""},
     {version = ">=1.21.2", markers = "platform_system != \"Darwin\" and python_version >= \"3.10\""},
+    {version = ">=1.19.3", markers = "platform_system == \"Linux\" and platform_machine == \"aarch64\" and python_version >= \"3.8\" and python_version < \"3.10\" or python_version > \"3.9\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_system != \"Darwin\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
 ]
 
 [[package]]
@@ -4503,7 +4503,7 @@ files = [
 name = "poetry-dynamic-versioning"
 version = "1.2.0"
 description = "Plugin for Poetry to enable dynamic versioning based on VCS tags"
-optional = false
+optional = true
 python-versions = ">=3.7,<4.0"
 files = [
     {file = "poetry_dynamic_versioning-1.2.0-py3-none-any.whl", hash = "sha256:8dbef9728d866eb3d1a4edbb29c7ac8abdf96e3ca659473e950e2c016f3785ec"},
@@ -7559,11 +7559,11 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [extras]
-dev = ["black", "bump2version", "cairosvg", "interrogate", "isort", "mike", "mkdocs", "mkdocs_autorefs", "mkdocs_gen_files", "mkdocs_literate_nav", "mkdocs_material", "mkdocs_material_extensions", "mkdocs_section_index", "mkdocstrings", "mkdocstrings_python", "mypy", "pandas_stubs", "pre_commit", "pylint", "pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_mock", "ruff", "twine", "types_pyyaml"]
+dev = ["black", "bump2version", "cairosvg", "interrogate", "isort", "mike", "mkdocs", "mkdocs_autorefs", "mkdocs_gen_files", "mkdocs_literate_nav", "mkdocs_material", "mkdocs_material_extensions", "mkdocs_section_index", "mkdocstrings", "mkdocstrings_python", "mypy", "pandas_stubs", "poetry-dynamic-versioning", "pre_commit", "pylint", "pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_mock", "ruff", "twine", "types_pyyaml"]
 docs = ["cairosvg", "mike", "mkdocs", "mkdocs_autorefs", "mkdocs_gen_files", "mkdocs_literate_nav", "mkdocs_material", "mkdocs_material_extensions", "mkdocs_section_index", "mkdocstrings", "mkdocstrings_python"]
 onnx = ["onnx", "onnxruntime_gpu", "onnxsim"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "22edccae94325095443cff258be5de98bae5fcd325cc3eeeb6b7eef59a1bdf23"
+content-hash = "e8b708c3636d17046b783ef68675554609fb4ea2461a5af2124a6c8948b93a5c"
