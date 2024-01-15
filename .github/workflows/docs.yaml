@@ -41,7 +41,7 @@ jobs:
           git fetch origin gh-pages --depth=1
           VERSION="${{ steps.determine_version.outputs.version }}"
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            mike deploy --push --update-aliases $VERSION latest
+            poetry run mike deploy --push --update-aliases $VERSION latest
           else
-            mike deploy --push $VERSION
+            poetry run mike deploy --push $VERSION
           fi
