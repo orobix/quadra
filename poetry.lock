@@ -7562,8 +7562,9 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 dev = ["black", "bump2version", "cairosvg", "interrogate", "isort", "mike", "mkdocs", "mkdocs_autorefs", "mkdocs_gen_files", "mkdocs_literate_nav", "mkdocs_material", "mkdocs_material_extensions", "mkdocs_section_index", "mkdocstrings", "mkdocstrings_python", "mypy", "pandas_stubs", "poetry-dynamic-versioning", "pre_commit", "pylint", "pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_mock", "ruff", "twine", "types_pyyaml"]
 docs = ["cairosvg", "mike", "mkdocs", "mkdocs_autorefs", "mkdocs_gen_files", "mkdocs_literate_nav", "mkdocs_material", "mkdocs_material_extensions", "mkdocs_section_index", "mkdocstrings", "mkdocstrings_python"]
 onnx = ["onnx", "onnxruntime_gpu", "onnxsim"]
+test = ["pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_mock"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "e8b708c3636d17046b783ef68675554609fb4ea2461a5af2124a6c8948b93a5c"
+content-hash = "d7e8605754d78a93147e6ab29a638a675c66f645c224a324fce122ea969adbb2"

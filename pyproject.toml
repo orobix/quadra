@@ -154,6 +154,14 @@ dev = [
   "poetry-dynamic-versioning",
 ]
 
+test = [
+  "pytest",
+  "pytest_cov",
+  "pytest_lazy_fixture",
+  "pytest_mock",
+  "pytest_env",
+]
+
 docs = [
   "mkdocs",
   "mkdocs_literate_nav",
