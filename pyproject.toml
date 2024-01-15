@@ -36,6 +36,7 @@ quadra = "quadra.main:main"
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 poetry = "1.7.1"
+poetry-dynamic-versioning = "1.2.0"
 
 # TODO: We could support previous torch version using mutually exclusive python version but it's bad...
 # TODO: Right now it seems that poetry will download every kind of possible dependency from cu116
@@ -167,6 +168,10 @@ docs = [
 ]
 
 onnx = ["onnx", "onnxsim", "onnxruntime_gpu"]
+
+[tool.poetry_bumpversion.file."quadra/__init__.py"]
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
 
 # Adapted from https://realpython.com/pypi-publish-python-package/#version-your-package
 [tool.bumpver]

@@ -1323,6 +1323,20 @@ paramiko = ["paramiko"]
 pgp = ["gpg"]
 
 [[package]]
+name = "dunamai"
+version = "1.19.0"
+description = "Dynamic version generation"
+optional = false
+python-versions = ">=3.5,<4.0"
+files = [
+    {file = "dunamai-1.19.0-py3-none-any.whl", hash = "sha256:1ed948676bbf0812bfaafe315a134634f8d6eb67138513c75aa66e747404b9c6"},
+    {file = "dunamai-1.19.0.tar.gz", hash = "sha256:6ad99ae34f7cd290550a2ef1305d2e0292e6e6b5b1b830dfc07ceb7fd35fec09"},
+]
+
+[package.dependencies]
+packaging = ">=20.9"
+
+[[package]]
 name = "efficientnet-pytorch"
 version = "0.7.1"
 description = "EfficientNet implemented in PyTorch."
@@ -4486,6 +4500,25 @@ files = [
 ]
 
 [[package]]
+name = "poetry-dynamic-versioning"
+version = "1.2.0"
+description = "Plugin for Poetry to enable dynamic versioning based on VCS tags"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "poetry_dynamic_versioning-1.2.0-py3-none-any.whl", hash = "sha256:8dbef9728d866eb3d1a4edbb29c7ac8abdf96e3ca659473e950e2c016f3785ec"},
+    {file = "poetry_dynamic_versioning-1.2.0.tar.gz", hash = "sha256:1a7bbdba2530499e73dfc6ac0af19de29020ab4aaa3e507573877114e6b71ed6"},
+]
+
+[package.dependencies]
+dunamai = ">=1.18.0,<2.0.0"
+jinja2 = ">=2.11.1,<4"
+tomlkit = ">=0.4"
+
+[package.extras]
+plugin = ["poetry (>=1.2.0,<2.0.0)"]
+
+[[package]]
 name = "poetry-plugin-export"
 version = "1.6.0"
 description = "Poetry plugin to export the dependencies to various formats"
@@ -7533,4 +7566,4 @@ onnx = ["onnx", "onnxruntime_gpu", "onnxsim"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "035fd1296422eb4eaabf99acc2614918d416f0ea28ebd70bbf87eeeec8cbb442"
+content-hash = "22edccae94325095443cff258be5de98bae5fcd325cc3eeeb6b7eef59a1bdf23"
