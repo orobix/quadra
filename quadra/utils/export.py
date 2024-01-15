@@ -191,7 +191,7 @@ def export_onnx_model(
     """
     if not ONNX_AVAILABLE:
         log.warning("ONNX is not installed, can not export model in this format.")
-        log.warning("Please install ONNX capabilities for quadra with: pip install .[onnx]")
+        log.warning("Please install ONNX capabilities for quadra with: poetry install -E onnx")
         return None
 
     model.eval()

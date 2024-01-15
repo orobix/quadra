@@ -1,6 +1,12 @@
 # Breaking Changes
 All the breaking changes will be documented in this file.
 
+### [1.5.0]
+
+#### Changed
+
+- In Quadra 1.5.0, poetry is used as the default build system for better dependency management and it should be used as primary source for development.
+
 ### [1.4.0]
 
 #### Changed

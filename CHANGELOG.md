@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.5.0]
+
+#### Changed
+
+- Change default build system from `setup.py` to `poetry` for better dependency management.
+
 ### [1.4.1]
 
 #### Changed

@@ -1,22 +1,17 @@
-[build-system]
-requires = ["setuptools >= 61.0.0"]
-build-backend = "setuptools.build_meta"
-
-[project]
+[tool.poetry]
 name = "quadra"
-version = "1.4.1"
+version = "1.5.0"
 description = "Deep Learning experiment orchestration library"
 authors = [
-  { name = "Alessandro Polidori", email = "alessandro.polidori@orobix.com" },
-  { name = "Federico Belotti", email = "federico.belotti@orobix.com" },
-  { name = "Lorenzo Mammana", email = "lorenzo.mammana@orobix.com" },
-  { name = "Refik Can Malli", email = "refikcan.malli@orobix.com" },
-  { name = "Silvia Bianchetti", email = "silvia.bianchetti@orobix.com" },
+  "Federico Belotti <federico.belotti@orobix.com>",
+  "Silvia Bianchetti <silvia.bianchetti@orobix.com>",
+  "Refik Can Malli <refikcan.malli@orobix.com>",
+  "Lorenzo Mammana <lorenzo.mammana@orobix.com>",
+  "Alessandro Polidori <alessandro.polidori@orobix.com>",
 ]
+license = "Apache-2.0"
+readme = "README.md"
 keywords = ["deep learning", "experiment", "lightning", "hydra-core"]
-license = { file = "LICENSE" }
-readme = { file = "README.md", content-type = "text/markdown" }
-requires-python = ">=3.9,<3.11"
 classifiers = [
   "Programming Language :: Python :: 3",
   "Intended Audience :: Developers",
@@ -28,98 +23,164 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "License :: OSI Approved :: Apache Software License",
 ]
+homepage = "https://orobix.github.io/quadra"
+repository = "https://github.com/orobix/quadra"
 
-dependencies = [
-  # --------- pytorch --------- #
-  "torch==1.13.1",
-  "torchvision==0.14.1",
-  "torchmetrics==0.10.*", # constrained by anomalib
-  "torchsummary==1.5.*",
-  "pytorch-lightning>=1.9.1,<1.10",
-  # --------- hydra --------- #
-  "hydra-core==1.3.*",
-  "hydra-colorlog==1.2.*",
-  "hydra-optuna-sweeper==1.2.*",
-  # --------- loggers --------- #
-  "mlflow==2.3.1",
-  "mlflow-skinny==2.3.1",
-  "boto3==1.26.*", # needed for artifact storage
-  "minio==7.1.*", # needed for artifact storage
-  "tensorboard==2.11.*",
-  # --------- others --------- #
-  # required by label-studio-converter
-  "Pillow==9.3.0",                                                        
-  "pandas<2.0.0",
-  "opencv-python-headless==4.7.0.*",
-  "python-dotenv==0.21.*",
-  "rich==13.2.*",
-  "scikit-learn==1.2.*",
-  "pydantic==1.10.10",
-  "grad-cam==1.4.6",
-  "matplotlib==3.6.*",
-  "seaborn==0.12.*",
-  "albumentations==1.3.*",
-  "nvitop==0.11.*",
-  "label-studio-converter==0.0.*",
-  "scikit-multilearn==0.2.*",
-  "tripy==1.0.*",
-  "h5py==3.8.*",
-  "timm==0.9.12",
-  # Currently the only version of smp supporting timm 0.9.12 is the following
-  "segmentation-models-pytorch@git+https://github.com/qubvel/segmentation_models.pytorch@7b381f899ed472a477a89d381689caf535b5d0a6",
-  "anomalib@git+https://github.com/orobix/anomalib.git@v0.7.0+obx.1.2.10",
-  "xxhash==3.2.*",
-  "torchinfo==1.8.*",
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+quadra = "quadra.main:main"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+poetry = "1.7.1"
+
+# TODO: We could support previous torch version using mutually exclusive python version but it's bad...
+# TODO: Right now it seems that poetry will download every kind of possible dependency from cu116
+# To make it faster we could hardcode the correct version of the dependencies
+torch = { version = "1.13.1", source = "torch_cu116" }
+torchvision = { version = "0.14.1", source = "torch_cu116" }
+
+pytorch_lightning = "1.9.5"
+torchsummary = "~1.5"
+torchmetrics = "~0.10"
+hydra_core = "~1.3"
+hydra_colorlog = "~1.2"
+hydra_optuna_sweeper = "~1.2"
+mlflow = "2.3.1"
+mlflow_skinny = "2.3.1"
+boto3 = "~1.26"
+minio = "~7.1"
+tensorboard = "~2.11"
+pillow = "~9.3"
+pandas = "<2.0"
+opencv_python_headless = "~4.7.0"
+python_dotenv = "~0.21"
+rich = "~13.2"
+scikit_learn = "~1.2"
+pydantic = "1.10.10"
+grad_cam = "1.4.6"
+matplotlib = "~3.6"
+seaborn = "~0.12"
+albumentations = "~1.3"
+nvitop = "~0.11"
+label_studio_converter = "~0.0"
+scikit_multilearn = "~0.2"
+tripy = "~1.0"
+h5py = "~3.8"
+timm = "0.9.12"
+# Right now only this ref supports timm 0.9.12
+segmentation_models_pytorch = { git = "https://github.com/qubvel/segmentation_models.pytorch", rev = "7b381f899ed472a477a89d381689caf535b5d0a6" }
+anomalib = { git = "https://github.com/orobix/anomalib.git", tag = "v0.7.0+obx.1.2.10" }
+xxhash = "~3.2"
+torchinfo = "~1.8"
+
+# Test dependencies
+pytest = { version = "^7", optional = true }
+pytest_cov = { version = "~4.0", optional = true }
+pytest_lazy_fixture = { version = "~0.6", optional = true }
+pytest_mock = { version = "~3.11", optional = true }
+pytest_env = { version = "~1.1", optional = true }
+
+# Dev dependencies
+interrogate = { version = "~1.5", optional = true }
+black = { version = "~22.12", optional = true }
+isort = { version = "~5.11", optional = true }
+pre_commit = { version = "~3.0", optional = true }
+pylint = { version = "~2.16", optional = true }
+bump2version = { version = "~1.0", optional = true }
+types_pyyaml = { version = "~6.0.12", optional = true }
+mypy = { version = "~1.0", optional = true }
+ruff = { version = "0.0.257", optional = true }
+pandas_stubs = { version = "~1.5.3", optional = true }
+twine = { version = "~4.0", optional = true }
+poetry-dynamic-versioning = { version = "1.2.0", optional = true }
+
+# Documentation dependencies
+mkdocs = { version = "1.5.2", optional = true }
+mkdocs_literate_nav = { version = "0.6.0", optional = true }
+mkdocs_section_index = { version = "0.3.6", optional = true }
+mkdocstrings = { version = "0.23.0", optional = true }
+mkdocs_autorefs = { version = "0.5.0", optional = true }
+mkdocs_gen_files = { version = "0.5.0", optional = true }
+mkdocs_material = { version = "9.2.8", optional = true }
+mkdocstrings_python = { version = "1.6.2", optional = true }
+mkdocs_material_extensions = { version = "1.1.1", optional = true }
+mike = { version = "1.1.2", optional = true }
+cairosvg = { version = "2.7.0", optional = true }
+
+# ONNX dependencies
+onnx = { version = "1.14.0", optional = true }
+onnxsim = { version = "0.4.28", optional = true }
+onnxruntime_gpu = { version = "1.15.0", optional = true }
+
+[[tool.poetry.source]]
+name = "torch_cu116"
+url = "https://download.pytorch.org/whl/cu116"
+priority = "explicit"
+
+[tool.poetry.extras]
+dev = [
+  "black",
+  "isort",
+  "pre_commit",
+  "pylint",
+  "bump2version",
+  "types_pyyaml",
+  "mypy",
+  "ruff",
+  "pandas_stubs",
+  "bumpver",
+  "twine",
+  "pytest",
+  "pytest_cov",
+  "pytest_lazy_fixture",
+  "pytest_mock",
+  "pytest_env",
+  "interrogate",
+  "mkdocs",
+  "mkdocs_literate_nav",
+  "mkdocs_section_index",
+  "mkdocstrings",
+  "mkdocs_autorefs",
+  "mkdocs_gen_files",
+  "mkdocs_material",
+  "mkdocstrings_python",
+  "mkdocs_material_extensions",
+  "mike",
+  "cairosvg",
+  "poetry-dynamic-versioning",
 ]
 
-[project.optional-dependencies]
-test = ["pytest==7.*", "pytest-cov==4.0.*", "pytest-lazy-fixture==0.6.*", "pytest-mock==3.11.*", "pytest-env==1.1.*"]
-
-dev = [
-  "interrogate==1.5.*",
-  "black==22.12.*",
-  "isort==5.11.*",
-  "pre-commit==3.0.*",
-  "pylint==2.16.*",
-  "bump2version==1.0.*",
-  "types-PyYAML==6.0.12.*",
-  "mypy==1.0.*",
-  "ruff==0.0.257",
-  "pandas-stubs==1.5.3.*",
-  "bumpver==2023.1124",
-  "twine==4.0.*",
-  "build==0.10.*",
+test = [
+  "pytest",
+  "pytest_cov",
+  "pytest_lazy_fixture",
+  "pytest_mock",
+  "pytest_env",
 ]
 
 docs = [
-  "mkdocs==1.5.2",
-  "mkdocs-literate-nav==0.6.0",
-  "mkdocs-section-index==0.3.6",
-  "mkdocstrings==0.23.0",
-  "mkdocs-autorefs==0.5.0",
-  "mkdocs-gen-files==0.5.0",
-  "mkdocs-material==9.2.8",
-  "mkdocstrings-python==1.6.2",
-  "mkdocs-material-extensions==1.1.1",
-  "mike==1.1.2",
-  "cairosvg==2.7.0",
+  "mkdocs",
+  "mkdocs_literate_nav",
+  "mkdocs_section_index",
+  "mkdocstrings",
+  "mkdocs_autorefs",
+  "mkdocs_gen_files",
+  "mkdocs_material",
+  "mkdocstrings_python",
+  "mkdocs_material_extensions",
+  "mike",
+  "cairosvg",
 ]
 
-onnx = ["onnx==1.14.0", "onnxsim==0.4.28", "onnxruntime-gpu==1.15.0"]
+onnx = ["onnx", "onnxsim", "onnxruntime_gpu"]
 
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.packages.find]
-include = ["quadra", "quadra.*", "hydra_plugins"]
-exclude = ["docs*", "tests*", "build*", "site*"]
-
-[project.scripts]
-quadra = "quadra.main:main"
-
-[project.urls]
-homepage = "https://orobix.github.io/quadra"
-repository = "https://github.com/orobix/quadra"
+[tool.poetry_bumpversion.file."quadra/__init__.py"]
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
 
 # Adapted from https://realpython.com/pypi-publish-python-package/#version-your-package
 [tool.bumpver]
