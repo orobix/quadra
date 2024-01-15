@@ -21,8 +21,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          python -m pip install -U pip
-          python -m pip install -e ".[docs]" --no-cache-dir
+          python -m pip install -U pip poetry
+          python -m poetry install --no-cache -E docs
 
       - name: Determine Version
         id: determine_version
