@@ -36,6 +36,7 @@ quadra = "quadra.main:main"
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 poetry = "1.7.1"
+hydra-plugins = { path = "quadra_hydra_plugin" }
 
 # TODO: We could support previous torch version using mutually exclusive python version but it's bad...
 # TODO: Right now it seems that poetry will download every kind of possible dependency from cu116
@@ -115,7 +116,6 @@ cairosvg = { version = "2.7.0", optional = true }
 onnx = { version = "1.14.0", optional = true }
 onnxsim = { version = "0.4.28", optional = true }
 onnxruntime_gpu = { version = "1.15.0", optional = true }
-hydra-plugins = {path = "quadra_hydra_plugin"}
 
 [[tool.poetry.source]]
 name = "torch_cu116"

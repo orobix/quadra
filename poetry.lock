@@ -2137,7 +2137,7 @@ optuna = ">=2.10.0,<3.0.0"
 [[package]]
 name = "hydra-plugins"
 version = "1.0.0"
-description = "Deep Learning experiment orchestration library"
+description = "Hydra plugin allowing the discovery of external configurations"
 optional = false
 python-versions = ">=3.9,<3.11"
 files = []
