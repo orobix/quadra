@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "hydra_plugins"
+version = "1.0.0"
+description = "Hydra plugin allowing the discovery of external configurations"
+authors = [
+  "Federico Belotti <federico.belotti@orobix.com>",
+  "Silvia Bianchetti <silvia.bianchetti@orobix.com>",
+  "Refik Can Malli <refikcan.malli@orobix.com>",
+  "Lorenzo Mammana <lorenzo.mammana@orobix.com>",
+  "Alessandro Polidori <alessandro.polidori@orobix.com>",
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+poetry = "1.7.1"
