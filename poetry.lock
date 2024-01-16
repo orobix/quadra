@@ -2135,6 +2135,22 @@ hydra-core = ">=1.1.0.dev7"
 optuna = ">=2.10.0,<3.0.0"
 
 [[package]]
+name = "hydra-plugins"
+version = "1.0.0"
+description = "Deep Learning experiment orchestration library"
+optional = false
+python-versions = ">=3.9,<3.11"
+files = []
+develop = false
+
+[package.dependencies]
+poetry = "1.7.1"
+
+[package.source]
+type = "directory"
+url = "quadra_hydra_plugin"
+
+[[package]]
 name = "identify"
 version = "2.5.33"
 description = "File identification library for Python"
@@ -7567,4 +7583,4 @@ test = ["pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_moc
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "d7e8605754d78a93147e6ab29a638a675c66f645c224a324fce122ea969adbb2"
+content-hash = "9c7352f680a808c9dfe48ec90b3dc8f4955f7c104a3657e9a1d38e3363e8ff2a"

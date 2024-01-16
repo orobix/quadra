@@ -115,6 +115,7 @@ cairosvg = { version = "2.7.0", optional = true }
 onnx = { version = "1.14.0", optional = true }
 onnxsim = { version = "0.4.28", optional = true }
 onnxruntime_gpu = { version = "1.15.0", optional = true }
+hydra-plugins = {path = "quadra_hydra_plugin"}
 
 [[tool.poetry.source]]
 name = "torch_cu116"
