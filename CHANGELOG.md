@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.5.2]
+
+#### Fixed
+
+- Fix hydra plugin not working properly when the library is installed from external sources.
+
 ### [1.5.1]
 
 #### Fixed
