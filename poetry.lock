@@ -2135,6 +2135,19 @@ hydra-core = ">=1.1.0.dev7"
 optuna = ">=2.10.0,<3.0.0"
 
 [[package]]
+name = "hydra-plugins"
+version = "1.0.0"
+description = "Hydra plugin allowing the discovery of external configurations"
+optional = true
+python-versions = "*"
+files = []
+develop = false
+
+[package.source]
+type = "directory"
+url = "quadra_hydra_plugin"
+
+[[package]]
 name = "identify"
 version = "2.5.33"
 description = "File identification library for Python"
@@ -7559,7 +7572,7 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [extras]
-dev = ["black", "bump2version", "cairosvg", "interrogate", "isort", "mike", "mkdocs", "mkdocs_autorefs", "mkdocs_gen_files", "mkdocs_literate_nav", "mkdocs_material", "mkdocs_material_extensions", "mkdocs_section_index", "mkdocstrings", "mkdocstrings_python", "mypy", "pandas_stubs", "poetry-dynamic-versioning", "pre_commit", "pylint", "pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_mock", "ruff", "twine", "types_pyyaml"]
+dev = ["black", "bump2version", "cairosvg", "hydra-plugins", "interrogate", "isort", "mike", "mkdocs", "mkdocs_autorefs", "mkdocs_gen_files", "mkdocs_literate_nav", "mkdocs_material", "mkdocs_material_extensions", "mkdocs_section_index", "mkdocstrings", "mkdocstrings_python", "mypy", "pandas_stubs", "poetry-dynamic-versioning", "pre_commit", "pylint", "pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_mock", "ruff", "twine", "types_pyyaml"]
 docs = ["cairosvg", "mike", "mkdocs", "mkdocs_autorefs", "mkdocs_gen_files", "mkdocs_literate_nav", "mkdocs_material", "mkdocs_material_extensions", "mkdocs_section_index", "mkdocstrings", "mkdocstrings_python"]
 onnx = ["onnx", "onnxruntime_gpu", "onnxsim"]
 test = ["pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_mock"]
@@ -7567,4 +7580,4 @@ test = ["pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_moc
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "d7e8605754d78a93147e6ab29a638a675c66f645c224a324fce122ea969adbb2"
+content-hash = "89770057e6656cc797382a515b29729a19969e03542a16ab0a5ae1219214516c"
