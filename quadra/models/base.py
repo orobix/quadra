@@ -141,6 +141,7 @@ class ModelSignatureWrapper(nn.Module):
             "to",
             "half",
             "cpu",
+            "call_super_init",
         ]:
             return super().__getattribute__(__name)
 
