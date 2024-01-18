@@ -2,6 +2,24 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.5.2]
+
+#### Fixed
+
+- Fix hydra plugin not working properly when the library is installed from external sources.
+
+### [1.5.1]
+
+#### Fixed
+
+- Fix hydra plugin not working properly.
+
+### [1.5.0]
+
+#### Changed
+
+- Change default build system from `setup.py` to `poetry` for better dependency management.
+
 ### [1.4.1]
 
 #### Changed

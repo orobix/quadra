@@ -180,7 +180,7 @@ class ONNXEvaluationModel(BaseEvaluationModel):
     def __init__(self, config: DictConfig) -> None:
         if not ONNX_AVAILABLE:
             raise ImportError(
-                "onnxruntime is not installed. Please install ONNX capabilities for quadra with: pip install .[onnx]"
+                "onnxruntime is not installed. Please install ONNX capabilities for quadra with: poetry install -E onnx"
             )
         super().__init__(config=config)
         self.session_options = self.generate_session_options()

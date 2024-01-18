@@ -36,9 +36,9 @@ jobs:
             setup.py
       - name: Install Package
         run: |
-          python -m pip install -U pip
-          python -m pip install -e ".[test,onnx]" --no-cache-dir
+          python -m pip install -U pip poetry
+          python -m poetry install --no-cache -E test -E onnx
 
       - name: Run Tests
         run: |
-          python -m pytest -v --disable-pytest-warnings --strict-markers --mock-training --color=yes -m "not slow"
+          poetry run pytest -v --disable-pytest-warnings --strict-markers --mock-training --color=yes -m "not slow"
