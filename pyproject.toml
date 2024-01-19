@@ -48,7 +48,7 @@ hydra-plugins = { path = "quadra_hydra_plugin", optional = true }
 torch = { version = "~2.1", source = "torch_cu121" }
 torchvision = { version = "~0.16", source = "torch_cu121" }
 
-pytorch_lightning = "1.9.5"
+pytorch_lightning = "~2.1"
 torchsummary = "~1.5"
 torchmetrics = "~0.10"
 hydra_core = "~1.3"
