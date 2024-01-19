@@ -37,8 +37,6 @@ metrics:
 trainer:
   accelerator: gpu # <"cpu", "gpu", "tpu", "ipu", "hpu", "auto">
   accumulate_grad_batches: 1
-  auto_lr_find: false
-  auto_scale_batch_size: false
   benchmark: false
   check_val_every_n_epoch: 1
   default_root_dir: null
@@ -60,7 +58,6 @@ trainer:
   max_time: null
   min_epochs: null
   min_steps: null
-  multiple_trainloader_mode: max_size_cycle
   num_nodes: 1
   num_sanity_val_steps: 0
   overfit_batches: 0.0
@@ -69,6 +66,5 @@ trainer:
   profiler: null
   reload_dataloaders_every_n_epochs: 0
   use_distributed_sampler: true
-  strategy: null
   sync_batchnorm: false
   val_check_interval: 1.0

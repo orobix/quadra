@@ -34,10 +34,7 @@ logger:
 trainer:
   devices: [2]
   accelerator: auto
-  strategy:
   accumulate_grad_batches: 1
-  auto_lr_find: false
-  auto_scale_batch_size: false
   benchmark: false
   check_val_every_n_epoch: ${trainer.max_epochs} # Don't validate before extracting features.
   default_root_dir: null
@@ -58,7 +55,6 @@ trainer:
   max_time: null
   min_epochs: null
   min_steps: null
-  multiple_trainloader_mode: max_size_cycle
   num_nodes: 1
   num_sanity_val_steps: 0
   overfit_batches: 0.0
