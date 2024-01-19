@@ -20,10 +20,10 @@ import rich.tree
 import torch
 from hydra.core.hydra_config import HydraConfig
 from hydra.utils import get_original_cwd
+from lightning_fabric.utilities.device_parser import _parse_gpu_ids
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities import rank_zero_only
-from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 
 import quadra
 import quadra.utils.export as quadra_export
@@ -255,7 +255,7 @@ def finish(
         tensorboard_logger = get_tensorboard_logger(trainer=trainer)
         file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt", "data/dataset.csv"]
         if "16" in str(trainer.precision):
-            index = parse_gpu_ids(config.trainer.devices, include_cuda=True)[0]
+            index = _parse_gpu_ids(config.trainer.devices, include_cuda=True)[0]
             device = "cuda:" + str(index)
             half_precision = True
         else:

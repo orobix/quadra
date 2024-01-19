@@ -3,6 +3,5 @@ devices: [0]
 accelerator: gpu
 min_epochs: 1
 max_epochs: 10
-resume_from_checkpoint: null
 log_every_n_steps: 10
 precision: bf16
