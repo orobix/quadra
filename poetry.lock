@@ -214,8 +214,8 @@ openvino = ["defusedxml (==0.7.1)", "networkx (>=2.5,<3.0)", "nncf (>=2.1.0)", "
 [package.source]
 type = "git"
 url = "https://github.com/orobix/anomalib.git"
-reference = "v0.7.0+obx.1.2.10"
-resolved_reference = "5a4d1243f0ddc3df6f86da6c7765b82fc3317136"
+reference = "v0.7.0+obx.1.2.11"
+resolved_reference = "715c3efee8c046aa98aaef7fad26f52613907ef4"
 
 [[package]]
 name = "antlr4-python3-runtime"
@@ -7606,4 +7606,4 @@ test = ["pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_moc
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "b38bf7787c99e6291ad7a700db8d7308176a181fac99959b00269303f2131c32"
+content-hash = "44a4a78e129bf1504d046845cdf9014b8a196a5868630ed2e5131588eedff6e1"
