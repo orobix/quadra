@@ -178,7 +178,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         )
         if self.checkpoint_path is not None:
             log.info("Loading model from lightning checkpoint: %s", self.checkpoint_path)
-            module = module.load_from_checkpoint(
+            module = module.__class__.load_from_checkpoint(
                 self.checkpoint_path,
                 model=self.model,
                 optimizer=self.optimizer,
@@ -286,7 +286,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         if self.best_model_path is not None:
             log.info("Saving deployment model for %s checkpoint", self.best_model_path)
 
-            module = self.module.load_from_checkpoint(
+            module = self.module.__class__.load_from_checkpoint(
                 self.best_model_path,
                 model=self.module.model,
                 optimizer=self.optimizer,
@@ -1099,11 +1099,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             return
 
         if isinstance(self.deployment_model.model.features_extractor, timm.models.resnet.ResNet):
-            target_layers = [
-                cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[
-                    -1
-                ]  # type: ignore[index]
-            ]
+            target_layers = [cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[-1]]
             self.cam = GradCAM(
                 model=self.deployment_model.model,
                 target_layers=target_layers,

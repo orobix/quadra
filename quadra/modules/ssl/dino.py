@@ -157,13 +157,11 @@ class Dino(BYOL):
     def configure_gradient_clipping(
         self,
         optimizer: Optimizer,
-        optimizer_idx: int,
         gradient_clip_val: Optional[Union[int, float]] = None,
         gradient_clip_algorithm: Optional[str] = None,
     ):
         """Configure gradient clipping for the optimizer."""
         if gradient_clip_algorithm is not None and gradient_clip_val is not None:
-
             clip_gradients(self.model, gradient_clip_val)
             clip_gradients(self.student_projection_mlp, gradient_clip_val)
         self.cancel_gradients_last_layer(self.current_epoch, self.freeze_last_layer)
@@ -173,19 +171,13 @@ class Dino(BYOL):
         epoch: int,
         batch_idx: int,
         optimizer: Union[Optimizer, LightningOptimizer],
-        optimizer_idx: int = 0,
         optimizer_closure: Optional[Callable[[], Any]] = None,
-        on_tpu: bool = False,
-        using_lbfgs: bool = False,
     ) -> None:
-        """Override optimizer_step to update the teacher model."""
+        """Override optimizer step to update the teacher parameters."""
         super().optimizer_step(
             epoch,
             batch_idx,
             optimizer,
-            optimizer_idx=optimizer_idx,
             optimizer_closure=optimizer_closure,
-            on_tpu=on_tpu,
-            using_lbfgs=using_lbfgs,
         )
         self.update_teacher()
