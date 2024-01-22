@@ -13,7 +13,7 @@ import torch
 import yaml
 from segmentation_models_pytorch.losses import DiceLoss
 from segmentation_models_pytorch.losses.constants import BINARY_MODE, MULTICLASS_MODE
-from skimage.measure import label, regionprops
+from skimage.measure import label, regionprops  # pylint: disable=no-name-in-module
 
 from quadra.utils.logger import get_logger
 from quadra.utils.visualization import UnNormalize, create_grid_figure
@@ -72,7 +72,7 @@ def score_dice_smp(y_pred: torch.Tensor, y_true: torch.Tensor, mode: str = "bina
 
     Args:
         y_pred: 1xCxHxW one channel for each class
-        y_true: 1x1xHxW true mask with value in [0, ..., num_classes]
+        y_true: 1x1xHxW true mask with value in [0, ..., n_classes]
         mode: "binary" or "multiclass"
 
     Returns:
@@ -93,6 +93,8 @@ def calculate_mask_based_metrics(
     threshold: float = 0.5,
     show_orj_predictions: bool = False,
     metric: Callable = score_dice,
+    multilabel: bool = False,
+    n_classes: Optional[int] = None,
 ) -> Tuple[
     Dict[str, float],
     Dict[str, List[np.ndarray]],
@@ -108,6 +110,8 @@ def calculate_mask_based_metrics(
         threshold: Threshold to apply. Defaults to 0.5.
         show_orj_predictions: Flag to show original predictions. Defaults to False.
         metric: Metric to use comparison. Defaults to `score_dice`.
+        multilabel: True if segmentation is multiclass.
+        n_classes: Number of classes. If multilabel is False, this should be None.
 
     Returns:
         dict: Dictionary with metrics.
@@ -118,7 +122,21 @@ def calculate_mask_based_metrics(
     thresh_preds = th_thresh_preds.squeeze(0).numpy()
     dice_scores = metric(th_thresh_preds, th_masks, reduction=None).numpy()
     result = {}
-    tp, fp, fn, tn = smp.metrics.get_stats(th_thresh_preds.long(), th_masks.long(), mode="binary")
+    if multilabel:
+        if n_classes is None:
+            raise ValueError("n_classes arg shouldn't be None when multilabel is True")
+        preds_multilabel = (
+            torch.nn.functional.one_hot(th_preds.to(torch.int64), num_classes=n_classes).squeeze(1).permute(0, 3, 1, 2)
+        )
+        masks_multilabel = (
+            torch.nn.functional.one_hot(th_masks.to(torch.int64), num_classes=n_classes).squeeze(1).permute(0, 3, 1, 2)
+        ).to(preds_multilabel.device)
+        # get_stats multiclass, not considering background channel
+        tp, fp, fn, tn = smp.metrics.get_stats(
+            preds_multilabel[:, 1:, :, :].long(), masks_multilabel[:, 1:, :, :].long(), mode="multilabel"
+        )
+    else:
+        tp, fp, fn, tn = smp.metrics.get_stats(th_thresh_preds.long(), th_masks.long(), mode="binary")
     per_image_iou = smp.metrics.iou_score(tp, fp, fn, tn, reduction="micro-imagewise")
     dataset_iou = smp.metrics.iou_score(tp, fp, fn, tn, reduction="micro")
     result["F1_image"] = round(float(smp.metrics.f1_score(tp, fp, fn, tn, reduction="micro-imagewise").item()), 4)
@@ -239,16 +257,16 @@ def create_mask_report(
     th_masks = output["mask"]
     th_preds = output["mask_pred"]
     th_labels = output["label"]
-
+    n_classes = th_preds.shape[1]
     # TODO: Apply sigmoid is a wrong name now
     if apply_sigmoid:
-        if th_preds.shape[1] == 1:
+        if n_classes == 1:
             th_preds = torch.nn.Sigmoid()(th_preds)
             th_thresh_preds = (th_preds > threshold).float()
         else:
             th_preds = torch.nn.Softmax(dim=1)(th_preds)
             th_thresh_preds = torch.argmax(th_preds, dim=1).float().unsqueeze(1)
-            th_preds = th_preds[:, 1].unsqueeze(1)
+            th_preds = th_thresh_preds
             # Compute labels from the given masks since by default they are all 0
             th_labels = th_masks.max(dim=2)[0].max(dim=2)[0].squeeze(dim=1)
 
@@ -323,6 +341,8 @@ def create_mask_report(
             threshold=threshold,
             show_orj_predictions=show_orj_predictions,
             metric=metric,
+            multilabel=bool(n_classes > 1),
+            n_classes=n_classes,
         )
 
         if len(fg["image"]) > 0:
