@@ -214,8 +214,8 @@ openvino = ["defusedxml (==0.7.1)", "networkx (>=2.5,<3.0)", "nncf (>=2.1.0)", "
 [package.source]
 type = "git"
 url = "https://github.com/orobix/anomalib.git"
-reference = "v0.7.0+obx.1.2.10"
-resolved_reference = "5a4d1243f0ddc3df6f86da6c7765b82fc3317136"
+reference = "v0.7.0+obx.1.2.11"
+resolved_reference = "715c3efee8c046aa98aaef7fad26f52613907ef4"
 
 [[package]]
 name = "antlr4-python3-runtime"
@@ -4074,9 +4074,9 @@ files = [
 [package.dependencies]
 numpy = [
     {version = ">=1.21.0", markers = "python_version == \"3.9\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
-    {version = ">=1.19.3", markers = "platform_system == \"Linux\" and platform_machine == \"aarch64\" and python_version >= \"3.8\" and python_version < \"3.10\" or python_version > \"3.9\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_system != \"Darwin\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
     {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\""},
     {version = ">=1.21.2", markers = "platform_system != \"Darwin\" and python_version >= \"3.10\""},
+    {version = ">=1.19.3", markers = "platform_system == \"Linux\" and platform_machine == \"aarch64\" and python_version >= \"3.8\" and python_version < \"3.10\" or python_version > \"3.9\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_system != \"Darwin\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
 ]
 
 [[package]]
@@ -4098,9 +4098,9 @@ files = [
 [package.dependencies]
 numpy = [
     {version = ">=1.21.0", markers = "python_version == \"3.9\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
-    {version = ">=1.19.3", markers = "platform_system == \"Linux\" and platform_machine == \"aarch64\" and python_version >= \"3.8\" and python_version < \"3.10\" or python_version > \"3.9\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_system != \"Darwin\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
     {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\""},
     {version = ">=1.21.2", markers = "platform_system != \"Darwin\" and python_version >= \"3.10\""},
+    {version = ">=1.19.3", markers = "platform_system == \"Linux\" and platform_machine == \"aarch64\" and python_version >= \"3.8\" and python_version < \"3.10\" or python_version > \"3.9\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_system != \"Darwin\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
 ]
 
 [[package]]
@@ -7610,4 +7610,4 @@ test = ["pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_moc
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "54c2bce1c42e7f3a9b3f80b326b9d216099a30211f2828367aeba31f558abac5"
+content-hash = "44a4a78e129bf1504d046845cdf9014b8a196a5868630ed2e5131588eedff6e1"

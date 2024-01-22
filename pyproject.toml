@@ -78,7 +78,7 @@ h5py = "~3.8"
 timm = "0.9.12"
 # Right now only this ref supports timm 0.9.12
 segmentation_models_pytorch = { git = "https://github.com/qubvel/segmentation_models.pytorch", rev = "7b381f899ed472a477a89d381689caf535b5d0a6" }
-anomalib = { git = "https://github.com/orobix/anomalib.git", tag = "v0.7.0+obx.1.2.10" }
+anomalib = { git = "https://github.com/orobix/anomalib.git", tag = "v0.7.0+obx.1.2.11" }
 xxhash = "~3.2"
 torchinfo = "~1.8"
 
