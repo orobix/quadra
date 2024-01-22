@@ -266,9 +266,9 @@ def create_mask_report(
         else:
             th_preds = torch.nn.Softmax(dim=1)(th_preds)
             th_thresh_preds = torch.argmax(th_preds, dim=1).float().unsqueeze(1)
-            th_preds = th_thresh_preds
             # Compute labels from the given masks since by default they are all 0
             th_labels = th_masks.max(dim=2)[0].max(dim=2)[0].squeeze(dim=1)
+            show_orj_predictions = False
 
     mean = np.asarray(mean)
     std = np.asarray(std)
@@ -286,7 +286,7 @@ def create_mask_report(
     binary_labels = labels == 0
 
     row_names = ["Input", "Mask", "Pred", f"Pred>{threshold}"]
-    bounds = [(0, 255), (0.0, 1.0), (0.0, 1.0), (0.0, 1.0)]
+    bounds = [(0, 255), (0.0, float(n_classes - 1)), (0.0, 1.0), (0.0, float(n_classes - 1))]
     if not show_orj_predictions:
         row_names.pop(2)
         bounds.pop(2)
@@ -320,7 +320,7 @@ def create_mask_report(
         for k, v in indexes.items():
             file_path = os.path.join(report_path, f"{stage}_{name}_{k}_results.png")
             images_to_show = [images[v], masks[v], preds[v], thresh_preds[v]]
-            if not show_orj_predictions:
+            if not show_orj_predictions or n_classes > 1:
                 images_to_show.pop(2)
             create_grid_figure(
                 images_to_show,
@@ -337,7 +337,7 @@ def create_mask_report(
         result, fg, fb, area_graph = calculate_mask_based_metrics(
             images=images,
             th_masks=th_masks,
-            th_preds=th_preds,
+            th_preds=th_thresh_preds,
             threshold=threshold,
             show_orj_predictions=show_orj_predictions,
             metric=metric,
