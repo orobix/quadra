@@ -45,8 +45,15 @@ hydra-plugins = { path = "quadra_hydra_plugin", optional = true }
 # TODO: We could support previous torch version using mutually exclusive python version but it's bad...
 # TODO: Right now it seems that poetry will download every kind of possible dependency from cu116
 # To make it faster we could hardcode the correct version of the dependencies
-torch = { version = "~2.1", source = "torch_cu121" }
+# torch = { version = "~2.1", source = "torch_cu121" }
 torchvision = { version = "~0.16", source = "torch_cu121" }
+
+torch = [
+  { url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp310-cp310-linux_x86_64.whl", markers = "sys_platform == 'linux' and python_version == '3.10'" },
+  { url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp310-cp310-win_amd64.whl", markers = "sys_platform == 'win32' and python_version == '3.10'" },
+  { url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp39-cp39-linux_x86_64.whl", markers = "sys_platform == 'linux' and python_version == '3.9'" },
+  { url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp39-cp39-win_amd64.whl", markers = "sys_platform == 'win32' and python_version == '3.9'" },
+]
 
 pytorch_lightning = "~2.1"
 torchsummary = "~1.5"
