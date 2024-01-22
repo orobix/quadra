@@ -7606,4 +7606,4 @@ test = ["pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_moc
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "44a4a78e129bf1504d046845cdf9014b8a196a5868630ed2e5131588eedff6e1"
+content-hash = "1153edbac74fe70ca0744ca93bdc26808780d30e2bdfca1d3f0b7684fbfa8c66"
