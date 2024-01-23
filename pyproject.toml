@@ -117,13 +117,18 @@ mike = { version = "1.1.2", optional = true }
 cairosvg = { version = "2.7.0", optional = true }
 
 # ONNX dependencies
-onnx = { version = "1.14.0", optional = true }
+onnx = { version = "1.15.0", optional = true }
 onnxsim = { version = "0.4.28", optional = true }
-onnxruntime_gpu = { version = "1.15.0", optional = true }
+onnxruntime_gpu = { version = "1.17.0", optional = true, source = "onnx_cu12" }
 
 [[tool.poetry.source]]
 name = "torch_cu121"
 url = "https://download.pytorch.org/whl/cu121"
+priority = "explicit"
+
+[[tool.poetry.source]]
+name = "onnx_cu12"
+url = "https://pkgs.dev.azure.com/onnxruntime/onnxruntime/_packaging/onnxruntime-cuda-12/pypi/simple/"
 priority = "explicit"
 
 [tool.poetry.extras]
