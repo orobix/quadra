@@ -23,6 +23,7 @@ from quadra.utils.tests.fixtures.models import (  # noqa
     smp_resnet18_unetplusplus,
     vit_tiny_patch16_224,
 )
+from quadra.utils.tests.helpers import get_quadra_test_device
 
 try:
     import onnx  # noqa
@@ -44,8 +45,11 @@ ONNX_CONFIG = DictConfig(
 
 
 @torch.inference_mode()
-def check_export_model_outputs(tmp_path: Path, model: nn.Module, export_types: list[str], input_shapes: tuple[Any]):
+def check_export_model_outputs(
+    tmp_path: Path, model: nn.Module, export_types: list[str], input_shapes: tuple[Any], half_precision: bool = False
+):
     exported_models = {}
+    device = get_quadra_test_device()
 
     for export_type in export_types:
         if export_type == "torchscript":
@@ -53,7 +57,7 @@ def check_export_model_outputs(tmp_path: Path, model: nn.Module, export_types: l
                 model=model,
                 input_shapes=input_shapes,
                 output_path=tmp_path,
-                half_precision=False,
+                half_precision=half_precision,
             )
 
             torchscript_model_path, input_shapes = out
@@ -64,7 +68,7 @@ def check_export_model_outputs(tmp_path: Path, model: nn.Module, export_types: l
                 output_path=tmp_path,
                 onnx_config=ONNX_CONFIG,
                 input_shapes=input_shapes,
-                half_precision=False,
+                half_precision=half_precision,
             )
 
             onnx_model_path, input_shapes = out
@@ -84,22 +88,23 @@ def check_export_model_outputs(tmp_path: Path, model: nn.Module, export_types: l
 
     models = []
     for export_type, model_path in exported_models.items():
-        model = import_deployment_model(model_path=model_path, inference_config=inference_config, device="cpu")
+        model = import_deployment_model(model_path=model_path, inference_config=inference_config, device=device)
         models.append(model)
 
-    inp = torch.rand((1, *input_shapes[0]), dtype=torch.float32)
+    inp = torch.rand((1, *input_shapes[0]), dtype=torch.float32 if not half_precision else torch.float16, device=device)
 
     outputs = []
 
     for model in models:
         outputs.append(model(inp))
 
+    tolerance = 1e-4 if not half_precision else 1e-2
     for i in range(len(outputs) - 1):
         if isinstance(outputs[i], Sequence):
             for j in range(len(outputs[i])):
-                assert torch.allclose(outputs[i][j], outputs[i + 1][j], atol=1e-5)
+                assert torch.allclose(outputs[i][j], outputs[i + 1][j], atol=tolerance)
         else:
-            assert torch.allclose(outputs[i], outputs[i + 1], atol=1e-5)
+            assert torch.allclose(outputs[i], outputs[i + 1], atol=tolerance)
 
 
 @pytest.mark.skipif(not ONNX_AVAILABLE, reason="ONNX not available")
@@ -113,12 +118,22 @@ def check_export_model_outputs(tmp_path: Path, model: nn.Module, export_types: l
         pytest.lazy_fixture("vit_tiny_patch16_224"),
     ],
 )
-def test_classification_models_export(tmp_path: Path, model: nn.Module):
+@pytest.mark.parametrize("half_precision", [False, True])
+def test_classification_models_export(tmp_path: Path, model: nn.Module, half_precision: bool):
+    if half_precision and get_quadra_test_device() == "cpu":
+        pytest.skip("Half precision not supported on CPU")
+
     export_types = ["onnx", "torchscript"]
 
     input_shapes = [(3, 224, 224)]
 
-    check_export_model_outputs(tmp_path=tmp_path, model=model, export_types=export_types, input_shapes=input_shapes)
+    check_export_model_outputs(
+        tmp_path=tmp_path,
+        model=model,
+        export_types=export_types,
+        input_shapes=input_shapes,
+        half_precision=half_precision,
+    )
 
 
 @pytest.mark.skipif(not ONNX_AVAILABLE, reason="ONNX not available")
@@ -129,12 +144,22 @@ def test_classification_models_export(tmp_path: Path, model: nn.Module):
         pytest.lazy_fixture("smp_resnet18_unetplusplus"),
     ],
 )
-def test_segmentation_models_export(tmp_path: Path, model: nn.Module):
+@pytest.mark.parametrize("half_precision", [False, True])
+def test_segmentation_models_export(tmp_path: Path, model: nn.Module, half_precision: bool):
+    if half_precision and get_quadra_test_device() == "cpu":
+        pytest.skip("Half precision not supported on CPU")
+
     export_types = ["onnx", "torchscript"]
 
     input_shapes = [(3, 224, 224)]
 
-    check_export_model_outputs(tmp_path=tmp_path, model=model, export_types=export_types, input_shapes=input_shapes)
+    check_export_model_outputs(
+        tmp_path=tmp_path,
+        model=model,
+        export_types=export_types,
+        input_shapes=input_shapes,
+        half_precision=half_precision,
+    )
 
 
 @pytest.mark.skipif(not ONNX_AVAILABLE, reason="ONNX not available")
@@ -147,7 +172,11 @@ def test_segmentation_models_export(tmp_path: Path, model: nn.Module):
         pytest.lazy_fixture("efficient_ad_small"),
     ],
 )
-def test_anomaly_detection_models_export(tmp_path: Path, model: nn.Module):
+@pytest.mark.parametrize("half_precision", [False, True])
+def test_anomaly_detection_models_export(tmp_path: Path, model: nn.Module, half_precision: bool):
+    if half_precision and get_quadra_test_device() == "cpu":
+        pytest.skip("Half precision not supported on CPU")
+
     export_types = ["onnx", "torchscript"]
 
     if isinstance(model, EfficientAdModel):
@@ -155,4 +184,10 @@ def test_anomaly_detection_models_export(tmp_path: Path, model: nn.Module):
     else:
         input_shapes = [(3, 224, 224)]
 
-    check_export_model_outputs(tmp_path=tmp_path, model=model, export_types=export_types, input_shapes=input_shapes)
+    check_export_model_outputs(
+        tmp_path=tmp_path,
+        model=model,
+        export_types=export_types,
+        input_shapes=input_shapes,
+        half_precision=half_precision,
+    )
