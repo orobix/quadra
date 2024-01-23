@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.5.3]
+
+#### Fixed
+
+- Fix multiclass segmentation analysis report.
+
 ### [1.5.2]
 
 #### Fixed
