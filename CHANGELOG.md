@@ -2,6 +2,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.5.4]
+
+#### Added
+
+- Add test for half precision export
+
+#### Fixed
+
+- Fix half precision export not working properly with onnx iobindings
+- Change full precision tolerance to avoid test failures
+
 ### [1.5.3]
 
 #### Fixed
