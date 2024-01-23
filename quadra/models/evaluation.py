@@ -247,7 +247,7 @@ class ONNXEvaluationModel(BaseEvaluationModel):
                 device_type=device_type,
                 # Weirdly enough onnx wants 0 for cpu
                 device_id=0 if device_type == "cpu" else int(self.device.split(":")[1]),
-                element_type=np.float32,
+                element_type=np.float16 if v.dtype == torch.float16 else np.float32,
                 shape=tuple(v.shape),
                 buffer_ptr=v.data_ptr(),
             )
