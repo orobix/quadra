@@ -2,6 +2,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.5.5]
+
+#### Fixed 
+
+- Fix poetry version not updating init file properly
+- Fix model_summary.txt not being saved correctly 
+
 ### [1.5.4]
 
 #### Added
