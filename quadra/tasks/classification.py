@@ -673,6 +673,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                 x1 = x1.to(next(feature_extractor.parameters()).device)
                 x1 = x1[0].unsqueeze(0)  # Remove batch dimension
 
+                model_info = None
+
                 try:
                     try:
                         # TODO: Do we want to print the summary to the console as well?
@@ -683,12 +685,15 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                             "parameters information"
                         )
                         model_info = summary(feature_extractor, verbose=0)  # type: ignore[arg-type]
-
-                        with open("model_summary.txt", "w") as f:
-                            f.write(str(model_info))
                 except Exception as e:
                     # If for some reason the summary fails we don't want to stop the training
                     log.warning("Failed to retrieve model summary: %s", e)
+
+                if model_info is not None:
+                    with open("model_summary.txt", "w") as f:
+                        f.write(str(model_info))
+            else:
+                log.warning("Failed to retrieve model summary, current model has no parameters")
 
             break
 
@@ -1099,11 +1104,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             return
 
         if isinstance(self.deployment_model.model.features_extractor, timm.models.resnet.ResNet):
-            target_layers = [
-                cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[
-                    -1
-                ]  # type: ignore[index]
-            ]
+            target_layers = [cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[-1]]
             self.cam = GradCAM(
                 model=self.deployment_model.model,
                 target_layers=target_layers,
