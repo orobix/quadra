@@ -1,7 +1,7 @@
 import os
 from ast import literal_eval
 from functools import wraps
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -96,7 +96,7 @@ def calculate_mask_based_metrics(
     multilabel: bool = False,
     n_classes: Optional[int] = None,
 ) -> Tuple[
-    Dict[str, float],
+    Dict[str, Any],
     Dict[str, List[np.ndarray]],
     Dict[str, List[np.ndarray]],
     Dict[str, List[Union[str, float]]],
@@ -231,6 +231,8 @@ def create_mask_report(
     threshold: float = 0.5,
     metric: Callable = score_dice,
     show_orj_predictions: bool = False,
+    best_ckpt_name: Optional[str] = None,
+    last_epoch: Optional[int] = None,
 ) -> List[str]:
     """Create report for segmentation experiment
     Args:
@@ -246,6 +248,8 @@ def create_mask_report(
         threshold: threshold for predictions
         metric: metric function
         show_orj_predictions: if True, original predictions will be shown.
+        best_ckpt_name: name of best model ckpt.
+        last_epoch: number of total training epochs.
 
     Returns:
         list of paths to created images.
@@ -344,7 +348,10 @@ def create_mask_report(
             multilabel=bool(n_classes > 1),
             n_classes=n_classes,
         )
-
+        if best_ckpt_name is not None:
+            result["best_ckpt_name"] = str(best_ckpt_name)
+        if last_epoch is not None:
+            result["last_epoch"] = str(last_epoch)
         if len(fg["image"]) > 0:
             if len(fg["image"]) > nb_samples:
                 for k, v in fg.items():

@@ -57,6 +57,8 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         self.num_viz_samples = num_viz_samples
         self.export_folder: str = "deployment_model"
         self.exported_model_path: Optional[str] = None
+        self.best_ckpt_name: Optional[str] = None
+        self.last_epoch: int = 0
         if self.evaluate and any(self.evaluate.values()):
             if (
                 self.config.export is None
@@ -128,6 +130,8 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         ):
             best_model_path = self.trainer.checkpoint_callback.best_model_path
             log.info("Loaded best model from %s", best_model_path)
+            self.best_ckpt_name = best_model_path.split("/")[-1]
+            self.last_epoch = self.trainer.current_epoch
 
             module = self.module.load_from_checkpoint(
                 best_model_path,
@@ -188,6 +192,8 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
                 eval_task = SegmentationAnalysisEvaluation(
                     config=self.config,
                     model_path=self.exported_model_path,
+                    best_ckpt_name=self.best_ckpt_name,
+                    last_epoch=self.last_epoch,
                 )
                 eval_tasks.append(eval_task)
             for task in eval_tasks:
@@ -298,16 +304,22 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
         config: The experiment configuration
         model_path: The model path.
         device: Device to use for evaluation. If None, the device is automatically determined.
+        best_ckpt_name: Name of best model ckpt.
+        last_epoch: Number of total training epochs.
     """
 
     def __init__(
         self,
         config: DictConfig,
         model_path: str,
+        last_epoch: int,
         device: Optional[str] = None,
+        best_ckpt_name: Optional[str] = None,
     ):
         super().__init__(config=config, model_path=model_path, device=device)
         self.test_output: Dict[str, Any] = {}
+        self.best_ckpt_name = best_ckpt_name
+        self.last_epoch = last_epoch
 
     def train(self) -> None:
         """Skip training."""
@@ -382,6 +394,8 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
                 nb_samples=10,
                 apply_sigmoid=True,
                 show_orj_predictions=True,
+                best_ckpt_name=self.best_ckpt_name,
+                last_epoch=self.last_epoch,
             )
             self.metadata["report_files"].extend(reports)
             log.info("%s analysis report completed.", stage)
