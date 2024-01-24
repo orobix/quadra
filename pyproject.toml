@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quadra"
-version = "1.5.4"
+version = "1.5.5"
 description = "Deep Learning experiment orchestration library"
 authors = [
   "Federico Belotti <federico.belotti@orobix.com>",
@@ -95,13 +95,12 @@ black = { version = "~22.12", optional = true }
 isort = { version = "~5.11", optional = true }
 pre_commit = { version = "~3.0", optional = true }
 pylint = { version = "~2.16", optional = true }
-bump2version = { version = "~1.0", optional = true }
 types_pyyaml = { version = "~6.0.12", optional = true }
 mypy = { version = "~1.0", optional = true }
 ruff = { version = "0.0.257", optional = true }
 pandas_stubs = { version = "~1.5.3", optional = true }
 twine = { version = "~4.0", optional = true }
-poetry-dynamic-versioning = { version = "1.2.0", optional = true }
+poetry-bumpversion = { version = "~0.3", optional = true }
 
 # Documentation dependencies
 mkdocs = { version = "1.5.2", optional = true }
@@ -137,7 +136,6 @@ dev = [
   "mypy",
   "ruff",
   "pandas_stubs",
-  "bumpver",
   "twine",
   "pytest",
   "pytest_cov",
@@ -156,7 +154,7 @@ dev = [
   "mkdocs_material_extensions",
   "mike",
   "cairosvg",
-  "poetry-dynamic-versioning",
+  "poetry-bumpversion",
   "hydra-plugins",
 ]
 
@@ -187,19 +185,6 @@ onnx = ["onnx", "onnxsim", "onnxruntime_gpu"]
 [tool.poetry_bumpversion.file."quadra/__init__.py"]
 search = '__version__ = "{current_version}"'
 replace = '__version__ = "{new_version}"'
-
-# Adapted from https://realpython.com/pypi-publish-python-package/#version-your-package
-[tool.bumpver]
-current_version = "1.4.1"
-version_pattern = "MAJOR.MINOR.PATCH"
-commit_message = "build: Bump version {old_version} -> {new_version}"
-commit = true
-tag = false
-push = false
-
-[tool.bumpver.file_patterns]
-"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
-"quadra/__init__.py" = ["{version}"]
 
 # Black formatting
 [tool.black]
