@@ -44,7 +44,9 @@ def limit_torch_threads():
 @pytest.fixture(autouse=True)
 def setup_devices(device: str):
     """Set the device to run tests on."""
-    torch_device = torch.device(device)
+    # torch_device = torch.device(device)
     os.environ["QUADRA_TEST_DEVICE"] = device
-    if torch_device.type != "cuda":
-        os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+    # TODO: If we use this lightning crashes because it sees gpus but no gpu are available!!
+    # if torch_device.type != "cuda":
+    #    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
