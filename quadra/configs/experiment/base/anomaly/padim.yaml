@@ -33,34 +33,5 @@ logger:
 
 trainer:
   devices: [2]
-  accelerator: auto
-  accumulate_grad_batches: 1
-  benchmark: false
   check_val_every_n_epoch: ${trainer.max_epochs} # Don't validate before extracting features.
-  default_root_dir: null
-  detect_anomaly: false
-  deterministic: false
-  enable_checkpointing: true
-  enable_model_summary: true
-  enable_progress_bar: true
-  fast_dev_run: false
-  gradient_clip_val: 0
-  limit_predict_batches: 1.0
-  limit_test_batches: 1.0
-  limit_train_batches: 1.0
-  limit_val_batches: 1.0
-  log_every_n_steps: 50
   max_epochs: 1
-  max_steps: -1
-  max_time: null
-  min_epochs: null
-  min_steps: null
-  num_nodes: 1
-  num_sanity_val_steps: 0
-  overfit_batches: 0.0
-  plugins: null
-  precision: 32
-  profiler: null
-  use_distributed_sampler: true
-  sync_batchnorm: false
-  val_check_interval: 1.0 # Don't validate before extracting features.
