@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quadra"
-version = "1.5.5"
+version = "1.5.6"
 description = "Deep Learning experiment orchestration library"
 authors = [
   "Federico Belotti <federico.belotti@orobix.com>",
