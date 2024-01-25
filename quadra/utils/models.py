@@ -146,8 +146,11 @@ def get_feature(
             x1, y1 = b
 
             if hasattr(feature_extractor, "parameters"):
-                # Move input to the correct device
-                x1 = x1.to(next(feature_extractor.parameters()).device)
+                # Move input to the correct device and dtype
+                parameter = next(feature_extractor.parameters())
+                x1 = x1.to(parameter.device).to(parameter.dtype)
+            elif isinstance(feature_extractor, BaseEvaluationModel):
+                x1 = x1.to(feature_extractor.device).to(feature_extractor.model_dtype)
 
             if gradcam:
                 y_hat = cast(

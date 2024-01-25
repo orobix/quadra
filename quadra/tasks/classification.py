@@ -473,6 +473,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         output: Dictionary defining which kind of outputs to generate. Defaults to None.
         automatic_batch_size: Whether to automatically find the largest batch size that fits in memory.
         save_model_summary: Whether to save a model_summary.txt file containing the model summary.
+        half_precision: Whether to use half precision during training.
     """
 
     def __init__(
@@ -482,6 +483,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         device: str,
         automatic_batch_size: DictConfig,
         save_model_summary: bool = False,
+        half_precision: bool = False,
     ):
         super().__init__(config=config)
 
@@ -502,6 +504,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self.test_dataloader_list: List[torch.utils.data.DataLoader] = []
         self.automatic_batch_size = automatic_batch_size
         self.save_model_summary = save_model_summary
+        self.half_precision = half_precision
 
     @property
     def device(self) -> str:
@@ -558,6 +561,10 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
         self._backbone = ModelSignatureWrapper(self._backbone)
         self._backbone.eval()
+        if self.half_precision:
+            if self.device == "cpu":
+                raise ValueError("Half precision is not supported on CPU")
+            self._backbone.half()
         self._backbone.to(self.device)
 
     @property
@@ -757,7 +764,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             config=self.config,
             model=self.backbone,
             export_folder=self.export_folder,
-            half_precision=False,
+            half_precision=self.half_precision,
             input_shapes=input_shapes,
             idx_to_class=idx_to_class,
             pytorch_model_type="backbone",
@@ -1104,7 +1111,11 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             return
 
         if isinstance(self.deployment_model.model.features_extractor, timm.models.resnet.ResNet):
-            target_layers = [cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[-1]]
+            target_layers = [
+                cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[
+                    -1
+                ]  # type: ignore[index]
+            ]
             self.cam = GradCAM(
                 model=self.deployment_model.model,
                 target_layers=target_layers,
