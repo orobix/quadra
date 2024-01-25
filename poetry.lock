@@ -187,7 +187,7 @@ test = ["flake8 (==3.7.9)", "mock (==2.0.0)", "pylint (==1.9.3)"]
 
 [[package]]
 name = "anomalib"
-version = "0.7.0+obx.1.2.11"
+version = "0.7.0+obx.1.3.0"
 description = "anomalib - Anomaly Detection Library"
 optional = false
 python-versions = ">=3.7"
@@ -214,8 +214,8 @@ openvino = ["defusedxml (==0.7.1)", "networkx (>=2.5,<3.0)", "nncf (>=2.1.0)", "
 [package.source]
 type = "git"
 url = "https://github.com/orobix/anomalib.git"
-reference = "v0.7.0+obx.1.2.11"
-resolved_reference = "715c3efee8c046aa98aaef7fad26f52613907ef4"
+reference = "v0.7.0+obx.1.3.0"
+resolved_reference = "04e2db7795c26a3d6cc1baf797134a895d1ad87a"
 
 [[package]]
 name = "antlr4-python3-runtime"
@@ -7833,4 +7833,4 @@ test = ["pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_moc
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "62d461320b686f7552f69976b4addbb823f34d1dd3ee8a84d6f66f5f33755135"
+content-hash = "8a21ad86e700d0ea1ae59f94dab392f7d366c7e301a23f2c5470fc9276d4e85d"
