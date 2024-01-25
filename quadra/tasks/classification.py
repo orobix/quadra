@@ -4,6 +4,7 @@ import glob
 import json
 import os
 import typing
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, Generic, List, Optional, cast
 
@@ -332,6 +333,8 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         if not self.run_test or self.config.trainer.get("fast_dev_run"):
             self.datamodule.setup(stage="test")
 
+        # Deepcopy to remove the inference mode from gradients causing issues when loading checkpoints
+        self.module.model = deepcopy(self.module.model)
         predictions_outputs = self.trainer.predict(
             model=self.module, datamodule=self.datamodule, ckpt_path=self.best_model_path
         )
