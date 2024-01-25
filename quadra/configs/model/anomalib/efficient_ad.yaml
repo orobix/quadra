@@ -29,3 +29,9 @@ metrics:
     method: adaptive # options: [adaptive, manual]
     manual_image: null
     manual_pixel: null
+
+trainer:
+  # This will avoid issues with ModelSignatureWrapper
+  # As the default forward for EfficientAD is performed with a None attribute
+  # Which we currently can't handle
+  num_sanity_val_steps: 0
