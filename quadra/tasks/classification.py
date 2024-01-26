@@ -688,7 +688,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
             if hasattr(feature_extractor, "parameters"):
                 # Move input to the correct device
-                x1 = x1.to(next(feature_extractor.parameters()).device)
+                parameter = next(feature_extractor.parameters())
+                x1 = x1.to(parameter.device).to(parameter.dtype)
                 x1 = x1[0].unsqueeze(0)  # Remove batch dimension
 
                 model_info = None
