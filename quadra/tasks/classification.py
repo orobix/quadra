@@ -332,6 +332,11 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         if not self.run_test or self.config.trainer.get("fast_dev_run"):
             self.datamodule.setup(stage="test")
 
+        if "16" in self.trainer.precision:
+            log.warning("Gradcam is currently not supported with half precision, it will be disabled")
+            self.module.gradcam = False
+            self.gradcam = False
+
         predictions_outputs = self.trainer.predict(
             model=self.module, datamodule=self.datamodule, ckpt_path=self.best_model_path
         )
