@@ -33,6 +33,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         device: The device to use
         output: Dictionary defining which kind of outputs to generate. Defaults to None.
         automatic_batch_size: Whether to automatically find the largest batch size that fits in memory.
+        half_precision: Whether to use half precision.
     """
 
     def __init__(
@@ -41,6 +42,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         output: DictConfig,
         device: str,
         automatic_batch_size: DictConfig,
+        half_precision: bool = False,
     ):
         super().__init__(config=config)
         self.device: str = device
@@ -58,6 +60,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         }
         self.export_folder: str = "deployment_model"
         self.automatic_batch_size = automatic_batch_size
+        self.half_precision = half_precision
 
     @property
     def model(self) -> ClassifierMixin:
@@ -87,6 +90,10 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
 
         self._backbone = ModelSignatureWrapper(self._backbone)
         self._backbone.eval()
+        if self.half_precision:
+            if self.device == "cpu":
+                raise ValueError("Half precision is not supported on CPU")
+            self._backbone.half()
         self._backbone = self._backbone.to(self.device)
 
     def prepare(self) -> None:
@@ -222,7 +229,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
             config=self.config,
             model=self.backbone,
             export_folder=self.export_folder,
-            half_precision=False,
+            half_precision=self.half_precision,
             input_shapes=input_shapes,
             idx_to_class=idx_to_class,
             pytorch_model_type="backbone",

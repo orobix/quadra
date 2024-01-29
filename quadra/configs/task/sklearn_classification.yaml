@@ -1,5 +1,7 @@
 _target_: quadra.tasks.SklearnClassification
 device: cuda:0
+half_precision: false
+gradcam: false
 automatic_batch_size:
   starting_batch_size: 1024
   disable: true
