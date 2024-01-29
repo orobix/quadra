@@ -332,6 +332,11 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         if not self.run_test or self.config.trainer.get("fast_dev_run"):
             self.datamodule.setup(stage="test")
 
+        if "16" in self.trainer.precision:
+            log.warning("Gradcam is currently not supported with half precision, it will be disabled")
+            self.module.gradcam = False
+            self.gradcam = False
+
         predictions_outputs = self.trainer.predict(
             model=self.module, datamodule=self.datamodule, ckpt_path=self.best_model_path
         )
@@ -473,6 +478,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         output: Dictionary defining which kind of outputs to generate. Defaults to None.
         automatic_batch_size: Whether to automatically find the largest batch size that fits in memory.
         save_model_summary: Whether to save a model_summary.txt file containing the model summary.
+        half_precision: Whether to use half precision during training.
+        gradcam: Whether to compute gradcams for test results.
     """
 
     def __init__(
@@ -482,6 +489,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         device: str,
         automatic_batch_size: DictConfig,
         save_model_summary: bool = False,
+        half_precision: bool = False,
+        gradcam: bool = False,
     ):
         super().__init__(config=config)
 
@@ -495,6 +504,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             "test_accuracy": [],
             "test_results": [],
             "test_labels": [],
+            "cams": [],
         }
         self.export_folder = "deployment_model"
         self.deploy_info_file = "model.json"
@@ -502,6 +512,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self.test_dataloader_list: List[torch.utils.data.DataLoader] = []
         self.automatic_batch_size = automatic_batch_size
         self.save_model_summary = save_model_summary
+        self.half_precision = half_precision
+        self.gradcam = gradcam
 
     @property
     def device(self) -> str:
@@ -558,6 +570,14 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
         self._backbone = ModelSignatureWrapper(self._backbone)
         self._backbone.eval()
+        if self.half_precision:
+            if self.device == "cpu":
+                raise ValueError("Half precision is not supported on CPU")
+            self._backbone.half()
+
+            if self.gradcam:
+                log.warning("Gradcam is currently not supported with half precision, it will be disabled")
+                self.gradcam = False
         self._backbone.to(self.device)
 
     @property
@@ -622,21 +642,23 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                     train_features=all_features_sorted[0:train_len], train_labels=all_labels_sorted[0:train_len]
                 )
 
-                _, pd_cm, accuracy, res, _ = self.trainer.test(
+                _, pd_cm, accuracy, res, cams = self.trainer.test(
                     test_dataloader=test_dataloader,
                     test_features=all_features_sorted[train_len:],
                     test_labels=all_labels_sorted[train_len:],
                     class_to_keep=class_to_keep,
                     idx_to_class=train_dataloader.dataset.idx_to_class,
                     predict_proba=True,
+                    gradcam=self.gradcam,
                 )
             else:
                 self.trainer.fit(train_dataloader=train_dataloader)
-                _, pd_cm, accuracy, res, _ = self.trainer.test(
+                _, pd_cm, accuracy, res, cams = self.trainer.test(
                     test_dataloader=test_dataloader,
                     class_to_keep=class_to_keep,
                     idx_to_class=train_dataloader.dataset.idx_to_class,
                     predict_proba=True,
+                    gradcam=self.gradcam,
                 )
 
             # save results
@@ -649,6 +671,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                     for i in res["real_label"].unique().tolist()
                 ]
             )
+            self.metadata["cams"].append(cams)
 
     def extract_model_summary(
         self, feature_extractor: torch.nn.Module | BaseEvaluationModel, dl: torch.utils.data.DataLoader
@@ -670,7 +693,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
             if hasattr(feature_extractor, "parameters"):
                 # Move input to the correct device
-                x1 = x1.to(next(feature_extractor.parameters()).device)
+                parameter = next(feature_extractor.parameters())
+                x1 = x1.to(parameter.device).to(parameter.dtype)
                 x1 = x1[0].unsqueeze(0)  # Remove batch dimension
 
                 model_info = None
@@ -725,8 +749,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
         # Put backbone on the correct device as it may be moved after export
         self.backbone.to(self.device)
-        _, pd_cm, accuracy, res, _ = self.trainer.test(
-            test_dataloader=test_dataloader, idx_to_class=idx_to_class, predict_proba=True
+        _, pd_cm, accuracy, res, cams = self.trainer.test(
+            test_dataloader=test_dataloader, idx_to_class=idx_to_class, predict_proba=True, gradcam=self.gradcam
         )
 
         output_folder_test = "test"
@@ -741,6 +765,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             test_dataloader=test_dataloader,
             config=self.config,
             output=self.output,
+            grayscale_cams=cams,
         )
 
     def export(self) -> None:
@@ -757,7 +782,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             config=self.config,
             model=self.backbone,
             export_folder=self.export_folder,
-            half_precision=False,
+            half_precision=self.half_precision,
             input_shapes=input_shapes,
             idx_to_class=idx_to_class,
             pytorch_model_type="backbone",
@@ -789,6 +814,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                 test_dataloader=self.test_dataloader_list[count],
                 config=self.config,
                 output=self.output,
+                grayscale_cams=self.metadata["cams"][count],
             )
         final_confusion_matrix = sum(cm_list)
 
@@ -1104,7 +1130,11 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             return
 
         if isinstance(self.deployment_model.model.features_extractor, timm.models.resnet.ResNet):
-            target_layers = [cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[-1]]
+            target_layers = [
+                cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[
+                    -1
+                ]  # type: ignore[index]
+            ]
             self.cam = GradCAM(
                 model=self.deployment_model.model,
                 target_layers=target_layers,

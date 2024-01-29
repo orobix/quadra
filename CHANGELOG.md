@@ -2,6 +2,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.5.6]
+
+#### Added
+
+- Add support for half precision training and inference for sklearn based tasks
+- Add gradcam export for sklearn training
+
 ### [1.5.5]
 
 #### Fixed 

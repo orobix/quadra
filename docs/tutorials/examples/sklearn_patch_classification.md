@@ -223,6 +223,7 @@ datamodule:
 
 task:
   device: cuda:2
+  half_precision: false
   automatic_batch_size:
     starting_batch_size: 1024
     disable: true
@@ -235,6 +236,7 @@ task:
 
 This will train a resnet18 model on the given dataset, using 256 as batch size and skipping the background class during training.
 The experiment results will be saved under the `classification_patch_experiment` folder. The deployment model will be generated but only the classifier will be saved (in joblib format), to reconstruct patches for evaluation the `major_voting` method will be used.
+It is possible to extract features in half precision by setting `half_precision` to true. The `automatic_batch_size` parameter can be used to automatically adjust the batch size to fit the memory of the device. The `starting_batch_size` parameter is used to specify the starting batch size, the algorithm will try to decrease the batch size until it can fit the batch into memory. The `disable` parameter can be used to disable the automatic batch size adjustment.
 
 ### Run
 

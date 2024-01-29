@@ -14,7 +14,12 @@ from timm.models.layers import DropPath
 from timm.models.vision_transformer import Mlp
 from torch import nn
 
-from quadra.models.evaluation import BaseEvaluationModel, TorchEvaluationModel, TorchscriptEvaluationModel
+from quadra.models.evaluation import (
+    BaseEvaluationModel,
+    ONNXEvaluationModel,
+    TorchEvaluationModel,
+    TorchscriptEvaluationModel,
+)
 from quadra.utils import utils
 from quadra.utils.vit_explainability import VitAttentionGradRollout
 
@@ -109,7 +114,7 @@ def get_feature(
     if isinstance(feature_extractor, (TorchEvaluationModel, TorchscriptEvaluationModel)):
         # If we are working with torch based evaluation models we need to extract the model
         feature_extractor = feature_extractor.model
-    else:
+    elif isinstance(feature_extractor, ONNXEvaluationModel):
         gradcam = False
 
     feature_extractor.eval()
@@ -146,8 +151,11 @@ def get_feature(
             x1, y1 = b
 
             if hasattr(feature_extractor, "parameters"):
-                # Move input to the correct device
-                x1 = x1.to(next(feature_extractor.parameters()).device)
+                # Move input to the correct device and dtype
+                parameter = next(feature_extractor.parameters())
+                x1 = x1.to(parameter.device).to(parameter.dtype)
+            elif isinstance(feature_extractor, BaseEvaluationModel):
+                x1 = x1.to(feature_extractor.device).to(feature_extractor.model_dtype)
 
             if gradcam:
                 y_hat = cast(
