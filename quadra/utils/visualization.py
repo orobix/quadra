@@ -69,6 +69,8 @@ def create_grid_figure(
         fig_size (Tuple[int, int], optional): Figure size. Defaults to (12, 8).
         bounds (Optional[List[Tuple[float, float]]], optional): Bounds for the images. Defaults to None.
     """
+    default_plt_backend = plt.get_backend()
+    plt.switch_backend("Agg")
     _, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=fig_size, squeeze=False)
     for i, row in enumerate(images):
         for j, image in enumerate(row):
@@ -84,6 +86,7 @@ def create_grid_figure(
     plt.tight_layout()
     plt.savefig(file_path, bbox_inches="tight", dpi=300, facecolor="white", transparent=False)
     plt.close()
+    plt.switch_backend(default_plt_backend)
 
 
 def create_visualization_dataset(dataset: torch.utils.data.Dataset):
