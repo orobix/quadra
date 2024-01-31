@@ -18,7 +18,7 @@ from pytest import raises
 
 from quadra.models.base import ModelSignatureWrapper
 from quadra.utils.export import generate_torch_inputs
-from quadra.utils.mlflow import infer_signature_input_torch, infer_signature_torch_model
+from quadra.utils.mlflow import infer_signature_model
 from quadra.utils.tests.models import DoubleInputModel, SingleInputModel
 
 
@@ -57,7 +57,7 @@ def test_single_tensor_signature():
 
     inputs = generate_torch_inputs(model.input_shapes, device="cpu")
 
-    signature = infer_signature_torch_model(model, inputs)
+    signature = infer_signature_model(model, inputs)
 
     expected_input_signature = [TensorSpec(shape=(-1, *x.shape[1:]), type=x.numpy().dtype)]
 
@@ -76,7 +76,7 @@ def test_multiple_tensor_signature():
     assert model.input_shapes == [(3, 224, 224), (3, 448, 448)]
     inputs = generate_torch_inputs(model.input_shapes, device="cpu")
 
-    signature = infer_signature_torch_model(model, inputs)
+    signature = infer_signature_model(model, inputs)
 
     expected_input_signature = [
         TensorSpec(shape=(-1, *x.shape[1:]), type=x.numpy().dtype, name="output_0"),
@@ -98,7 +98,7 @@ def test_dict_signature():
 
     inputs = generate_torch_inputs(model.input_shapes, device="cpu")
 
-    signature = infer_signature_torch_model(model, inputs)
+    signature = infer_signature_model(model, inputs)
 
     expected_input_signature = [TensorSpec(shape=(-1, *x.shape[1:]), type=x.numpy().dtype, name="x")]
 

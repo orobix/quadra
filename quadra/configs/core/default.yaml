@@ -7,4 +7,5 @@ cv2_num_threads: 1
 command: "python "
 experiment_path: null
 upload_artifacts: False
+upload_models: [torchscript] # Default behavior in quadra <= 1.5.6
 log_level: info

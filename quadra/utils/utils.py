@@ -14,6 +14,7 @@ import cv2
 import dotenv
 import mlflow
 import numpy as np
+import onnx
 import pytorch_lightning as pl
 import rich.syntax
 import rich.tree
@@ -28,7 +29,7 @@ from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 import quadra
 import quadra.utils.export as quadra_export
 from quadra.callbacks.mlflow import get_mlflow_logger
-from quadra.utils.mlflow import infer_signature_torch_model
+from quadra.utils.mlflow import infer_signature_model
 
 IMAGE_EXTENSIONS: List[str] = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pbm", ".pgm", ".ppm", ".pxm", ".pnm"]
 
@@ -291,20 +292,40 @@ def finish(
                     List[Any],
                     quadra_export.generate_torch_inputs(input_size, device=device, half_precision=half_precision),
                 )
+                types_to_upload = config.core.get("upload_models")
                 for model_path in deployed_models:
-                    if model_path.endswith(".pt"):
+                    model_type = model_type_from_path(model_path)
+                    if model_type is None:
+                        logging.warning("%s model type not supported", model_path)
+                        continue
+                    if model_type is not None and model_type in types_to_upload:
                         model = quadra_export.import_deployment_model(
                             model_path, device=device, inference_config=config.inference
-                        ).model
+                        )
 
-                        signature = infer_signature_torch_model(model, inputs)
-
-                        with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
-                            mlflow.pytorch.log_model(
-                                model,
-                                artifact_path=model_path,
-                                signature=signature,
-                            )
+                        if model_type in ["torchscript", "pytorch"]:
+                            signature = infer_signature_model(model.model, inputs)
+                            with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
+                                mlflow.pytorch.log_model(
+                                    model.model,
+                                    artifact_path=model_path,
+                                    signature=signature,
+                                )
+                        elif model_type in ["onnx", "simplified_onnx"]:
+                            signature = infer_signature_model(model, inputs)
+                            with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
+                                if model.model_path is None:
+                                    logging.warning(
+                                        "Cannot log onnx model on mlflow, \
+                                        BaseEvaluationModel 'model_path' attribute is None"
+                                    )
+                                else:
+                                    model_proto = onnx.load(model.model_path)
+                                    mlflow.onnx.log_model(
+                                        model_proto,
+                                        artifact_path=model_path,
+                                        signature=signature,
+                                    )
 
         if tensorboard_logger is not None:
             config_paths = []
@@ -329,6 +350,41 @@ def load_envs(env_file: Optional[str] = None) -> None:
                      it searches for a `.env` file in the project.
     """
     dotenv.load_dotenv(dotenv_path=env_file, override=True)
+
+
+def model_type_from_path(model_path: str) -> Optional[str]:
+    """Determine the type of the machine learning model based on its file extension.
+
+    Parameters:
+    - model_path (str): The file path of the machine learning model.
+
+    Returns:
+    - str: The type of the model, which can be one of the following:
+      - "torchscript" if the model has a '.pt' extension (TorchScript).
+      - "pytorch" if the model has a '.pth' extension (PyTorch).
+      - "simplified_onnx" if the model file ends with 'simplified.onnx' (Simplified ONNX).
+      - "onnx" if the model has a '.onnx' extension (ONNX).
+      - "json" id the model has a '.json' extension (JSON).
+      - None if model extension is not supported.
+
+    Example:
+    ```python
+    model_path = "path/to/your/model.onnx"
+    model_type = model_type_from_path(model_path)
+    print(f"The model type is: {model_type}")
+    ```
+    """
+    if model_path.endswith(".pt"):
+        return "torchscript"
+    if model_path.endswith(".pth"):
+        return "pytorch"
+    if model_path.endswith("simplified.onnx"):
+        return "simplified_onnx"
+    if model_path.endswith(".onnx"):
+        return "onnx"
+    if model_path.endswith(".json"):
+        return "json"
+    return None
 
 
 def setup_opencv() -> None:
