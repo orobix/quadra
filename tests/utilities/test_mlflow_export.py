@@ -18,7 +18,7 @@ from pytest import raises
 
 from quadra.models.base import ModelSignatureWrapper
 from quadra.utils.export import generate_torch_inputs
-from quadra.utils.mlflow import infer_signature_model
+from quadra.utils.mlflow import infer_signature_input, infer_signature_model
 from quadra.utils.tests.models import DoubleInputModel, SingleInputModel
 
 
@@ -126,9 +126,9 @@ def test_nested_tuple_signature():
 
     # Nested structures are not supported
     with raises(ValueError):
-        infer_signature_input_torch(inputs)
+        infer_signature_input(inputs)
 
-    signature = infer_signature(infer_signature_input_torch(outputs), infer_signature_input_torch(outputs))
+    signature = infer_signature(infer_signature_input(outputs), infer_signature_input(outputs))
 
     assert check_signature_equality(signature.outputs.inputs, expected_output_signature)
 
@@ -151,9 +151,9 @@ def test_nested_list_signature():
 
     # Nested structures are not supported
     with raises(ValueError):
-        infer_signature_input_torch(inputs)
+        infer_signature_input(inputs)
 
-    signature = infer_signature(infer_signature_input_torch(outputs), infer_signature_input_torch(outputs))
+    signature = infer_signature(infer_signature_input(outputs), infer_signature_input(outputs))
 
     assert check_signature_equality(signature.outputs.inputs, expected_output_signature)
 
@@ -170,10 +170,10 @@ def test_nested_dicts_signature():
 
     # Nested structures are not supported
     with raises(ValueError):
-        infer_signature_input_torch(inputs)
+        infer_signature_input(inputs)
 
     with raises(ValueError):
-        infer_signature_input_torch(outputs)
+        infer_signature_input(outputs)
 
 
 @torch.inference_mode()
@@ -189,7 +189,7 @@ def test_tuple_of_dicts_signature():
 
     # Nested structures are not supported
     with raises(ValueError):
-        infer_signature_input_torch(inputs)
+        infer_signature_input(inputs)
 
     with raises(ValueError):
-        infer_signature_input_torch(outputs)
+        infer_signature_input(outputs)
