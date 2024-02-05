@@ -8,29 +8,28 @@ try:
 except ImportError:
     MLFLOW_AVAILABLE = False
 
-from typing import Any, Sequence, TypeVar
+from typing import Any, Sequence
 
 import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import MLFlowLogger
-from torch import nn
 
-NnModuleT = TypeVar("NnModuleT", bound=nn.Module)
+from quadra.models.evaluation import BaseEvaluationModel
 
 
 @torch.inference_mode()
-def infer_signature_torch_model(model: NnModuleT, data: list[Any]) -> ModelSignature | None:
+def infer_signature_model(model: BaseEvaluationModel, data: list[Any]) -> ModelSignature | None:
     """Infer input and output signature for a PyTorch/Torchscript model."""
     model = model.eval()
     model_output = model(*data)
 
     try:
-        output_signature = infer_signature_input_torch(model_output)
+        output_signature = infer_signature_input(model_output)
 
         if len(data) == 1:
-            signature_input = infer_signature_input_torch(data[0])
+            signature_input = infer_signature_input(data[0])
         else:
-            signature_input = infer_signature_input_torch(data)
+            signature_input = infer_signature_input(data)
     except ValueError:
         # TODO: Solve circular import as it is not possible to import get_logger right now
         # log.warning("Unable to infer signature for model output type %s", type(model_output))
@@ -39,7 +38,7 @@ def infer_signature_torch_model(model: NnModuleT, data: list[Any]) -> ModelSigna
     return infer_signature(signature_input, output_signature)
 
 
-def infer_signature_input_torch(input_tensor: Any) -> Any:
+def infer_signature_input(input_tensor: Any) -> Any:
     """Recursively infer the signature input format to pass to mlflow.models.infer_signature.
 
     Raises:
@@ -58,7 +57,7 @@ def infer_signature_input_torch(input_tensor: Any) -> Any:
                 # Nested dicts are not supported
                 raise ValueError("Nested dicts are not supported")
 
-            signature[f"output_{i}"] = infer_signature_input_torch(x)
+            signature[f"output_{i}"] = infer_signature_input(x)
     elif isinstance(input_tensor, torch.Tensor):
         signature = input_tensor.cpu().numpy()
     elif isinstance(input_tensor, dict):
@@ -71,7 +70,7 @@ def infer_signature_input_torch(input_tensor: Any) -> Any:
                 # Nested signature is currently not supported by mlflow
                 raise ValueError("Nested sequences are not supported")
 
-            signature[k] = infer_signature_input_torch(v)
+            signature[k] = infer_signature_input(v)
     else:
         raise ValueError(f"Unable to infer signature for model output type {type(input_tensor)}")
 

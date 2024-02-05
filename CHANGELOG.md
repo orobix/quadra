@@ -2,6 +2,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.5.7]
+
+#### Added
+
+- Add upload_models to core config
+
+#### Refactored
+
+- infer_signature_torch_model refactored to infer_signature_model
+
 ### [1.5.6]
 
 #### Added
