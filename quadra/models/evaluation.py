@@ -306,6 +306,7 @@ class ONNXEvaluationModel(BaseEvaluationModel):
 
     def eval(self):
         """Fake interface to match torch models."""
+        return self
 
     def half(self):
         """Convert model to half precision."""

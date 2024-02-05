@@ -305,13 +305,18 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
             self.data.to_csv(self.dataset_file, index=False)
             log.info("Datamodule checkpoint saved to disk.")
 
-        if "targets" in self.data and not isinstance(self.data["targets"].iloc[0], np.ndarray):
-            # If we find a numpy array target it's very likely one hot encoded, in that case we don't want to print
+        if "targets" in self.data:
+            if isinstance(self.data["targets"].iloc[0], np.ndarray):
+                # If we find a numpy array target it's very likely one hot encoded,
+                # in that case we just print the number of train/val/test samples
+                grouping = ["split"]
+            else:
+                grouping = ["split", "targets"]
             log.info("Dataset Info:")
             split_order = {"train": 0, "val": 1, "test": 2}
             log.info(
                 "\n%s",
-                self.data.groupby(["split", "targets"])
+                self.data.groupby(grouping)
                 .size()
                 .to_frame()
                 .reset_index()
