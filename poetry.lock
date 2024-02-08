@@ -264,7 +264,7 @@ files = [
 name = "astroid"
 version = "2.15.8"
 description = "An abstract syntax tree for Python with inference support."
-optional = true
+optional = false
 python-versions = ">=3.7.2"
 files = [
     {file = "astroid-2.15.8-py3-none-any.whl", hash = "sha256:1aa149fc5c6589e3d0ece885b4491acd80af4f087baafa3fb5203b113e68cd3c"},
@@ -321,7 +321,7 @@ files = [
 name = "babel"
 version = "2.14.0"
 description = "Internationalization utilities"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "Babel-2.14.0-py3-none-any.whl", hash = "sha256:efb1a25b7118e67ce3a259bed20545c29cb68be8ad2c784c83689981b7a57287"},
@@ -386,7 +386,7 @@ typecheck = ["mypy"]
 name = "black"
 version = "22.12.0"
 description = "The uncompromising code formatter."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "black-22.12.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9eedd20838bd5d75b80c9f5487dbcb06836a43833a37846cf1d8c1cc01cef59d"},
@@ -526,7 +526,7 @@ files = [
 name = "cairocffi"
 version = "1.6.1"
 description = "cffi-based cairo bindings for Python"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "cairocffi-1.6.1-py3-none-any.whl", hash = "sha256:aa78ee52b9069d7475eeac457389b6275aa92111895d78fbaa2202a52dac112e"},
@@ -545,7 +545,7 @@ xcb = ["xcffib (>=1.4.0)"]
 name = "cairosvg"
 version = "2.7.0"
 description = "A Simple SVG Converter based on Cairo"
-optional = true
+optional = false
 python-versions = ">=3.5"
 files = [
     {file = "CairoSVG-2.7.0-py3-none-any.whl", hash = "sha256:17cb96423a896258848322a95c80160e714a58f1af3dd73b8e1750994519b9f9"},
@@ -642,7 +642,7 @@ pycparser = "*"
 name = "cfgv"
 version = "3.4.0"
 description = "Validate configuration and produce human readable error messages."
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "cfgv-3.4.0-py2.py3-none-any.whl", hash = "sha256:b7265b1f29fd3316bfcd2b330d63d024f2bfd8bcb8b0272f8e19a504856c48f9"},
@@ -958,7 +958,7 @@ test-no-images = ["pytest", "pytest-cov", "pytest-xdist", "wurlitzer"]
 name = "coverage"
 version = "7.4.0"
 description = "Code coverage measurement for Python"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "coverage-7.4.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:36b0ea8ab20d6a7564e89cb6135920bc9188fb5f1f7152e94e8300b7b189441a"},
@@ -1090,7 +1090,7 @@ test-randomorder = ["pytest-randomly"]
 name = "cssselect2"
 version = "0.7.0"
 description = "CSS selectors for Python ElementTree"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "cssselect2-0.7.0-py3-none-any.whl", hash = "sha256:fd23a65bfd444595913f02fc71f6b286c29261e354c41d722ca7a261a49b5969"},
@@ -1144,7 +1144,7 @@ urllib3 = ">=1.26.7,<3"
 name = "defusedxml"
 version = "0.7.1"
 description = "XML bomb protection for Python stdlib modules"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 files = [
     {file = "defusedxml-0.7.1-py2.py3-none-any.whl", hash = "sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61"},
@@ -1155,7 +1155,7 @@ files = [
 name = "dill"
 version = "0.3.7"
 description = "serialize all of Python"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "dill-0.3.7-py3-none-any.whl", hash = "sha256:76b122c08ef4ce2eedcd4d1abd8e641114bfc6c2867f49f3c41facf65bf19f5e"},
@@ -1226,7 +1226,7 @@ files = [
 name = "docutils"
 version = "0.20.1"
 description = "Docutils -- Python Documentation Utilities"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "docutils-0.20.1-py3-none-any.whl", hash = "sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6"},
@@ -1671,7 +1671,7 @@ tqdm = ["tqdm"]
 name = "ghp-import"
 version = "2.1.0"
 description = "Copy your docs directly to the gh-pages branch."
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "ghp-import-2.1.0.tar.gz", hash = "sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343"},
@@ -1882,7 +1882,7 @@ test = ["objgraph", "psutil"]
 name = "griffe"
 version = "0.39.1"
 description = "Signatures for entire Python programs. Extract the structure, the frame, the skeleton of your project, to generate API documentation or find breaking changes in your API."
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "griffe-0.39.1-py3-none-any.whl", hash = "sha256:6ce4ecffcf0d2f96362c5974b3f7df812da8f8d4cfcc5ebc8202ef72656fc087"},
@@ -2135,7 +2135,7 @@ url = "quadra_hydra_plugin"
 name = "identify"
 version = "2.5.33"
 description = "File identification library for Python"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "identify-2.5.33-py2.py3-none-any.whl", hash = "sha256:d40ce5fcd762817627670da8a7d8d8e65f24342d14539c59488dc603bf662e34"},
@@ -2331,7 +2331,7 @@ testing = ["flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
@@ -2353,7 +2353,7 @@ files = [
 name = "interrogate"
 version = "1.5.0"
 description = "Interrogate a codebase for docstring coverage."
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "interrogate-1.5.0-py3-none-any.whl", hash = "sha256:a4ccc5cbd727c74acc98dee6f5e79ef264c0bcfa66b68d4e123069b2af89091a"},
@@ -2378,7 +2378,7 @@ tests = ["pytest", "pytest-cov", "pytest-mock"]
 name = "isort"
 version = "5.11.5"
 description = "A Python utility / library to sort Python imports."
-optional = true
+optional = false
 python-versions = ">=3.7.0"
 files = [
     {file = "isort-5.11.5-py3-none-any.whl", hash = "sha256:ba1d72fb2595a01c7895a5128f9585a5cc4b6d395f1c8d514989b9a7eb2a8746"},
@@ -2717,7 +2717,7 @@ test = ["pytest (>=7.4)", "pytest-cov (>=4.1)"]
 name = "lazy-object-proxy"
 version = "1.10.0"
 description = "A fast and thorough lazy object proxy."
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "lazy-object-proxy-1.10.0.tar.gz", hash = "sha256:78247b6d45f43a52ef35c25b5581459e85117225408a4128a3daf8bf9648ac69"},
@@ -3151,7 +3151,7 @@ python-dateutil = ">=2.7"
 name = "mccabe"
 version = "0.7.0"
 description = "McCabe checker, plugin for flake8"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "mccabe-0.7.0-py2.py3-none-any.whl", hash = "sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e"},
@@ -3192,7 +3192,7 @@ files = [
 name = "mergedeep"
 version = "1.3.4"
 description = "A deep merge function for 🐍."
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "mergedeep-1.3.4-py3-none-any.whl", hash = "sha256:70775750742b25c0d8f36c55aed03d24c3384d17c951b3175d898bd778ef0307"},
@@ -3203,7 +3203,7 @@ files = [
 name = "mike"
 version = "1.1.2"
 description = "Manage multiple versions of your MkDocs-powered documentation"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "mike-1.1.2-py3-none-any.whl", hash = "sha256:4c307c28769834d78df10f834f57f810f04ca27d248f80a75f49c6fa2d1527ca"},
@@ -3239,7 +3239,7 @@ urllib3 = "*"
 name = "mkdocs"
 version = "1.5.2"
 description = "Project documentation with Markdown."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "mkdocs-1.5.2-py3-none-any.whl", hash = "sha256:60a62538519c2e96fe8426654a67ee177350451616118a41596ae7c876bb7eac"},
@@ -3270,7 +3270,7 @@ min-versions = ["babel (==2.9.0)", "click (==7.0)", "colorama (==0.4)", "ghp-imp
 name = "mkdocs-autorefs"
 version = "0.5.0"
 description = "Automatically link across pages in MkDocs."
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "mkdocs_autorefs-0.5.0-py3-none-any.whl", hash = "sha256:7930fcb8ac1249f10e683967aeaddc0af49d90702af111a5e390e8b20b3d97ff"},
@@ -3285,7 +3285,7 @@ mkdocs = ">=1.1"
 name = "mkdocs-gen-files"
 version = "0.5.0"
 description = "MkDocs plugin to programmatically generate documentation pages during the build"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "mkdocs_gen_files-0.5.0-py3-none-any.whl", hash = "sha256:7ac060096f3f40bd19039e7277dd3050be9a453c8ac578645844d4d91d7978ea"},
@@ -3299,7 +3299,7 @@ mkdocs = ">=1.0.3"
 name = "mkdocs-literate-nav"
 version = "0.6.0"
 description = "MkDocs plugin to specify the navigation in Markdown instead of YAML"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "mkdocs_literate_nav-0.6.0-py3-none-any.whl", hash = "sha256:8c1b84714e5974da5e44e011ec0069275ae7647270c13a679662cf6ffce675a4"},
@@ -3313,7 +3313,7 @@ mkdocs = ">=1.0.3"
 name = "mkdocs-material"
 version = "9.2.8"
 description = "Documentation that simply works"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "mkdocs_material-9.2.8-py3-none-any.whl", hash = "sha256:6bc8524f8047a4f060d6ab0925b9d7cb61b3b5e6d5ca8a8e8085f8bfdeca1b71"},
@@ -3337,7 +3337,7 @@ requests = ">=2.31,<3.0"
 name = "mkdocs-material-extensions"
 version = "1.1.1"
 description = "Extension pack for Python Markdown and MkDocs Material."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "mkdocs_material_extensions-1.1.1-py3-none-any.whl", hash = "sha256:e41d9f38e4798b6617ad98ca8f7f1157b1e4385ac1459ca1e4ea219b556df945"},
@@ -3348,7 +3348,7 @@ files = [
 name = "mkdocs-section-index"
 version = "0.3.6"
 description = "MkDocs plugin to allow clickable sections that lead to an index page"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "mkdocs_section_index-0.3.6-py3-none-any.whl", hash = "sha256:4172deff4890868d7d88ef41e895546ee07714cca83a7dcc56db979c00e10acf"},
@@ -3362,7 +3362,7 @@ mkdocs = ">=1.2"
 name = "mkdocstrings"
 version = "0.23.0"
 description = "Automatic documentation from sources, for MkDocs."
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "mkdocstrings-0.23.0-py3-none-any.whl", hash = "sha256:051fa4014dfcd9ed90254ae91de2dbb4f24e166347dae7be9a997fe16316c65e"},
@@ -3388,7 +3388,7 @@ python-legacy = ["mkdocstrings-python-legacy (>=0.2.1)"]
 name = "mkdocstrings-python"
 version = "1.6.2"
 description = "A Python handler for mkdocstrings."
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "mkdocstrings_python-1.6.2-py3-none-any.whl", hash = "sha256:cf560df975faf712808e44c1c2e52b8267f17bc89c8b23e7b9bfe679561adf4d"},
@@ -3685,7 +3685,7 @@ yaml = ["PyYAML (>=5.1.0)"]
 name = "mypy"
 version = "1.0.1"
 description = "Optional static typing for Python"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "mypy-1.0.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:71a808334d3f41ef011faa5a5cd8153606df5fc0b56de5b2e89566c8093a0c9a"},
@@ -3731,7 +3731,7 @@ reports = ["lxml"]
 name = "mypy-extensions"
 version = "1.0.0"
 description = "Type system extensions for programs checked with the mypy type checker."
-optional = true
+optional = false
 python-versions = ">=3.5"
 files = [
     {file = "mypy_extensions-1.0.0-py3-none-any.whl", hash = "sha256:4392f6c0eb8a5668a69e23d168ffa70f0be9ccfd32b5cc2d26a34ae5b844552d"},
@@ -3760,7 +3760,7 @@ test = ["pytest (>=7.2)", "pytest-cov (>=4.0)"]
 name = "nh3"
 version = "0.2.15"
 description = "Python bindings to the ammonia HTML sanitization library."
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "nh3-0.2.15-cp37-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:9c0d415f6b7f2338f93035bba5c0d8c1b464e538bfbb1d598acd47d7969284f0"},
@@ -3810,7 +3810,7 @@ twitter = ["twython"]
 name = "nodeenv"
 version = "1.8.0"
 description = "Node.js virtual environment builder"
-optional = true
+optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*"
 files = [
     {file = "nodeenv-1.8.0-py2.py3-none-any.whl", hash = "sha256:df865724bb3c3adc86b3876fa209771517b0cfe596beff01a92700e0e8be4cec"},
@@ -4335,7 +4335,7 @@ files = [
 name = "paginate"
 version = "0.5.6"
 description = "Divides large result sets into pages for easier browsing"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "paginate-0.5.6.tar.gz", hash = "sha256:5e6007b6a9398177a7e1648d04fdd9f8c9766a1a945bceac82f1929e8c78af2d"},
@@ -4392,7 +4392,7 @@ test = ["hypothesis (>=5.5.3)", "pytest (>=6.0)", "pytest-xdist (>=1.31)"]
 name = "pandas-stubs"
 version = "1.5.3.230321"
 description = "Type annotations for pandas"
-optional = true
+optional = false
 python-versions = ">=3.8,<3.12"
 files = [
     {file = "pandas_stubs-1.5.3.230321-py3-none-any.whl", hash = "sha256:4bf36b3071dd55f0e558ac8efe07676a120f2ed89e7a3df0fb78ddf2733bf247"},
@@ -4427,7 +4427,7 @@ invoke = ["invoke (>=2.0)"]
 name = "pathspec"
 version = "0.12.1"
 description = "Utility library for gitignore style pattern matching of file paths."
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "pathspec-0.12.1-py3-none-any.whl", hash = "sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08"},
@@ -4576,7 +4576,7 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4)", "pytest-co
 name = "pluggy"
 version = "1.3.0"
 description = "plugin and hook calling mechanisms for python"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "pluggy-1.3.0-py3-none-any.whl", hash = "sha256:d89c696a773f8bd377d18e5ecda92b7a3793cbe66c87060a6fb58c7b6e1061f7"},
@@ -4628,7 +4628,7 @@ xattr = {version = ">=0.10.0,<0.11.0", markers = "sys_platform == \"darwin\""}
 name = "poetry-bumpversion"
 version = "0.3.2"
 description = "Poetry plugin to update __version__ in __init__ file and other files containing version strings"
-optional = true
+optional = false
 python-versions = ">=3.8,<4.0"
 files = [
     {file = "poetry_bumpversion-0.3.2-py3-none-any.whl", hash = "sha256:df51b3c27330820ad036e83b6ab6db083dcaeb13bab3f320b781c69a38773f81"},
@@ -4670,7 +4670,7 @@ poetry-core = ">=1.7.0,<2.0.0"
 name = "pre-commit"
 version = "3.0.4"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "pre_commit-3.0.4-py2.py3-none-any.whl", hash = "sha256:9e3255edb0c9e7fe9b4f328cb3dc86069f8fdc38026f1bf521018a05eaf4d67b"},
@@ -4807,7 +4807,7 @@ files = [
 name = "py"
 version = "1.11.0"
 description = "library with cross-python path, ini-parsing, io, code, log facilities"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 files = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
@@ -5027,7 +5027,7 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 name = "pylint"
 version = "2.16.4"
 description = "python code static checker"
-optional = true
+optional = false
 python-versions = ">=3.7.2"
 files = [
     {file = "pylint-2.16.4-py3-none-any.whl", hash = "sha256:4a770bb74fde0550fa0ab4248a2ad04e7887462f9f425baa0cd8d3c1d098eaee"},
@@ -5053,7 +5053,7 @@ testutils = ["gitpython (>3)"]
 name = "pymdown-extensions"
 version = "10.7"
 description = "Extension pack for Python Markdown."
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "pymdown_extensions-10.7-py3-none-any.whl", hash = "sha256:6ca215bc57bc12bf32b414887a68b810637d039124ed9b2e5bd3325cbb2c050c"},
@@ -5146,7 +5146,7 @@ files = [
 name = "pytest"
 version = "7.4.4"
 description = "pytest: simple powerful testing with Python"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "pytest-7.4.4-py3-none-any.whl", hash = "sha256:b090cdf5ed60bf4c45261be03239c2c1c22df034fbffe691abe93cd80cea01d8"},
@@ -5168,7 +5168,7 @@ testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "no
 name = "pytest-cov"
 version = "4.0.0"
 description = "Pytest plugin for measuring coverage."
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "pytest-cov-4.0.0.tar.gz", hash = "sha256:996b79efde6433cdbd0088872dbc5fb3ed7fe1578b68cdbba634f14bb8dd0470"},
@@ -5186,7 +5186,7 @@ testing = ["fields", "hunter", "process-tests", "pytest-xdist", "six", "virtuale
 name = "pytest-env"
 version = "1.1.3"
 description = "pytest plugin that allows you to add environment variables."
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "pytest_env-1.1.3-py3-none-any.whl", hash = "sha256:aada77e6d09fcfb04540a6e462c58533c37df35fa853da78707b17ec04d17dfc"},
@@ -5204,7 +5204,7 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.3.2)", "pytest-mock (>=3.12)"]
 name = "pytest-lazy-fixture"
 version = "0.6.3"
 description = "It helps to use fixtures in pytest.mark.parametrize"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "pytest-lazy-fixture-0.6.3.tar.gz", hash = "sha256:0e7d0c7f74ba33e6e80905e9bfd81f9d15ef9a790de97993e34213deb5ad10ac"},
@@ -5218,7 +5218,7 @@ pytest = ">=3.2.5"
 name = "pytest-mock"
 version = "3.11.1"
 description = "Thin-wrapper around the mock package for easier use with pytest"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "pytest-mock-3.11.1.tar.gz", hash = "sha256:7f6b125602ac6d743e523ae0bfa71e1a697a2f5534064528c6ff84c2f7c2fc7f"},
@@ -5413,7 +5413,7 @@ files = [
 name = "pyyaml-env-tag"
 version = "0.1"
 description = "A custom YAML tag for referencing environment variables in YAML files. "
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "pyyaml_env_tag-0.1-py3-none-any.whl", hash = "sha256:af31106dec8a4d68c60207c1886031cbf839b68aa7abccdb19868200532c2069"},
@@ -5560,7 +5560,7 @@ full = ["numpy"]
 name = "readme-renderer"
 version = "42.0"
 description = "readme_renderer is a library for rendering readme descriptions for Warehouse"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "readme_renderer-42.0-py3-none-any.whl", hash = "sha256:13d039515c1f24de668e2c93f2e877b9dbe6c6c32328b90a40a49d8b2b85f36d"},
@@ -5734,7 +5734,7 @@ requests = ">=2.0.1,<3.0.0"
 name = "rfc3986"
 version = "2.0.0"
 description = "Validating URI References per RFC 3986"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "rfc3986-2.0.0-py2.py3-none-any.whl", hash = "sha256:50b1502b60e289cb37883f3dfd34532b8873c7de9f49bb546641ce9cbd256ebd"},
@@ -5780,7 +5780,7 @@ pyasn1 = ">=0.1.3"
 name = "ruff"
 version = "0.0.257"
 description = "An extremely fast Python linter, written in Rust."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "ruff-0.0.257-py3-none-macosx_10_7_x86_64.whl", hash = "sha256:7280640690c1d0046b20e0eb924319a89d8e22925d7d232180ce31196e7478f8"},
@@ -6705,7 +6705,7 @@ torchvision = "*"
 name = "tinycss2"
 version = "1.2.1"
 description = "A tiny CSS parser"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "tinycss2-1.2.1-py3-none-any.whl", hash = "sha256:2b80a96d41e7c3914b8cda8bc7f705a4d9c49275616e886103dd839dfc847847"},
@@ -6723,7 +6723,7 @@ test = ["flake8", "isort", "pytest"]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
-optional = true
+optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
@@ -7044,7 +7044,7 @@ test = ["pytest"]
 name = "twine"
 version = "4.0.2"
 description = "Collection of utilities for publishing packages on PyPI"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "twine-4.0.2-py3-none-any.whl", hash = "sha256:929bc3c280033347a00f847236564d1c52a3e61b1ac2516c97c48f3ceab756d8"},
@@ -7066,7 +7066,7 @@ urllib3 = ">=1.26.0"
 name = "types-pytz"
 version = "2023.3.1.1"
 description = "Typing stubs for pytz"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "types-pytz-2023.3.1.1.tar.gz", hash = "sha256:cc23d0192cd49c8f6bba44ee0c81e4586a8f30204970fc0894d209a6b08dab9a"},
@@ -7077,7 +7077,7 @@ files = [
 name = "types-pyyaml"
 version = "6.0.12.12"
 description = "Typing stubs for PyYAML"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "types-PyYAML-6.0.12.12.tar.gz", hash = "sha256:334373d392fde0fdf95af5c3f1661885fa10c52167b14593eb856289e1855062"},
@@ -7222,7 +7222,7 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 name = "verspec"
 version = "0.1.0"
 description = "Flexible version handling"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "verspec-0.1.0-py3-none-any.whl", hash = "sha256:741877d5633cc9464c45a469ae2a31e801e6dbbaa85b9675d481cda100f11c31"},
@@ -7309,7 +7309,7 @@ sweeps = ["PyYAML", "jsonref (>=0.2)", "jsonschema (>=3.2.0)", "numpy (>=1.15,<1
 name = "watchdog"
 version = "3.0.0"
 description = "Filesystem events monitoring"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "watchdog-3.0.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:336adfc6f5cc4e037d52db31194f7581ff744b67382eb6021c868322e32eef41"},
@@ -7359,7 +7359,7 @@ files = [
 name = "webencodings"
 version = "0.5.1"
 description = "Character encoding aliases for legacy web content"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78"},
@@ -7440,7 +7440,7 @@ files = [
 name = "wrapt"
 version = "1.16.0"
 description = "Module for decorators, wrappers and monkey patching."
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "wrapt-1.16.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ffa565331890b90056c01db69c0fe634a776f8019c143a5ae265f9c6bc4bd6d4"},
@@ -7825,12 +7825,9 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [extras]
-dev = ["black", "cairosvg", "interrogate", "isort", "mike", "mkdocs", "mkdocs_autorefs", "mkdocs_gen_files", "mkdocs_literate_nav", "mkdocs_material", "mkdocs_material_extensions", "mkdocs_section_index", "mkdocstrings", "mkdocstrings_python", "mypy", "pandas_stubs", "poetry-bumpversion", "pre_commit", "pylint", "pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_mock", "ruff", "twine", "types_pyyaml"]
-docs = ["cairosvg", "mike", "mkdocs", "mkdocs_autorefs", "mkdocs_gen_files", "mkdocs_literate_nav", "mkdocs_material", "mkdocs_material_extensions", "mkdocs_section_index", "mkdocstrings", "mkdocstrings_python"]
 onnx = ["onnx", "onnxruntime_gpu", "onnxsim"]
-test = ["pytest", "pytest_cov", "pytest_env", "pytest_lazy_fixture", "pytest_mock"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "8a21ad86e700d0ea1ae59f94dab392f7d366c7e301a23f2c5470fc9276d4e85d"
+content-hash = "71b257f752974e3c002c0a4027a9faf5c5a99ae2eac9704e668393b6c2c53299"
