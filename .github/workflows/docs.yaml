@@ -22,7 +22,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install -U pip poetry
-          python -m poetry install --no-cache -E docs
+          python -m poetry install --no-cache --with docs
 
       - name: Determine Version
         id: determine_version
