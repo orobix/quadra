@@ -1,6 +1,13 @@
 # Breaking Changes
 All the breaking changes will be documented in this file.
 
+### [2.0.0]
+
+#### Changed
+
+- Quadra 2.0.0 works with torch 2 and pytorch lightning 2, lightning trainer configurations must be aligned following the [migration guide](https://lightning.ai/docs/pytorch/LTS/upgrade/migration_guide.html).
+- Quadra now relies on CUDA 12 to work instead of the old CUDA 11.6
+
 ### [1.5.0]
 
 #### Changed

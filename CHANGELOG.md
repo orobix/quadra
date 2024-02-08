@@ -2,6 +2,19 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.0.0]
+
+#### Updated
+
+- Update torch to 2.1.2 with CUDA 12 support
+- Update pytorch lightning to 2.1.*
+
+#### Changed
+
+- Refactor hydra plugins to use optional dev groups intend of extras to avoid dragging local packages around in external installations
+- Refactor extra dev dependencies to use poetry groups instead
+- Improve trainer configs to avoid wrong overrides when calling different trainer overrides
+
 ### [1.5.7]
 
 #### Added
