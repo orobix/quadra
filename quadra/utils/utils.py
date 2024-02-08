@@ -14,7 +14,6 @@ import cv2
 import dotenv
 import mlflow
 import numpy as np
-import onnx
 import pytorch_lightning as pl
 import rich.syntax
 import rich.tree
@@ -31,7 +30,26 @@ import quadra.utils.export as quadra_export
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.utils.mlflow import infer_signature_model
 
-IMAGE_EXTENSIONS: List[str] = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pbm", ".pgm", ".ppm", ".pxm", ".pnm"]
+try:
+    import onnx
+
+    ONNX_AVAILABLE = True
+except ImportError:
+    ONNX_AVAILABLE = False
+
+IMAGE_EXTENSIONS: List[str] = [
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".bmp",
+    ".tiff",
+    ".tif",
+    ".pbm",
+    ".pgm",
+    ".ppm",
+    ".pxm",
+    ".pnm",
+]
 
 
 def get_logger(name=__name__) -> logging.Logger:
@@ -40,7 +58,15 @@ def get_logger(name=__name__) -> logging.Logger:
 
     # this ensures all logging levels get marked with the rank zero decorator
     # otherwise logs would get multiplied for each GPU process in multi-GPU setup
-    for level in ("debug", "info", "warning", "error", "exception", "fatal", "critical"):
+    for level in (
+        "debug",
+        "info",
+        "warning",
+        "error",
+        "exception",
+        "fatal",
+        "critical",
+    ):
         setattr(logger, level, rank_zero_only(getattr(logger, level)))
 
     return logger
@@ -178,7 +204,9 @@ def log_hyperparameters(
     # pylint: disable=consider-using-with
     if (
         subprocess.call(
-            ["git", "-C", get_original_cwd(), "status"], stderr=subprocess.STDOUT, stdout=open(os.devnull, "w")
+            ["git", "-C", get_original_cwd(), "status"],
+            stderr=subprocess.STDOUT,
+            stdout=open(os.devnull, "w"),
         )
         == 0
     ):
@@ -254,7 +282,12 @@ def finish(
     if len(logger) > 0 and config.core.get("upload_artifacts"):
         mlflow_logger = get_mlflow_logger(trainer=trainer)
         tensorboard_logger = get_tensorboard_logger(trainer=trainer)
-        file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt", "data/dataset.csv"]
+        file_names = [
+            "config.yaml",
+            "config_resolved.yaml",
+            "config_tree.txt",
+            "data/dataset.csv",
+        ]
         if "16" in str(trainer.precision):
             index = _parse_gpu_ids(config.trainer.devices, include_cuda=True)[0]
             device = "cuda:" + str(index)
@@ -272,7 +305,9 @@ def finish(
 
             for path in config_paths:
                 mlflow_logger.experiment.log_artifact(
-                    run_id=mlflow_logger.run_id, local_path=path, artifact_path="metadata"
+                    run_id=mlflow_logger.run_id,
+                    local_path=path,
+                    artifact_path="metadata",
                 )
 
             deployed_models = glob.glob(os.path.join(export_folder, "*"))
@@ -312,6 +347,11 @@ def finish(
                                     signature=signature,
                                 )
                         elif model_type in ["onnx", "simplified_onnx"]:
+                            if not ONNX_AVAILABLE:
+                                raise ImportError(
+                                    "ONNX library is not installed, please install Quadra \
+                                        with `onnx` as extra dependency."
+                                )
                             signature = infer_signature_model(model, inputs)
                             with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
                                 if model.model_path is None:
