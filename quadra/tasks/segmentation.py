@@ -107,7 +107,9 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         log.info("Instantiating module <%s>", module_config.module["_target_"])
         module = hydra.utils.instantiate(module_config.module, model=model, optimizer=optimizer, lr_scheduler=scheduler)
         if self.checkpoint_path is not None:
-            module.load_from_checkpoint(self.checkpoint_path, model=model, optimizer=optimizer, lr_scheduler=scheduler)
+            module.__class__.load_from_checkpoint(
+                self.checkpoint_path, model=model, optimizer=optimizer, lr_scheduler=scheduler
+            )
         self._module = module
 
     def prepare(self) -> None:
@@ -129,7 +131,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
             best_model_path = self.trainer.checkpoint_callback.best_model_path
             log.info("Loaded best model from %s", best_model_path)
 
-            module = self.module.load_from_checkpoint(
+            module = self.module.__class__.load_from_checkpoint(
                 best_model_path,
                 model=self.module.model,
                 loss_fun=None,
