@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.5.8]
+
+#### Fix
+
+- Fix ONNX import call for the utilities when ONNX is not installed.
+
 ### [1.5.7]
 
 #### Added

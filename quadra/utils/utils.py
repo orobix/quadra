@@ -14,7 +14,6 @@ import cv2
 import dotenv
 import mlflow
 import numpy as np
-import onnx
 import pytorch_lightning as pl
 import rich.syntax
 import rich.tree
@@ -30,6 +29,14 @@ import quadra
 import quadra.utils.export as quadra_export
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.utils.mlflow import infer_signature_model
+
+try:
+    import onnx  # noqa
+
+    ONNX_AVAILABLE = True
+except ImportError:
+    ONNX_AVAILABLE = False
+
 
 IMAGE_EXTENSIONS: List[str] = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pbm", ".pgm", ".ppm", ".pxm", ".pnm"]
 
@@ -311,7 +318,7 @@ def finish(
                                     artifact_path=model_path,
                                     signature=signature,
                                 )
-                        elif model_type in ["onnx", "simplified_onnx"]:
+                        elif model_type in ["onnx", "simplified_onnx"] and ONNX_AVAILABLE:
                             signature = infer_signature_model(model, inputs)
                             with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
                                 if model.model_path is None:
