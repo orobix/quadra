@@ -4,6 +4,7 @@ import glob
 import json
 import os
 import typing
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, Generic, List, Optional, cast
 
@@ -178,7 +179,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         )
         if self.checkpoint_path is not None:
             log.info("Loading model from lightning checkpoint: %s", self.checkpoint_path)
-            module = module.load_from_checkpoint(
+            module = module.__class__.load_from_checkpoint(
                 self.checkpoint_path,
                 model=self.model,
                 optimizer=self.optimizer,
@@ -286,7 +287,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         if self.best_model_path is not None:
             log.info("Saving deployment model for %s checkpoint", self.best_model_path)
 
-            module = self.module.load_from_checkpoint(
+            module = self.module.__class__.load_from_checkpoint(
                 self.best_model_path,
                 model=self.module.model,
                 optimizer=self.optimizer,
@@ -332,6 +333,8 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         if not self.run_test or self.config.trainer.get("fast_dev_run"):
             self.datamodule.setup(stage="test")
 
+        # Deepcopy to remove the inference mode from gradients causing issues when loading checkpoints
+        self.module.model = deepcopy(self.module.model)
         if "16" in self.trainer.precision:
             log.warning("Gradcam is currently not supported with half precision, it will be disabled")
             self.module.gradcam = False
@@ -1130,11 +1133,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             return
 
         if isinstance(self.deployment_model.model.features_extractor, timm.models.resnet.ResNet):
-            target_layers = [
-                cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[
-                    -1
-                ]  # type: ignore[index]
-            ]
+            target_layers = [cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[-1]]
             self.cam = GradCAM(
                 model=self.deployment_model.model,
                 target_layers=target_layers,

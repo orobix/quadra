@@ -6,10 +6,10 @@ from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 import hydra
 import torch
 from hydra.core.hydra_config import HydraConfig
+from lightning_fabric.utilities.device_parser import _parse_gpu_ids
 from omegaconf import DictConfig, OmegaConf, open_dict
 from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.loggers import Logger, MLFlowLogger
-from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 
 from quadra import get_version
@@ -231,7 +231,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             return
 
         try:
-            self._devices = parse_gpu_ids(devices, include_cuda=True)
+            self._devices = _parse_gpu_ids(devices, include_cuda=True)
         except MisconfigurationException:
             self._devices = 1
             self.config.trainer["accelerator"] = "cpu"

@@ -138,20 +138,14 @@ class BYOL(SSLModule):
         epoch: int,
         batch_idx: int,
         optimizer: Union[Optimizer, LightningOptimizer],
-        optimizer_idx: int = 0,
         optimizer_closure: Optional[Callable[[], Any]] = None,
-        on_tpu: bool = False,
-        using_lbfgs: bool = False,
     ) -> None:
         """Override optimizer step to update the teacher parameters."""
         super().optimizer_step(
             epoch,
             batch_idx,
             optimizer,
-            optimizer_idx=optimizer_idx,
             optimizer_closure=optimizer_closure,
-            on_tpu=on_tpu,
-            using_lbfgs=using_lbfgs,
         )
         self.update_teacher()
 

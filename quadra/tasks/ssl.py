@@ -170,7 +170,7 @@ class Simsiam(SSL):
             lr_scheduler=self.scheduler,
         )
         if self.checkpoint_path is not None:
-            module = module.load_from_checkpoint(
+            module = module.__class__.load_from_checkpoint(
                 self.checkpoint_path,
                 model=self.backbone,
                 projection_mlp=self.projection_mlp,
@@ -231,7 +231,7 @@ class SimCLR(SSL):
             lr_scheduler=self.scheduler,
         )
         if self.checkpoint_path is not None:
-            module = module.load_from_checkpoint(
+            module = module.__class__.load_from_checkpoint(
                 self.checkpoint_path,
                 model=self.backbone,
                 projection_mlp=self.projection_mlp,
@@ -349,7 +349,7 @@ class BYOL(SSL):
             lr_scheduler=self.scheduler,
         )
         if self.checkpoint_path is not None:
-            module = module.load_from_checkpoint(
+            module = module.__class__.load_from_checkpoint(
                 self.checkpoint_path,
                 student=self.student_model,
                 teacher=self.teacher_model,
@@ -420,7 +420,7 @@ class DINO(SSL):
             lr_scheduler=self.scheduler,
         )
         if self.checkpoint_path is not None:
-            module = module.load_from_checkpoint(
+            module = module.__class__.load_from_checkpoint(
                 self.checkpoint_path,
                 student=self.student_model,
                 teacher=self.teacher_model,

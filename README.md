@@ -92,16 +92,18 @@ source myenv/bin/activate
   pip install --upgrade pip
   ```
 
-3a. **Install the `quadra` package** with pip:
-  ```shell
-  pip install git+https://github.com/orobix/quadra.git
-  ```
+3. Install the package
 
-3b. **Install the `quadra` package** with poetry:
-  ```shell
-  pip install poetry
-  poetry add git+https://github.com/orobix/quadra.git
-  ```
+    * **Install the `quadra` package** with pip:
+      ```shell
+      pip install git+https://github.com/orobix/quadra.git
+      ```
+
+    * **Install the `quadra` package** with poetry:
+      ```shell
+      pip install poetry
+      poetry add git+https://github.com/orobix/quadra.git
+      ```
 
 4. **Run from CLI**:
   Run the following command to check if the installation was successful:
@@ -243,7 +245,7 @@ First clone the repository from Github
 First clone the repository from `Github`, then we need to install the package with optional dependencies (generally in editable mode) and enable the pre-commit hooks.
 
 1. `git clone https://github.com/orobix/quadra.git && cd quadra` 
-1. Install `quadra` package in editable mode `poetry install -E dev -E docs -E test`
+1. Install `quadra` package in editable mode `poetry install --with test,dev,docs --all-extras`
 2. Install pre-commit hooks `pre-commit install`
 3. (Optional) Eventually build documentation by calling required commands (see below).
 
