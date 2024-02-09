@@ -14,6 +14,11 @@ All notable changes to this project will be documented in this file.
 - Refactor hydra plugins to use optional dev groups intend of extras to avoid dragging local packages around in external installations
 - Refactor extra dev dependencies to use poetry groups instead
 - Improve trainer configs to avoid wrong overrides when calling different trainer overrides
+### [1.5.8]
+
+#### Fix
+
+- Fix ONNX import call for the utilities when ONNX is not installed.
 
 ### [1.5.7]
 
