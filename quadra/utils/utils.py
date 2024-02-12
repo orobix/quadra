@@ -1,6 +1,7 @@
 """Common utility functions.
 Some of them are mostly based on https://github.com/ashleve/lightning-hydra-template.
 """
+
 import glob
 import json
 import logging
@@ -28,7 +29,7 @@ from pytorch_lightning.utilities import rank_zero_only
 
 import quadra
 import quadra.utils.export as quadra_export
-from quadra.utils import get_torch_model
+from quadra.utils.classification import get_torch_model
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.utils.mlflow import infer_signature_model
 
@@ -318,8 +319,9 @@ def finish(
 
                             model_architecture = get_torch_model(model_config)
                         model = quadra_export.import_deployment_model(
-                            model_path, device=device, 
-                            inference_config=config.inference, 
+                            model_path,
+                            device=device,
+                            inference_config=config.inference,
                             model_architecture=model_architecture,
                         )
 

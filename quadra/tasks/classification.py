@@ -27,7 +27,6 @@ from tqdm import tqdm
 
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.callbacks.scheduler import WarmupInit
-from quadra.utils import get_torch_model
 from quadra.datamodules import (
     ClassificationDataModule,
     MultilabelClassificationDataModule,
@@ -41,7 +40,12 @@ from quadra.modules.classification import ClassificationModule
 from quadra.tasks.base import Evaluation, LightningTask, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
-from quadra.utils.classification import automatic_batch_size_computation, get_results, save_classification_result
+from quadra.utils.classification import (
+    automatic_batch_size_computation,
+    get_results,
+    save_classification_result,
+    get_torch_model,
+)
 from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model, import_deployment_model
 from quadra.utils.models import get_feature, is_vision_transformer
