@@ -26,6 +26,7 @@ from tqdm import tqdm
 
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.callbacks.scheduler import WarmupInit
+from quadra.utils import get_torch_model
 from quadra.datamodules import (
     ClassificationDataModule,
     MultilabelClassificationDataModule,
@@ -1051,16 +1052,6 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         self.gradcam = gradcam
         self.cam: GradCAM
 
-    def get_torch_model(self, model_config: DictConfig) -> nn.Module:
-        """Instantiate the torch model from the config."""
-        pre_classifier = self.get_pre_classifier(model_config)
-        classifier = self.get_classifier(model_config)
-        log.info("Instantiating backbone <%s>", model_config.model["_target_"])
-
-        return hydra.utils.instantiate(
-            model_config.model, classifier=classifier, pre_classifier=pre_classifier, _convert_="partial"
-        )
-
     def get_pre_classifier(self, model_config: DictConfig) -> nn.Module:
         """Instantiate the pre-classifier from the config."""
         if "pre_classifier" in model_config and model_config.pre_classifier is not None:
@@ -1098,7 +1089,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             if not isinstance(model_config, DictConfig):
                 raise ValueError(f"The model config must be a DictConfig, got {type(model_config)}")
 
-            model_architecture = self.get_torch_model(model_config)
+            model_architecture = get_torch_model(model_config)
 
         self._deployment_model = import_deployment_model(
             model_path=model_path,

@@ -18,6 +18,8 @@ from torch.utils.data import DataLoader
 from quadra.models.base import ModelSignatureWrapper
 from quadra.utils import utils
 from quadra.utils.models import get_feature
+from torch import nn
+import hydra
 from quadra.utils.visualization import UnNormalize, plot_classification_results
 
 if TYPE_CHECKING:
@@ -51,7 +53,16 @@ def get_file_condition(
 
     return True
 
+def get_torch_model(self, model_config: DictConfig) -> nn.Module:
+        """Instantiate the torch model from the config."""
+        pre_classifier = self.get_pre_classifier(model_config)
+        classifier = self.get_classifier(model_config)
+        log.info("Instantiating backbone <%s>", model_config.model["_target_"])
 
+        return hydra.utils.instantiate(
+            model_config.model, classifier=classifier, pre_classifier=pre_classifier, _convert_="partial"
+        )
+        
 def natural_key(string_):
     """See http://www.codinghorror.com/blog/archives/001018.html."""
     return [int(s) if s.isdigit() else s for s in re.split(r"(\d+)", string_.lower())]

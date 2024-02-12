@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import subprocess
+from pathlib import Path
 import sys
 import warnings
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, cast
@@ -28,6 +29,7 @@ from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 
 import quadra
 import quadra.utils.export as quadra_export
+from quadra.utils import get_torch_model
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.utils.mlflow import infer_signature_model
 
@@ -299,8 +301,19 @@ def finish(
                         logging.warning("%s model type not supported", model_path)
                         continue
                     if model_type is not None and model_type in types_to_upload:
+                        file_extension = os.path.splitext(model_path)[1]
+                        model_architecture = None
+                        if file_extension == ".pth":
+                            model_config = OmegaConf.load(os.path.join(Path(model_path).parent, "model_config.yaml"))
+
+                            if not isinstance(model_config, DictConfig):
+                                raise ValueError(f"The model config must be a DictConfig, got {type(model_config)}")
+
+                            model_architecture = get_torch_model(model_config)
                         model = quadra_export.import_deployment_model(
-                            model_path, device=device, inference_config=config.inference
+                            model_path, device=device, 
+                            inference_config=config.inference, 
+                            model_architecture=model_architecture,
                         )
 
                         if model_type in ["torchscript", "pytorch"]:
