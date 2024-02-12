@@ -18,7 +18,6 @@ core:
 backbone:
   model:
     num_classes: 2
-    ckpt_path: ???
 
 trainer:
   devices: [2, 3]

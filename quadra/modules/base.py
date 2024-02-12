@@ -67,7 +67,8 @@ class BaseLightningModule(pl.LightningModule):
         }
         return [self.optimizer], [lr_scheduler_conf]
 
-    def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx):
+    # pylint: disable=unused-argument
+    def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx: int = 0):
         """Redefine optimizer zero grad."""
         optimizer.zero_grad(set_to_none=True)
 

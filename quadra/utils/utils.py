@@ -15,23 +15,30 @@ import cv2
 import dotenv
 import mlflow
 import numpy as np
-import onnx
 import pytorch_lightning as pl
 import rich.syntax
 import rich.tree
 import torch
 from hydra.core.hydra_config import HydraConfig
 from hydra.utils import get_original_cwd
+from lightning_fabric.utilities.device_parser import _parse_gpu_ids
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities import rank_zero_only
-from pytorch_lightning.utilities.device_parser import parse_gpu_ids
 
 import quadra
 import quadra.utils.export as quadra_export
 from quadra.utils import get_torch_model
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.utils.mlflow import infer_signature_model
+
+try:
+    import onnx  # noqa
+
+    ONNX_AVAILABLE = True
+except ImportError:
+    ONNX_AVAILABLE = False
+
 
 IMAGE_EXTENSIONS: List[str] = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pbm", ".pgm", ".ppm", ".pxm", ".pnm"]
 
@@ -258,7 +265,7 @@ def finish(
         tensorboard_logger = get_tensorboard_logger(trainer=trainer)
         file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt", "data/dataset.csv"]
         if "16" in str(trainer.precision):
-            index = parse_gpu_ids(config.trainer.devices, include_cuda=True)[0]
+            index = _parse_gpu_ids(config.trainer.devices, include_cuda=True)[0]
             device = "cuda:" + str(index)
             half_precision = True
         else:
@@ -324,7 +331,7 @@ def finish(
                                     artifact_path=model_path,
                                     signature=signature,
                                 )
-                        elif model_type in ["onnx", "simplified_onnx"]:
+                        elif model_type in ["onnx", "simplified_onnx"] and ONNX_AVAILABLE:
                             signature = infer_signature_model(model, inputs)
                             with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
                                 if model.model_path is None:
