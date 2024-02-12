@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.0.1]
+
+#### Fixed
+
+- Fix pytorch model mlflow upload. Not supported.
+
 ### [2.0.0]
 
 #### Updated
