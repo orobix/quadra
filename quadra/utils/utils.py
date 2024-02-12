@@ -7,7 +7,6 @@ import json
 import logging
 import os
 import subprocess
-from pathlib import Path
 import sys
 import warnings
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, cast
@@ -29,7 +28,6 @@ from pytorch_lightning.utilities import rank_zero_only
 
 import quadra
 import quadra.utils.export as quadra_export
-from quadra.utils.export import get_torch_model
 from quadra.callbacks.mlflow import get_mlflow_logger
 from quadra.utils.mlflow import infer_signature_model
 
