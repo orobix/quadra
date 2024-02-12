@@ -350,7 +350,7 @@ def get_split(
         exclude_filter=exclude_filter,
         include_filter=include_filter,
         class_to_idx=class_to_idx,
-        label_map=label_map
+        label_map=label_map,
         # include_none_class=include_none_class,
     )
 

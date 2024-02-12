@@ -1,6 +1,7 @@
 """Common utility functions.
 Some of them are mostly based on https://github.com/ashleve/lightning-hydra-template.
 """
+
 import glob
 import json
 import logging
@@ -306,8 +307,14 @@ def finish(
                         logging.warning("%s model type not supported", model_path)
                         continue
                     if model_type is not None and model_type in types_to_upload:
+                        if model_type == "pytorch":
+                            logging.warning("Pytorch format still not supported for mlflow upload")
+                            continue
+
                         model = quadra_export.import_deployment_model(
-                            model_path, device=device, inference_config=config.inference
+                            model_path,
+                            device=device,
+                            inference_config=config.inference,
                         )
 
                         if model_type in ["torchscript", "pytorch"]:
