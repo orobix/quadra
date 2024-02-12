@@ -5,8 +5,6 @@ import torch
 from anomalib.models.cflow import CflowLightning
 from omegaconf import DictConfig, ListConfig, OmegaConf
 from torch import nn
-import hydra
-from omegaconf import DictConfig
 
 from quadra.models.base import ModelSignatureWrapper
 from quadra.models.evaluation import (
@@ -28,17 +26,6 @@ except ImportError:
 log = get_logger(__name__)
 
 BaseDeploymentModelT = TypeVar("BaseDeploymentModelT", bound=BaseEvaluationModel)
-
-
-def get_torch_model(self, model_config: DictConfig) -> nn.Module:
-    """Instantiate the torch model from the config."""
-    pre_classifier = self.get_pre_classifier(model_config)
-    classifier = self.get_classifier(model_config)
-    log.info("Instantiating backbone <%s>", model_config.model["_target_"])
-
-    return hydra.utils.instantiate(
-        model_config.model, classifier=classifier, pre_classifier=pre_classifier, _convert_="partial"
-    )
 
 
 def generate_torch_inputs(

@@ -18,8 +18,6 @@ from torch.utils.data import DataLoader
 from quadra.models.base import ModelSignatureWrapper
 from quadra.utils import utils
 from quadra.utils.models import get_feature
-from torch import nn
-import hydra
 from quadra.utils.visualization import UnNormalize, plot_classification_results
 
 if TYPE_CHECKING:
@@ -52,6 +50,7 @@ def get_file_condition(
             return False
 
     return True
+
 
 def natural_key(string_):
     """See http://www.codinghorror.com/blog/archives/001018.html."""

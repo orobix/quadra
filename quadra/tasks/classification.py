@@ -48,7 +48,6 @@ from quadra.utils.classification import (
 from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model, import_deployment_model
 from quadra.utils.models import get_feature, is_vision_transformer
-from quadra.utils.export import get_torch_model
 from quadra.utils.vit_explainability import VitAttentionGradRollout
 
 log = utils.get_logger(__name__)
@@ -1059,6 +1058,16 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         self.gradcam = gradcam
         self.cam: GradCAM
 
+    def get_torch_model(self, model_config: DictConfig) -> nn.Module:
+        """Instantiate the torch model from the config."""
+        pre_classifier = self.get_pre_classifier(model_config)
+        classifier = self.get_classifier(model_config)
+        log.info("Instantiating backbone <%s>", model_config.model["_target_"])
+
+        return hydra.utils.instantiate(
+            model_config.model, classifier=classifier, pre_classifier=pre_classifier, _convert_="partial"
+        )
+
     def get_pre_classifier(self, model_config: DictConfig) -> nn.Module:
         """Instantiate the pre-classifier from the config."""
         if "pre_classifier" in model_config and model_config.pre_classifier is not None:
@@ -1096,7 +1105,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             if not isinstance(model_config, DictConfig):
                 raise ValueError(f"The model config must be a DictConfig, got {type(model_config)}")
 
-            model_architecture = get_torch_model(model_config)
+            model_architecture = self.get_torch_model(model_config)
 
         self._deployment_model = import_deployment_model(
             model_path=model_path,
