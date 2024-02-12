@@ -44,11 +44,11 @@ from quadra.utils.classification import (
     automatic_batch_size_computation,
     get_results,
     save_classification_result,
-    get_torch_model,
 )
 from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model, import_deployment_model
 from quadra.utils.models import get_feature, is_vision_transformer
+from quadra.utils.export import get_torch_model
 from quadra.utils.vit_explainability import VitAttentionGradRollout
 
 log = utils.get_logger(__name__)

@@ -53,16 +53,6 @@ def get_file_condition(
 
     return True
 
-def get_torch_model(self, model_config: DictConfig) -> nn.Module:
-        """Instantiate the torch model from the config."""
-        pre_classifier = self.get_pre_classifier(model_config)
-        classifier = self.get_classifier(model_config)
-        log.info("Instantiating backbone <%s>", model_config.model["_target_"])
-
-        return hydra.utils.instantiate(
-            model_config.model, classifier=classifier, pre_classifier=pre_classifier, _convert_="partial"
-        )
-        
 def natural_key(string_):
     """See http://www.codinghorror.com/blog/archives/001018.html."""
     return [int(s) if s.isdigit() else s for s in re.split(r"(\d+)", string_.lower())]
@@ -361,7 +351,7 @@ def get_split(
         exclude_filter=exclude_filter,
         include_filter=include_filter,
         class_to_idx=class_to_idx,
-        label_map=label_map
+        label_map=label_map,
         # include_none_class=include_none_class,
     )
 
