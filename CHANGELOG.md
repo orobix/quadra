@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [1.5.8]
+
+#### Fixed
+
+- Fix classification finetuning best ckpt usage during export
+
 ### [1.5.7]
 
 #### Added
