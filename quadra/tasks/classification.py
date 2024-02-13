@@ -338,7 +338,8 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             self.datamodule.setup(stage="test")
 
         # Deepcopy to remove the inference mode from gradients causing issues when loading checkpoints
-        self.module.model = deepcopy(self.module.model)
+        # TODO: Why deepcopy of module model removes ModelSignatureWrapper?
+        self.module.model.instance = deepcopy(self.module.model.instance)
         if "16" in self.trainer.precision:
             log.warning("Gradcam is currently not supported with half precision, it will be disabled")
             self.module.gradcam = False
