@@ -138,23 +138,23 @@ class VisualizerCallback(Callback):
 
     def on_test_batch_end(
         self,
-        _trainer: pl.Trainer,
+        trainer: pl.Trainer,
         pl_module: AnomalyModule,
         outputs: Optional[STEP_OUTPUT],
-        _batch: Any,
-        _batch_idx: int,
-        _dataloader_idx: int,
+        batch: Any,
+        batch_idx: int,
+        dataloader_idx: int = 0,
     ) -> None:
         """Log images at the end of every batch.
 
         Args:
-            _trainer: Pytorch lightning trainer object (unused).
+            trainer: Pytorch lightning trainer object (unused).
             pl_module: Lightning modules derived from BaseAnomalyLightning object as
                 currently only they support logging images.
             outputs: Outputs of the current test step.
-            _batch: Input batch of the current test step (unused).
-            _batch_idx: Index of the current test batch (unused).
-            _dataloader_idx: Index of the dataloader that yielded the current batch (unused).
+            batch: Input batch of the current test step (unused).
+            batch_idx: Index of the current test batch (unused).
+            dataloader_idx: Index of the dataloader that yielded the current batch (unused).
         """
         if self.disable:
             return

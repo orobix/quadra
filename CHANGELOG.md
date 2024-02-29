@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.0.3]
+
+#### Fixed 
+
+- Fix anomaly visualizer callback not working properly after lightning upgrade
+
 ### [2.0.2]
 
 #### Fixed
