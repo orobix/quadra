@@ -11,13 +11,9 @@ defaults:
   - override /backbone: smp
   - override /trainer: lightning_gpu
 
-backbone:
-  model:
-    num_classes: 2
-
 trainer:
   devices: [0]
-  max_epochs: 10
+  max_epochs: 100
   num_sanity_val_steps: 0
 
 core:
@@ -28,10 +24,3 @@ core:
 datamodule:
   num_workers: 8
   batch_size: 32
-  data_path: ${oc.env:HOME}/shared/benchmark_datasets/segmentation/csm-segmentation-v0
-  train_split_file: ${oc.env:HOME}/shared/benchmark_datasets/segmentation/csm-segmentation-v0/train.txt
-  val_split_file: ${oc.env:HOME}/shared/benchmark_datasets/segmentation/csm-segmentation-v0/valid.txt
-  test_split_file: ${oc.env:HOME}/shared/benchmark_datasets/segmentation/csm-segmentation-v0/test.txt
-  idx_to_class: # Contains the mapping of all classes without background
-    1: "blackspeck"
-    2: "scratch"
