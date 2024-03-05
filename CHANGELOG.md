@@ -2,6 +2,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.0.4]
+
+#### Fixed 
+
+- Fix segmentation num_data_train sorting
+
+#### Added
+
+- Add default presorting to segmentation samples
+
 ### [2.0.3]
 
 #### Fixed 

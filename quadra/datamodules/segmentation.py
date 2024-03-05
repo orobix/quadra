@@ -590,14 +590,34 @@ class SegmentationMulticlassDataModule(BaseDataModule):
             masks_train = samples_and_masks_train[:, 0, 1]
             masks_val = samples_and_masks_val[:, 0, 1]
 
+        # Pre-ordering train and val samples for determinism
+        # They will be shuffled (with a seed) during training
+        sorting_indices_train = np.argsort(list(samples_train))
+        samples_train = [samples_train[i] for i in sorting_indices_train]
+        targets_train = [targets_train[i] for i in sorting_indices_train]
+        masks_train = [masks_train[i] for i in sorting_indices_train]
+
+        sorting_indices_val = np.argsort(samples_val)
+        samples_val = [samples_val[i] for i in sorting_indices_val]
+        targets_val = [targets_val[i] for i in sorting_indices_val]
+        masks_val = [masks_val[i] for i in sorting_indices_val]
+
         if self.exclude_good:
             samples_train = list(np.array(samples_train)[np.array(targets_train)[:, 0] == 0])
             masks_train = list(np.array(masks_train)[np.array(targets_train)[:, 0] == 0])
             targets_train = list(np.array(targets_train)[np.array(targets_train)[:, 0] == 0])
 
         if self.num_data_train is not None:
+            # Generate a random permutation
+            random_permutation = list(range(len(samples_train)))
             random.seed(self.seed)
-            random.shuffle(samples_train)
+            random.shuffle(random_permutation)
+
+            # Shuffle samples_train, targets_train, and masks_train using the same permutation
+            samples_train = [samples_train[i] for i in random_permutation]
+            targets_train = [targets_train[i] for i in random_permutation]
+            masks_train = [masks_train[i] for i in random_permutation]
+
             samples_train = np.array(samples_train)[: self.num_data_train]
             targets_train = np.array(targets_train)[: self.num_data_train]
             masks_train = np.array(masks_train)[: self.num_data_train]
