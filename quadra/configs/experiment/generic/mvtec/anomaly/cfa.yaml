@@ -11,7 +11,7 @@ datamodule:
   category: bottle
 
 callbacks:
-  min_max_normalization:
+  threshold_normalization:
     threshold_type: "pixel"
   early_stopping:
     patience: 2

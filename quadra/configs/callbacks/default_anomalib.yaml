@@ -1,6 +1,6 @@
 # Anomalib specific callbacks
-min_max_normalization:
-  _target_: anomalib.utils.callbacks.min_max_normalization.MinMaxNormalizationCallback
+threshold_normalization:
+  _target_: quadra.utils.anomaly.ThresholdNormalizationCallback
   threshold_type: image
 post_processing_configuration:
   _target_: anomalib.utils.callbacks.post_processing_configuration.PostProcessingConfigurationCallback
@@ -16,7 +16,7 @@ visualizer:
   _target_: quadra.callbacks.anomalib.VisualizerCallback
   inputs_are_normalized: true
   output_path: anomaly_output
-  threshold_type: ${callbacks.min_max_normalization.threshold_type}
+  threshold_type: ${callbacks.threshold_normalization.threshold_type}
   disable: true
   plot_only_wrong: false
   plot_raw_outputs: false

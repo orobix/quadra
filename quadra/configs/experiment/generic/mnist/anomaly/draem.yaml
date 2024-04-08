@@ -10,7 +10,7 @@ datamodule:
   good_number: 9
 
 callbacks:
-  min_max_normalization:
+  threshold_normalization:
     threshold_type: "image"
   early_stopping:
     patience: 20

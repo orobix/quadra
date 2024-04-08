@@ -24,6 +24,7 @@ from quadra.datamodules import AnomalyDataModule
 from quadra.modules.base import ModelSignatureWrapper
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
+from quadra.utils.anomaly import ThresholdNormalizationCallback
 from quadra.utils.classification import get_results
 from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model
@@ -202,6 +203,8 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             class_to_idx.pop("false_defect")
 
         anomaly_scores = all_output_flatten["pred_scores"]
+        if isinstance(anomaly_scores, torch.Tensor):
+            anomaly_scores = anomaly_scores.cpu().tolist()
         # Zip the lists together to create rows for the CSV file
         rows = zip(image_paths, pred_labels, gt_labels, anomaly_scores)
         # Specify the CSV file name
@@ -223,17 +226,16 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         defect_scores = anomaly_scores[np.where(all_output_flatten["label"] == 1)]
 
         # Lightning has a callback attribute but is not inside the __init__ so mypy complains
-        threshold = (
-            torch.tensor(0.5)
-            if any(
-                isinstance(x, MinMaxNormalizationCallback) for x in self.trainer.callbacks  # type: ignore[attr-defined]
-            )
-            else self.module.image_metrics.F1Score.threshold  # type: ignore[union-attr]
-        )
+        if any(isinstance(x, MinMaxNormalizationCallback) for x in self.trainer.callbacks):
+            threshold = torch.tensor(0.5)
+        elif any(isinstance(x, ThresholdNormalizationCallback) for x in self.trainer.callbacks):
+            threshold = torch.tensor(100.0)
+        else:
+            threshold = self.module.image_metrics.F1Score.threshold
 
-        plot_cumulative_histogram(
-            good_scores, defect_scores, threshold.item(), self.report_path  # type: ignore[arg-type, operator]
-        )
+        # The output of the prediction is a normalized score so the cumulative histogram is displayed with the
+        # normalized scores
+        plot_cumulative_histogram(good_scores, defect_scores, threshold.item(), self.report_path)
 
         _, pd_cm, _ = get_results(np.array(gt_labels), np.array(pred_labels), idx_to_class)
         np_cm = np.array(pd_cm)
@@ -462,7 +464,7 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
 
         if hasattr(self.datamodule, "valid_area_mask") and self.datamodule.valid_area_mask is not None:
             mask_area = cv2.imread(self.datamodule.valid_area_mask, 0)
-            mask_area = (mask_area > 0).astype(np.uint8)
+            mask_area = (mask_area > 0).astype(np.uint8)  # type: ignore[operator]
 
         if hasattr(self.datamodule, "crop_area") and self.datamodule.crop_area is not None:
             crop_area = self.datamodule.crop_area
@@ -478,7 +480,7 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         ):
             img = cv2.imread(img_path, 0)
             if mask_area is not None:
-                img = img * mask_area
+                img = img * mask_area  # type: ignore[operator]
 
             if crop_area is not None:
                 img = img[crop_area[1] : crop_area[3], crop_area[0] : crop_area[2]]
