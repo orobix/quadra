@@ -5,7 +5,13 @@
 
 from __future__ import annotations
 
-from typing import Any, TypeAlias
+try:
+    from typing import Any, TypeAlias
+except ImportError:
+    from typing import Any
+
+    from typing_extensions import TypeAlias
+
 
 # MyPy wants TypeAlias, but pylint has problems dealing with it
 import numpy as np  # pylint: disable=unused-import
