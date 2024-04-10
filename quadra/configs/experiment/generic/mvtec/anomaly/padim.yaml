@@ -15,7 +15,7 @@ datamodule:
   category: bottle
 
 callbacks:
-  min_max_normalization:
+  score_normalization:
     threshold_type: "pixel"
 
 print_config: false

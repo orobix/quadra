@@ -92,7 +92,7 @@ class VisualizerCallback(Callback):
     Args:
         task: either 'segmentation' or 'classification'
         output_path: location where the images will be saved.
-        inputs_are_normalized: whether the input images are normalized (i.e using MinMax callback).
+        inputs_are_normalized: whether the input images are normalized (like when using MinMax or Treshold callback).
         threshold_type: Either 'pixel' or 'image'. If 'pixel', the threshold is computed on the pixel-level.
         disable: whether to disable the callback.
         plot_only_wrong: whether to plot only the images that are not correctly predicted.
