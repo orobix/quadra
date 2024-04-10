@@ -15,7 +15,7 @@ datamodule:
   category: hazelnut
 
 callbacks:
-  threshold_normalization:
+  score_normalization:
     threshold_type: "pixel"
 
 print_config: false

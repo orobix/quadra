@@ -15,7 +15,7 @@ datamodule:
   good_number: 9
 
 callbacks:
-  threshold_normalization:
+  score_normalization:
     threshold_type: "image"
 
 print_config: false

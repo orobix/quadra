@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 #### Updated
 
 - Change the way anomaly scores are normalized by default, instead of using a [0-1] range with a 0.5 threshold, the scores are now normalized to a [0-1000] range with a threshold of 100, the new score represents the distance from the selected threshold, for example, a score of 200 means that the anomaly score is 100% of the threshold above the threshold itself, a score of 50 means that the anomaly score is 50% of the threshold below. 
+- Change the default normalization config name for anomaly from `min_max_normalization` to `score_normalization`.
 
 #### Fixed
 
