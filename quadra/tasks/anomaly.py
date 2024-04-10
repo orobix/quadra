@@ -24,7 +24,7 @@ from quadra.datamodules import AnomalyDataModule
 from quadra.modules.base import ModelSignatureWrapper
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
-from quadra.utils.anomaly import ThresholdNormalizationCallback
+from quadra.utils.anomaly import MapOrValue, ThresholdNormalizationCallback, normalize_anomaly_score
 from quadra.utils.classification import get_results
 from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model
@@ -204,9 +204,12 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
         anomaly_scores = all_output_flatten["pred_scores"]
         if isinstance(anomaly_scores, torch.Tensor):
-            anomaly_scores = anomaly_scores.cpu().tolist()
+            exportable_anomaly_scores = anomaly_scores.cpu().numpy()
+        else:
+            exportable_anomaly_scores = anomaly_scores
+
         # Zip the lists together to create rows for the CSV file
-        rows = zip(image_paths, pred_labels, gt_labels, anomaly_scores)
+        rows = zip(image_paths, pred_labels, gt_labels, exportable_anomaly_scores)
         # Specify the CSV file name
         csv_file = "test_predictions.csv"
         # Write the data to the CSV file
@@ -220,22 +223,28 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         log.info("CSV file %s has been created.", csv_file)
 
         if not isinstance(anomaly_scores, torch.Tensor):
-            raise ValueError("Anoaly scores must be a tensor")
+            raise ValueError("Anomaly scores must be a tensor")
 
         good_scores = anomaly_scores[np.where(all_output_flatten["label"] == 0)]
         defect_scores = anomaly_scores[np.where(all_output_flatten["label"] == 1)]
 
         # Lightning has a callback attribute but is not inside the __init__ so mypy complains
-        if any(isinstance(x, MinMaxNormalizationCallback) for x in self.trainer.callbacks):
+        if any(
+            isinstance(x, MinMaxNormalizationCallback) for x in self.trainer.callbacks  # type: ignore[attr-defined]
+        ):
             threshold = torch.tensor(0.5)
-        elif any(isinstance(x, ThresholdNormalizationCallback) for x in self.trainer.callbacks):
+        elif any(
+            isinstance(x, ThresholdNormalizationCallback) for x in self.trainer.callbacks  # type: ignore[attr-defined]
+        ):
             threshold = torch.tensor(100.0)
         else:
             threshold = self.module.image_metrics.F1Score.threshold
 
         # The output of the prediction is a normalized score so the cumulative histogram is displayed with the
         # normalized scores
-        plot_cumulative_histogram(good_scores, defect_scores, threshold.item(), self.report_path)
+        plot_cumulative_histogram(
+            good_scores.cpu().numpy(), defect_scores.cpu().numpy(), threshold.item(), self.report_path
+        )
 
         _, pd_cm, _ = get_results(np.array(gt_labels), np.array(pred_labels), idx_to_class)
         np_cm = np.array(pd_cm)
@@ -486,13 +495,10 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 img = img[crop_area[1] : crop_area[3], crop_area[0] : crop_area[2]]
 
             output_mask = (anomaly_map >= self.metadata["threshold"]).cpu().numpy().squeeze().astype(np.uint8)
+            output_mask_label = os.path.basename(os.path.dirname(img_path))
             output_mask_name = os.path.splitext(os.path.basename(img_path))[0] + ".png"
             pred_label = int(anomaly_score >= self.metadata["threshold"])
-            anomaly_probability = np.clip(
-                ((anomaly_score.item() - self.metadata["threshold"]) / (max_anomaly_score - min_anomaly_score)) + 0.5,
-                0,
-                1,
-            )
+            anomaly_confidence = normalize_anomaly_score(anomaly_score.item(), threshold=self.metadata["threshold"])
 
             json_output["observations"].append(
                 {
@@ -500,11 +506,11 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                     "file_name": os.path.basename(img_path),
                     "expectation": gt_label if gt_label != -1 else "",
                     "prediction": pred_label,
-                    "prediction_mask": output_mask_name,
-                    "prediction_heatmap": output_mask_name,
+                    "prediction_mask": os.path.join("predictions", output_mask_label, output_mask_name),
+                    "prediction_heatmap": os.path.join("heatmaps", output_mask_label, output_mask_name),
                     "is_correct": pred_label == gt_label if gt_label != -1 else True,
                     "anomaly_score": f"{anomaly_score.item():.3f}",
-                    "anomaly_probability": f"{anomaly_probability:.3f}",
+                    "anomaly_confidence": f"{anomaly_confidence:.3f}",
                 }
             )
 
@@ -519,19 +525,30 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
 
             output_mask = output_mask * 255
             output_mask = cv2.resize(output_mask, (img.shape[1], img.shape[0]))
-            cv2.imwrite(os.path.join(self.report_path, "predictions", output_mask_name), output_mask)
+            output_prediction_folder = os.path.join(self.report_path, "predictions", output_mask_label)
+            os.makedirs(output_prediction_folder, exist_ok=True)
+            cv2.imwrite(os.path.join(output_prediction_folder, output_mask_name), output_mask)
 
-            # Normalize the heatmaps based on the current min and max anomaly score, otherwise even on good images the
-            # anomaly map looks like there are defects while it's not true
-            output_heatmap = (
-                (anomaly_map.cpu().numpy().squeeze() - self.metadata["threshold"])
-                / (max_anomaly_score - min_anomaly_score)
-            ) + 0.5
-            output_heatmap = np.clip(output_heatmap, 0, 1)
-            output_heatmap = anomaly_map_to_color_map(output_heatmap, normalize=False)
+            # Normalize the map and rescale it to 0-1 range
+            # In this case we are saying that the anomaly map is in the range [50, 150]
+            # This allow to have a stronger color for the anomalies and a lighter one for really normal regions
+            # It's also independent from the max or min anomaly score!
+            normalized_map: MapOrValue = (normalize_anomaly_score(anomaly_map, self.metadata["threshold"]) - 50.0) / (
+                150.0 - 50.0
+            )
+
+            if isinstance(normalized_map, torch.Tensor):
+                normalized_map = normalized_map.cpu().numpy().squeeze()
+
+            normalized_map = np.clip(normalized_map, 0, 1)
+            output_heatmap = anomaly_map_to_color_map(normalized_map, normalize=False)
             output_heatmap = cv2.resize(output_heatmap, (img.shape[1], img.shape[0]))
+
+            output_heatmap_folder = os.path.join(self.report_path, "heatmaps", output_mask_label)
+            os.makedirs(output_heatmap_folder, exist_ok=True)
+
             cv2.imwrite(
-                os.path.join(self.report_path, "heatmaps", output_mask_name),
+                os.path.join(output_heatmap_folder, output_mask_name),
                 cv2.cvtColor(output_heatmap, cv2.COLOR_RGB2BGR),
             )
 
