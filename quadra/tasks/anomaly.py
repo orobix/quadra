@@ -433,10 +433,22 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         if len(self.report_path) > 0:
             os.makedirs(self.report_path, exist_ok=True)
 
+        # TODO: We currently don't use anomaly for segmentation, so the pixel threshold handling is not properly
+        # implemented and we produce as output only a single threshold.
+        training_threshold = self.model_data[f"{self.training_threshold_type}_threshold"]
+        optimal_threshold = self.metadata["threshold"]
+
+        normalized_optimal_threshold = cast(float, normalize_anomaly_score(optimal_threshold, training_threshold))
+
         os.makedirs(os.path.join(self.report_path, "predictions"), exist_ok=True)
         os.makedirs(os.path.join(self.report_path, "heatmaps"), exist_ok=True)
 
         anomaly_scores = self.metadata["anomaly_scores"].cpu().numpy()
+        anomaly_scores = normalize_anomaly_score(anomaly_scores, training_threshold)
+
+        if not isinstance(anomaly_scores, np.ndarray):
+            raise ValueError("Anomaly scores must be a numpy array")
+
         good_scores = anomaly_scores[np.where(np.array(self.metadata["image_labels"]) == 0)]
         defect_scores = anomaly_scores[np.where(np.array(self.metadata["image_labels"]) == 1)]
 
@@ -447,24 +459,17 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 np.where((anomaly_scores >= defect_scores.min()) & (anomaly_scores <= good_scores.max()))[0]
             )
 
-        plot_cumulative_histogram(good_scores, defect_scores, self.metadata["threshold"], self.report_path)
+        plot_cumulative_histogram(good_scores, defect_scores, normalized_optimal_threshold, self.report_path)
 
         json_output = {
             "observations": [],
-            "threshold": np.round(self.metadata["threshold"], 3),
+            "threshold": np.round(normalized_optimal_threshold, 3),
+            "unnormalized_threshold": np.round(optimal_threshold, 3),
             "f1_score": np.round(self.metadata["optimal_f1"], 3),
             "metrics": {
                 "overlapping_scores": count_overlapping_scores,
             },
         }
-
-        min_anomaly_score = self.metadata["anomaly_scores"].min().item()
-        max_anomaly_score = self.metadata["anomaly_scores"].max().item()
-
-        if min_anomaly_score == max_anomaly_score:
-            # Handle the case where all anomaly scores are the same, skip normalization
-            min_anomaly_score = 0
-            max_anomaly_score = 1
 
         tg, fb, fg, tb = 0, 0, 0, 0
 
@@ -478,12 +483,17 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         if hasattr(self.datamodule, "crop_area") and self.datamodule.crop_area is not None:
             crop_area = self.datamodule.crop_area
 
+        anomaly_maps = normalize_anomaly_score(self.metadata["anomaly_maps"], training_threshold)
+
+        if not isinstance(anomaly_maps, torch.Tensor):
+            raise ValueError("Anomaly maps must be a tensor")
+
         for img_path, gt_label, anomaly_score, anomaly_map in tqdm(
             zip(
                 self.metadata["image_paths"],
                 self.metadata["image_labels"],
-                self.metadata["anomaly_scores"],
-                self.metadata["anomaly_maps"],
+                anomaly_scores,
+                anomaly_maps,
             ),
             total=len(self.metadata["image_paths"]),
         ):
@@ -494,11 +504,10 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
             if crop_area is not None:
                 img = img[crop_area[1] : crop_area[3], crop_area[0] : crop_area[2]]
 
-            output_mask = (anomaly_map >= self.metadata["threshold"]).cpu().numpy().squeeze().astype(np.uint8)
+            output_mask = (anomaly_map >= normalized_optimal_threshold).cpu().numpy().squeeze().astype(np.uint8)
             output_mask_label = os.path.basename(os.path.dirname(img_path))
             output_mask_name = os.path.splitext(os.path.basename(img_path))[0] + ".png"
-            pred_label = int(anomaly_score >= self.metadata["threshold"])
-            anomaly_confidence = normalize_anomaly_score(anomaly_score.item(), threshold=self.metadata["threshold"])
+            pred_label = int(anomaly_score >= normalized_optimal_threshold)
 
             json_output["observations"].append(
                 {
@@ -510,7 +519,6 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                     "prediction_heatmap": os.path.join("heatmaps", output_mask_label, output_mask_name),
                     "is_correct": pred_label == gt_label if gt_label != -1 else True,
                     "anomaly_score": f"{anomaly_score.item():.3f}",
-                    "anomaly_confidence": f"{anomaly_confidence:.3f}",
                 }
             )
 
@@ -530,12 +538,10 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
             cv2.imwrite(os.path.join(output_prediction_folder, output_mask_name), output_mask)
 
             # Normalize the map and rescale it to 0-1 range
-            # In this case we are saying that the anomaly map is in the range [50, 150]
+            # In this case we are saying that the anomaly map is in the range [normalized_th - 50, normalized_th + 50]
             # This allow to have a stronger color for the anomalies and a lighter one for really normal regions
             # It's also independent from the max or min anomaly score!
-            normalized_map: MapOrValue = (normalize_anomaly_score(anomaly_map, self.metadata["threshold"]) - 50.0) / (
-                150.0 - 50.0
-            )
+            normalized_map: MapOrValue = (anomaly_map - (normalized_optimal_threshold - 50)) / 100
 
             if isinstance(normalized_map, torch.Tensor):
                 normalized_map = normalized_map.cpu().numpy().squeeze()
