@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.1]
+
+#### Updated
+
+- Anomaly test task now exports results based on the normalized anomaly scores instead of the raw scores. The normalized anomaly scores and the optimal threshold are computed based on the training threshold of the model.
+
 ### [2.1.0]
 
 #### Updated
