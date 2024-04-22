@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quadra"
-version = "2.1.1"
+version = "2.1.2"
 description = "Deep Learning experiment orchestration library"
 authors = [
   "Federico Belotti <federico.belotti@orobix.com>",
@@ -79,7 +79,7 @@ h5py = "~3.8"
 timm = "0.9.12"
 # Right now only this ref supports timm 0.9.12
 segmentation_models_pytorch = { git = "https://github.com/qubvel/segmentation_models.pytorch", rev = "7b381f899ed472a477a89d381689caf535b5d0a6" }
-anomalib = { git = "https://github.com/orobix/anomalib.git", tag = "v0.7.0+obx.1.3.0" }
+anomalib = { git = "https://github.com/orobix/anomalib.git", tag = "v0.7.0+obx.1.3.1" }
 xxhash = "~3.2"
 torchinfo = "~1.8"
 typing_extensions = { version = "4.11.0", python = "<3.10" }

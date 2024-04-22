@@ -2,6 +2,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.2]
+
+#### Updated
+
+- Update anomalib to v0.7.0+obx.1.3.1
+- The optimal anomaly threshold is now computed as the average between the max good and min bad score when the F1 is 1
+
 ### [2.1.1]
 
 #### Updated
