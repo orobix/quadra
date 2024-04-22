@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.3]
+
+#### Updated
+
+- Update anomalib to v0.7.0+obx.1.3.2
+
 ### [2.1.2]
 
 #### Updated
