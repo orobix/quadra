@@ -30,7 +30,7 @@ def check_signature_equality(
     is_equal = True
 
     if isinstance(input_signature, Sequence) and isinstance(expected_signature, Sequence):
-        for c_input_signature, c_expected_signature in zip(input_signature, expected_signature, strict=False):
+        for c_input_signature, c_expected_signature in zip(input_signature, expected_signature):
             is_equal = is_equal and check_signature_equality(c_input_signature, c_expected_signature)
     elif isinstance(input_signature, dict) and isinstance(expected_signature, dict):
         for k, v in input_signature.items():

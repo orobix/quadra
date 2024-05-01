@@ -565,7 +565,7 @@ def generate_patch_dataset(
             num_workers=num_workers,
         )
 
-    for phase, split_dict in zip(["val", "test"], [val_data_dictionary, test_data_dictionary], strict=False):
+    for phase, split_dict in zip(["val", "test"], [val_data_dictionary, test_data_dictionary]):
         if len(split_dict) > 0:
             log.info("Generating %s set", phase)
             generate_patch_sliding_window_dataset(

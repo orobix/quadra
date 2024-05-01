@@ -46,7 +46,7 @@ class UnNormalize:
             new_t = tensor.detach().clone()
         else:
             new_t = tensor
-        for t, m, s in zip(new_t, self.mean, self.std, strict=False):
+        for t, m, s in zip(new_t, self.mean, self.std):
             t.mul_(s).add_(m)
             # The normalize code -> t.sub_(m).div_(s)
         return new_t
@@ -83,7 +83,7 @@ def create_grid_figure(
             ax[i][j].get_xaxis().set_ticks([])
             ax[i][j].get_yaxis().set_ticks([])
     if row_names is not None:
-        for ax, name in zip(ax[:, 0], row_names, strict=False):  # noqa: B020
+        for ax, name in zip(ax[:, 0], row_names):  # noqa: B020
             ax.set_ylabel(name, rotation=90)
 
     plt.tight_layout()

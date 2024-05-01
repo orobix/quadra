@@ -243,7 +243,7 @@ class ClassificationDataModule(BaseDataModule):
                 samples_test, targets_test = self._read_split(self.test_split_file)
                 if not self.train_split_file:
                     samples_train, targets_train = [], []
-                    for sample, target in zip(all_samples, all_targets, strict=False):
+                    for sample, target in zip(all_samples, all_targets):
                         if sample not in samples_test:
                             samples_train.append(sample)
                             targets_train.append(target)
@@ -251,7 +251,7 @@ class ClassificationDataModule(BaseDataModule):
                 samples_train, targets_train = self._read_split(self.train_split_file)
                 if not self.test_split_file:
                     samples_test, targets_test = [], []
-                    for sample, target in zip(all_samples, all_targets, strict=False):
+                    for sample, target in zip(all_samples, all_targets):
                         if sample not in samples_train:
                             samples_test.append(sample)
                             targets_test.append(target)

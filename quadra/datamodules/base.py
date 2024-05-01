@@ -260,7 +260,7 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
             return
 
         # TODO: We need to find a way to annotate the columns of data.
-        paths_and_hash_length = zip(self.data["samples"], [self.hash_size] * len(self.data), strict=False)
+        paths_and_hash_length = zip(self.data["samples"], [self.hash_size] * len(self.data))
 
         with mp.Pool(min(8, mp.cpu_count() - 1)) as pool:
             self.data["hash"] = list(
@@ -355,7 +355,7 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
             raise ValueError("`n_aug_to_take` is not set. Cannot load augmented samples.")
         aug_samples = []
         aug_labels = []
-        for sample, label in zip(samples, targets, strict=False):
+        for sample, label in zip(samples, targets):
             aug_samples.append(sample)
             aug_labels.append(label)
             if replace_str_from is not None and replace_str_to is not None:

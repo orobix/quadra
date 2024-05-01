@@ -341,7 +341,7 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
         if self.datamodule.test_dataset_available:
             stages.append("test")
             dataloaders.append(self.datamodule.test_dataloader())
-        for stage, dataloader in zip(stages, dataloaders, strict=False):
+        for stage, dataloader in zip(stages, dataloaders):
             log.info("Running inference on %s set with batch size: %d", stage, dataloader.batch_size)
             image_list, mask_list, mask_pred_list, label_list = [], [], [], []
             for batch in dataloader:

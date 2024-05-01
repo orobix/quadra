@@ -547,7 +547,7 @@ class EmbeddingVisualization(Task):
                 im = interpolate(im, self.embedding_image_size)
 
             images.append(im.cpu())
-            metadata.extend(zip(targets, class_names, file_paths, strict=False))
+            metadata.extend(zip(targets, class_names, file_paths))
             counter += len(im)
         images = torch.cat(images, dim=0)
         embeddings = torch.cat(embeddings, dim=0)

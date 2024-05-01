@@ -62,7 +62,7 @@ class Visualizer:
         self.figure.subplots_adjust(right=0.9)
 
         axes = self.axis if len(self.images) > 1 else [self.axis]
-        for axis, image_dict in zip(axes, self.images, strict=False):
+        for axis, image_dict in zip(axes, self.images):
             axis.axes.xaxis.set_visible(False)
             axis.axes.yaxis.set_visible(False)
             axis.imshow(image_dict["image"], image_dict["color_map"], vmin=0, vmax=255)
@@ -200,7 +200,6 @@ class VisualizerCallback(Callback):
                 outputs["label"],
                 outputs["pred_labels"],
                 outputs["pred_scores"],
-                strict=False,
             )
         ):
             image = Denormalize()(image.cpu())
@@ -247,7 +246,7 @@ class VisualizerCallback(Callback):
             visualizer.close()
 
             if self.plot_raw_outputs:
-                for raw_output, raw_name in zip([heatmap, vis_img], ["heatmap", "segmentation"], strict=False):
+                for raw_output, raw_name in zip([heatmap, vis_img], ["heatmap", "segmentation"]):
                     if raw_name == "segmentation":
                         raw_output = (raw_output * 255).astype(np.uint8)
                     raw_output = cv2.cvtColor(raw_output, cv2.COLOR_RGB2BGR)

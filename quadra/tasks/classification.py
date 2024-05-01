@@ -629,9 +629,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             all_labels = all_labels[sorted_indices]
 
         # cycle over all train/test split
-        for train_dataloader, test_dataloader in zip(
-            self.train_dataloader_list, self.test_dataloader_list, strict=False
-        ):
+        for train_dataloader, test_dataloader in zip(self.train_dataloader_list, self.test_dataloader_list):
             # Reinit classifier
             self.model = self.config.model
             self.trainer.change_classifier(self.model)

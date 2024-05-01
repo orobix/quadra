@@ -243,7 +243,7 @@ def test_multilabel_classification_datamodule(multilabel_classification_dataset:
         test_labels = np.array([datamodule.class_to_idx[x] for l in test_labels for x in l])
 
     # Verify that the one hot encoded labels count matches the number of labels in the split
-    for split, labels in zip(["train", "val", "test"], [train_labels, val_labels, test_labels], strict=False):
+    for split, labels in zip(["train", "val", "test"], [train_labels, val_labels, test_labels]):
         for l in np.unique(labels):
             train_targets = np.vstack(datamodule.data[datamodule.data["split"] == split]["targets"])
             assert train_targets[:, l].sum() == (labels == l).sum()

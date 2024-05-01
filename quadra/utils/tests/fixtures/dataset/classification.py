@@ -95,7 +95,7 @@ def _build_classification_dataset(
 
     classes = dataset_arguments.classes if dataset_arguments.classes else range(len(dataset_arguments.samples))
 
-    for class_name, samples in zip(classes, dataset_arguments.samples, strict=False):
+    for class_name, samples in zip(classes, dataset_arguments.samples):
         class_path = classification_dataset_path / str(class_name)
         class_path.mkdir()
         for i in range(samples):
@@ -197,7 +197,7 @@ def _build_multilabel_classification_dataset(
 
     generated_samples = []
     counter = 0
-    for class_name, samples in zip(classes, dataset_arguments.samples, strict=False):
+    for class_name, samples in zip(classes, dataset_arguments.samples):
         for _ in range(samples):
             image = _random_image()
             image_path = images_path / f"{counter}.png"
@@ -319,7 +319,7 @@ def _build_classification_patch_dataset(
 
     class_to_idx = {class_name: i for i, class_name in enumerate(classes)}
 
-    for class_name, samples in zip(classes, dataset_arguments.samples, strict=False):
+    for class_name, samples in zip(classes, dataset_arguments.samples):
         for i in range(samples):
             image = _random_image(size=(224, 224))
             mask = np.zeros((224, 224), dtype=np.uint8)

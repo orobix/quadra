@@ -58,14 +58,12 @@ def _build_segmentation_dataset(
     classes = [0] + classes
 
     counter = 0
-    for split_name, split_samples in zip(
-        ["train", "val", "test"], [train_samples, val_samples, test_samples], strict=False
-    ):
+    for split_name, split_samples in zip(["train", "val", "test"], [train_samples, val_samples, test_samples]):
         if split_samples is None:
             continue
 
         with open(segmentation_dataset_path / f"{split_name}.txt", "w") as split_file:
-            for class_name, samples in zip(classes, split_samples, strict=False):
+            for class_name, samples in zip(classes, split_samples):
                 for _ in range(samples):
                     image = _random_image(size=(224, 224))
                     mask = np.zeros((224, 224), dtype=np.uint8)

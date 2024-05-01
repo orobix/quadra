@@ -153,7 +153,7 @@ def grad_rollout(
     """
     result = torch.eye(attentions[0].size(-1))
     with torch.no_grad():
-        for attention, grad in zip(attentions, gradients, strict=False):
+        for attention, grad in zip(attentions, gradients):
             weights = grad
             attention_heads_fused = torch.mean((attention * weights), dim=1)
             attention_heads_fused[attention_heads_fused < 0] = 0

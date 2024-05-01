@@ -211,7 +211,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             exportable_anomaly_scores = anomaly_scores
 
         # Zip the lists together to create rows for the CSV file
-        rows = zip(image_paths, pred_labels, gt_labels, exportable_anomaly_scores, strict=False)
+        rows = zip(image_paths, pred_labels, gt_labels, exportable_anomaly_scores)
         # Specify the CSV file name
         csv_file = "test_predictions.csv"
         # Write the data to the CSV file
@@ -498,7 +498,6 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 self.metadata["image_labels"],
                 anomaly_scores,
                 anomaly_maps,
-                strict=False,
             ),
             total=len(self.metadata["image_paths"]),
         ):
