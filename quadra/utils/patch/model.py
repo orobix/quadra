@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,13 +22,13 @@ log = utils.get_logger(__name__)
 def save_classification_result(
     results: pd.DataFrame,
     output_folder: str,
-    confusion_matrix: Optional[pd.DataFrame],
+    confusion_matrix: pd.DataFrame | None,
     accuracy: float,
     test_dataloader: DataLoader,
-    reconstructions: List[Dict],
+    reconstructions: list[dict],
     config: DictConfig,
     output: DictConfig,
-    ignore_classes: Optional[List[int]] = None,
+    ignore_classes: list[int] | None = None,
 ):
     """Save classification results.
 

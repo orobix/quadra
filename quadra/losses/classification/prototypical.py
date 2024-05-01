@@ -1,5 +1,4 @@
-# coding=utf-8
-from typing import Optional
+from __future__ import annotations
 
 import torch
 from torch.nn import functional as F
@@ -80,7 +79,7 @@ def prototypical_loss(
     coords: torch.Tensor,
     target: torch.Tensor,
     n_support: int,
-    prototypes: Optional[torch.Tensor] = None,
+    prototypes: torch.Tensor | None = None,
     sen: bool = True,
     eps_pos: float = 1.0,
     eps_neg: float = -1e-7,

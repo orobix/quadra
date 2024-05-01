@@ -1,10 +1,10 @@
-from typing import Tuple
+from __future__ import annotations
 
 import cv2
 import numpy as np
 
 
-def crop_image(image: np.ndarray, roi: Tuple[int, int, int, int]) -> np.ndarray:
+def crop_image(image: np.ndarray, roi: tuple[int, int, int, int]) -> np.ndarray:
     """Crop an image given a roi in proper format.
 
     Args:

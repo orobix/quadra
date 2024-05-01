@@ -1,4 +1,7 @@
-from typing import Any, Callable, List, Optional
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
 
 import torch
 from torch.nn import Parameter
@@ -19,7 +22,7 @@ class SAM(torch.optim.Optimizer):
 
     def __init__(
         self,
-        params: List[Parameter],
+        params: list[Parameter],
         base_optimizer: torch.optim.Optimizer,
         rho: float = 0.05,
         adaptive: bool = True,
@@ -85,7 +88,7 @@ class SAM(torch.optim.Optimizer):
             self.zero_grad()
 
     @torch.no_grad()
-    def step(self, closure: Optional[Callable] = None) -> None:
+    def step(self, closure: Callable | None = None) -> None:  # type: ignore[override]
         """Step for SAM optimizer.
 
         Args:

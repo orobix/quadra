@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from __future__ import annotations
 
 import sklearn
 import torch
@@ -26,10 +26,10 @@ class SimCLR(SSLModule):
         model: nn.Module,
         projection_mlp: nn.Module,
         criterion: torch.nn.Module,
-        classifier: Optional[sklearn.base.ClassifierMixin] = None,
-        optimizer: Optional[torch.optim.Optimizer] = None,
-        lr_scheduler: Optional[object] = None,
-        lr_scheduler_interval: Optional[str] = "epoch",
+        classifier: sklearn.base.ClassifierMixin | None = None,
+        optimizer: torch.optim.Optimizer | None = None,
+        lr_scheduler: object | None = None,
+        lr_scheduler_interval: str | None = "epoch",
     ):
         super().__init__(
             model,
@@ -47,7 +47,7 @@ class SimCLR(SSLModule):
         return x
 
     def training_step(
-        self, batch: Tuple[Tuple[torch.Tensor, torch.Tensor], torch.Tensor], batch_idx: int
+        self, batch: tuple[tuple[torch.Tensor, torch.Tensor], torch.Tensor], batch_idx: int
     ) -> torch.Tensor:
         """Args:
             batch: The batch of data

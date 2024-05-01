@@ -1,19 +1,22 @@
+from __future__ import annotations
+
 import difflib
 import importlib
 import inspect
-from typing import Any, Iterable, List, Tuple, Union
+from collections.abc import Iterable
+from typing import Any
 
 from omegaconf import DictConfig, ListConfig, OmegaConf
 
 from quadra.utils.utils import get_logger
 
-OMEGACONF_FIELDS: Tuple[str, ...] = ("_target_", "_convert_", "_recursive_", "_args_")
-EXCLUDE_KEYS: Tuple[str, ...] = ("hydra",)
+OMEGACONF_FIELDS: tuple[str, ...] = ("_target_", "_convert_", "_recursive_", "_args_")
+EXCLUDE_KEYS: tuple[str, ...] = ("hydra",)
 
 logger = get_logger(__name__)
 
 
-def get_callable_arguments(full_module_path: str) -> Tuple[List[str], bool]:
+def get_callable_arguments(full_module_path: str) -> tuple[list[str], bool]:
     """Gets all arguments from module path.
 
     Args:
@@ -56,7 +59,7 @@ def get_callable_arguments(full_module_path: str) -> Tuple[List[str], bool]:
     return arg_names, accepts_kwargs
 
 
-def check_all_arguments(callable_variable: str, configuration_arguments: List[str], argument_names: List[str]) -> None:
+def check_all_arguments(callable_variable: str, configuration_arguments: list[str], argument_names: list[str]) -> None:
     """Checks if all arguments passed from configuration are valid for the target class or function.
 
     Args:
@@ -78,7 +81,7 @@ def check_all_arguments(callable_variable: str, configuration_arguments: List[st
             raise ValueError(error_string)
 
 
-def validate_config(_cfg: Union[DictConfig, ListConfig], package_name: str = "quadra") -> None:
+def validate_config(_cfg: DictConfig | ListConfig, package_name: str = "quadra") -> None:
     """Recursively traverse OmegaConf object and check if arguments are valid for the target class or function.
     If not, raise a ValueError with a suggestion for the closest match of the argument name.
 
@@ -104,7 +107,7 @@ def validate_config(_cfg: Union[DictConfig, ListConfig], package_name: str = "qu
             if key == "_target_":
                 callable_variable = str(_cfg[key])
                 if callable_variable.startswith(package_name):
-                    configuration_arguments = [str(x) for x in _cfg.keys() if x not in OMEGACONF_FIELDS]
+                    configuration_arguments = [str(x) for x in _cfg if x not in OMEGACONF_FIELDS]
                     argument_names, accepts_kwargs = get_callable_arguments(callable_variable)
                     if not accepts_kwargs:
                         check_all_arguments(callable_variable, configuration_arguments, argument_names)

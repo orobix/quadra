@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import os
 import random
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Union
 
 import albumentations as alb
 import cv2
@@ -77,10 +78,10 @@ def split_normal_images_in_train_set(samples: DataFrame, split_ratio: float = 0.
 
 def make_anomaly_dataset(
     path: Path,
-    split: Optional[str] = None,
+    split: str | None = None,
     split_ratio: float = 0.1,
     seed: int = 0,
-    mask_suffix: Optional[str] = None,
+    mask_suffix: str | None = None,
     create_test_set_if_empty: bool = True,
 ) -> DataFrame:
     """Create dataframe by parsing a folder following the MVTec data file structure.
@@ -202,8 +203,8 @@ class AnomalyDataset(Dataset):
         transform: alb.Compose,
         samples: DataFrame,
         task: str = "segmentation",
-        valid_area_mask: Optional[str] = None,
-        crop_area: Optional[Tuple[int, int, int, int]] = None,
+        valid_area_mask: str | None = None,
+        crop_area: tuple[int, int, int, int] | None = None,
     ) -> None:
         self.task = task
         self.transform = transform
@@ -213,19 +214,19 @@ class AnomalyDataset(Dataset):
         self.split = self.samples.split.unique()[0]
 
         self.crop_area = crop_area
-        self.valid_area_mask: Optional[np.ndarray] = None
+        self.valid_area_mask: np.ndarray | None = None
 
         if valid_area_mask is not None:
             if not os.path.exists(valid_area_mask):
                 raise RuntimeError(f"Valid area mask {valid_area_mask} does not exist.")
 
-            self.valid_area_mask = cv2.imread(valid_area_mask, 0) > 0
+            self.valid_area_mask = cv2.imread(valid_area_mask, 0) > 0  # type: ignore[operator]
 
     def __len__(self) -> int:
         """Get length of the dataset."""
         return len(self.samples)
 
-    def __getitem__(self, index: int) -> Dict[str, Union[str, Tensor]]:
+    def __getitem__(self, index: int) -> dict[str, str | Tensor]:
         """Get dataset item for the index ``index``.
 
         Args:
@@ -235,7 +236,7 @@ class AnomalyDataset(Dataset):
             Dict of image tensor during training.
             Otherwise, Dict containing image path, target path, image tensor, label and transformed bounding box.
         """
-        item: Dict[str, Union[str, Tensor]] = {}
+        item: dict[str, str | Tensor] = {}
 
         image_path = self.samples.samples.iloc[index]
         image = cv2.imread(image_path)
@@ -265,7 +266,7 @@ class AnomalyDataset(Dataset):
                     mask = np.zeros(shape=original_image_shape[:2])
                 else:
                     if os.path.isfile(mask_path):
-                        mask = cv2.imread(mask_path, flags=0) / 255.0
+                        mask = cv2.imread(mask_path, flags=0) / 255.0  # type: ignore[operator]
                     else:
                         # We need ones in the mask to compute correctly at least image level f1 score
                         mask = np.ones(shape=original_image_shape[:2])

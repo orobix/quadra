@@ -1,4 +1,7 @@
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
 
 import pytorch_lightning as pl
 import sklearn
@@ -25,9 +28,9 @@ class BaseLightningModule(pl.LightningModule):
     def __init__(
         self,
         model: nn.Module,
-        optimizer: Optional[Optimizer] = None,
-        lr_scheduler: Optional[object] = None,
-        lr_scheduler_interval: Optional[str] = "epoch",
+        optimizer: Optimizer | None = None,
+        lr_scheduler: object | None = None,
+        lr_scheduler_interval: str | None = "epoch",
     ):
         super().__init__()
         self.model = ModelSignatureWrapper(model)
@@ -45,7 +48,7 @@ class BaseLightningModule(pl.LightningModule):
         """
         return self.model(x)
 
-    def configure_optimizers(self) -> Tuple[List[Any], List[Dict[str, Any]]]:
+    def configure_optimizers(self) -> tuple[list[Any], list[dict[str, Any]]]:
         """Get default optimizer if not passed a value.
 
         Returns:
@@ -88,14 +91,14 @@ class SSLModule(BaseLightningModule):
         self,
         model: nn.Module,
         criterion: nn.Module,
-        classifier: Optional[sklearn.base.ClassifierMixin] = None,
-        optimizer: Optional[Optimizer] = None,
-        lr_scheduler: Optional[object] = None,
-        lr_scheduler_interval: Optional[str] = "epoch",
+        classifier: sklearn.base.ClassifierMixin | None = None,
+        optimizer: Optimizer | None = None,
+        lr_scheduler: object | None = None,
+        lr_scheduler_interval: str | None = "epoch",
     ):
         super().__init__(model, optimizer, lr_scheduler, lr_scheduler_interval)
         self.criterion = criterion
-        self.classifier_train_loader: Optional[torch.utils.data.DataLoader]
+        self.classifier_train_loader: torch.utils.data.DataLoader | None
         if classifier is None:
             self.classifier = LogisticRegression(max_iter=10000, n_jobs=8, random_state=42)
         else:
@@ -137,7 +140,7 @@ class SSLModule(BaseLightningModule):
         if self.classifier_train_loader is not None:
             self.fit_estimator()
 
-    def validation_step(self, batch: Tuple[Tuple[torch.Tensor, torch.Tensor], torch.Tensor], batch_idx: int) -> None:
+    def validation_step(self, batch: tuple[tuple[torch.Tensor, torch.Tensor], torch.Tensor], batch_idx: int) -> None:
         # pylint: disable=unused-argument
         if self.classifier_train_loader is None:
             # Compute loss
@@ -175,8 +178,8 @@ class SegmentationModel(BaseLightningModule):
         self,
         model: torch.nn.Module,
         loss_fun: Callable,
-        optimizer: Optional[Optimizer] = None,
-        lr_scheduler: Optional[object] = None,
+        optimizer: Optimizer | None = None,
+        lr_scheduler: object | None = None,
     ):
         super().__init__(model, optimizer, lr_scheduler)
         self.loss_fun = loss_fun
@@ -192,7 +195,7 @@ class SegmentationModel(BaseLightningModule):
         x = self.model(x)
         return x
 
-    def step(self, batch: Tuple[torch.Tensor, torch.Tensor, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
+    def step(self, batch: tuple[torch.Tensor, torch.Tensor, torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
         """Compute loss
         Args:
             batch: batch.
@@ -223,7 +226,7 @@ class SegmentationModel(BaseLightningModule):
         loss = self.loss_fun(pred_masks, target_masks)
         return loss
 
-    def training_step(self, batch: Tuple[torch.Tensor, torch.Tensor, torch.Tensor], batch_idx: int):
+    def training_step(self, batch: tuple[torch.Tensor, torch.Tensor, torch.Tensor], batch_idx: int):
         """Training step."""
         # pylint: disable=unused-argument
         pred_masks, target_masks = self.step(batch)
@@ -236,7 +239,7 @@ class SegmentationModel(BaseLightningModule):
         )
         return loss
 
-    def validation_step(self, batch: Tuple[torch.Tensor, torch.Tensor, torch.Tensor], batch_idx):
+    def validation_step(self, batch: tuple[torch.Tensor, torch.Tensor, torch.Tensor], batch_idx):
         """Validation step."""
         # pylint: disable=unused-argument
         pred_masks, target_masks = self.step(batch)
@@ -249,7 +252,7 @@ class SegmentationModel(BaseLightningModule):
         )
         return loss
 
-    def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor, torch.Tensor], batch_idx: int):
+    def test_step(self, batch: tuple[torch.Tensor, torch.Tensor, torch.Tensor], batch_idx: int):
         """Test step."""
         # pylint: disable=unused-argument
         pred_masks, target_masks = self.step(batch)
@@ -264,9 +267,9 @@ class SegmentationModel(BaseLightningModule):
 
     def predict_step(
         self,
-        batch: Tuple[torch.Tensor, torch.Tensor, torch.Tensor],
+        batch: tuple[torch.Tensor, torch.Tensor, torch.Tensor],
         batch_idx: int,
-        dataloader_idx: Optional[int] = None,
+        dataloader_idx: int | None = None,
     ) -> Any:
         """Predict step."""
         # pylint: disable=unused-argument
@@ -289,12 +292,12 @@ class SegmentationModelMulticlass(SegmentationModel):
         self,
         model: torch.nn.Module,
         loss_fun: Callable,
-        optimizer: Optional[Optimizer] = None,
-        lr_scheduler: Optional[object] = None,
+        optimizer: Optimizer | None = None,
+        lr_scheduler: object | None = None,
     ):
         super().__init__(model=model, optimizer=optimizer, lr_scheduler=lr_scheduler, loss_fun=loss_fun)
 
-    def step(self, batch: Tuple[torch.Tensor, torch.Tensor, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
+    def step(self, batch: tuple[torch.Tensor, torch.Tensor, torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
         """Compute step
         Args:
             batch: batch.

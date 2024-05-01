@@ -1,4 +1,6 @@
-from typing import Dict, List, Optional, Tuple, Union, cast
+from __future__ import annotations
+
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -29,7 +31,7 @@ class SklearnClassificationTrainer:
 
     def __init__(
         self,
-        input_shape: List,
+        input_shape: list,
         backbone: torch.nn.Module,
         random_state: int = 42,
         classifier: ClassifierMixin = LogisticRegression,
@@ -58,9 +60,9 @@ class SklearnClassificationTrainer:
 
     def fit(
         self,
-        train_dataloader: Optional[DataLoader] = None,
-        train_features: Optional[ndarray] = None,
-        train_labels: Optional[ndarray] = None,
+        train_dataloader: DataLoader | None = None,
+        train_features: ndarray | None = None,
+        train_labels: ndarray | None = None,
     ):
         """Fit classifier on training set."""
         # Extract feature
@@ -91,16 +93,16 @@ class SklearnClassificationTrainer:
     def test(
         self,
         test_dataloader: DataLoader,
-        test_labels: Optional[ndarray] = None,
-        test_features: Optional[ndarray] = None,
-        class_to_keep: Optional[List[int]] = None,
-        idx_to_class: Optional[Dict[int, str]] = None,
+        test_labels: ndarray | None = None,
+        test_features: ndarray | None = None,
+        class_to_keep: list[int] | None = None,
+        idx_to_class: dict[int, str] | None = None,
         predict_proba: bool = True,
         gradcam: bool = False,
-    ) -> Union[
-        Tuple[Union[str, Dict], DataFrame, float, DataFrame, Optional[np.ndarray]],
-        Tuple[None, None, None, DataFrame, Optional[np.ndarray]],
-    ]:
+    ) -> (
+        tuple[str | dict, DataFrame, float, DataFrame, np.ndarray | None]
+        | tuple[None, None, None, DataFrame, np.ndarray | None]
+    ):
         """Test classifier on test set.
 
         Args:
@@ -148,7 +150,7 @@ class SklearnClassificationTrainer:
                 raise ValueError("You must provide `idx_to_class` and `test_labels` when using `class_to_keep`")
             filtered_test_labels = [int(x) if idx_to_class[x] in class_to_keep else -1 for x in final_test_labels]
         else:
-            filtered_test_labels = cast(List[int], final_test_labels.tolist())
+            filtered_test_labels = cast(list[int], final_test_labels.tolist())
 
         if not hasattr(test_dataloader.dataset, "x"):
             raise ValueError("Current dataset doesn't provide an `x` attribute")

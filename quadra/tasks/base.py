@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
+from typing import Any, Generic, TypeVar
 
 import hydra
 import torch
@@ -34,7 +36,7 @@ class Task(Generic[DataModuleT]):
         self.config = config
         self.export_folder: str = "deployment_model"
         self._datamodule: DataModuleT
-        self.metadata: Dict[str, Any]
+        self.metadata: dict[str, Any]
         self.save_config()
 
     def save_config(self) -> None:
@@ -103,7 +105,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
     def __init__(
         self,
         config: DictConfig,
-        checkpoint_path: Optional[str] = None,
+        checkpoint_path: str | None = None,
         run_test: bool = False,
         report: bool = False,
     ):
@@ -112,9 +114,9 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         self.run_test = run_test
         self.report = report
         self._module: LightningModule
-        self._devices: Union[int, List[int]]
-        self._callbacks: List[Callback]
-        self._logger: List[Logger]
+        self._devices: int | list[int]
+        self._callbacks: list[Callback]
+        self._logger: list[Logger]
         self._trainer: Trainer
 
     def prepare(self) -> None:
@@ -160,7 +162,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         self._trainer = trainer
 
     @property
-    def callbacks(self) -> List[Callback]:
+    def callbacks(self) -> list[Callback]:
         """List[Callback]: The callbacks."""
         return self._callbacks
 
@@ -182,10 +184,9 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
                     with open_dict(cb_conf):
                         del cb_conf.disable
 
-                if not torch.cuda.is_available():
-                    # Skip the gpu stats logger callback if no gpu is available to avoid errors
-                    if cb_conf["_target_"] == "nvitop.callbacks.lightning.GpuStatsLogger":
-                        continue
+                # Skip the gpu stats logger callback if no gpu is available to avoid errors
+                if not torch.cuda.is_available() and cb_conf["_target_"] == "nvitop.callbacks.lightning.GpuStatsLogger":
+                    continue
 
                 log.info("Instantiating callback <%s>", cb_conf["_target_"])
                 instatiated_callbacks.append(hydra.utils.instantiate(cb_conf))
@@ -194,7 +195,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             log.warning("No callback found in configuration.")
 
     @property
-    def logger(self) -> List[Logger]:
+    def logger(self) -> list[Logger]:
         """List[Logger]: The loggers."""
         return self._logger
 
@@ -219,7 +220,7 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             log.warning("No logger found in configuration.")
 
     @property
-    def devices(self) -> Union[int, List[int]]:
+    def devices(self) -> int | list[int]:
         """List[int]: The devices ids."""
         return self._devices
 
@@ -282,11 +283,12 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
             export_folder=self.export_folder,
         )
 
-        if not self.config.trainer.get("fast_dev_run"):
-            if self.trainer.checkpoint_callback is not None and hasattr(
-                self.trainer.checkpoint_callback, "best_model_path"
-            ):
-                log.info("Best model ckpt: %s", self.trainer.checkpoint_callback.best_model_path)
+        if (
+            not self.config.trainer.get("fast_dev_run")
+            and self.trainer.checkpoint_callback is not None
+            and hasattr(self.trainer.checkpoint_callback, "best_model_path")
+        ):
+            log.info("Best model ckpt: %s", self.trainer.checkpoint_callback.best_model_path)
 
     def add_callback(self, callback: Callback):
         """Add a callback to the trainer.
@@ -334,7 +336,7 @@ class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
         self,
         config: DictConfig,
         model_path: str,
-        device: Optional[str] = None,
+        device: str | None = None,
     ):
         super().__init__(config=config)
 
@@ -344,7 +346,7 @@ class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
             self.device = device
 
         self.config = config
-        self.model_data: Dict[str, Any]
+        self.model_data: dict[str, Any]
         self.model_path = model_path
         self._deployment_model: BaseEvaluationModel
         self.deployment_model_type: str

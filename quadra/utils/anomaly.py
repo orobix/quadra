@@ -10,7 +10,7 @@ try:
 except ImportError:
     from typing import Any
 
-    from typing_extensions import TypeAlias
+    from typing_extensions import TypeAlias  # noqa
 
 
 # MyPy wants TypeAlias, but pylint has problems dealing with it
@@ -103,7 +103,7 @@ class ThresholdNormalizationCallback(Callback):
         outputs["pred_scores"] = normalize_anomaly_score(outputs["pred_scores"], image_threshold)
 
         threshold = pixel_threshold if self.threshold_type == "pixel" else image_threshold
-        if "anomaly_maps" in outputs.keys():
+        if "anomaly_maps" in outputs:
             outputs["anomaly_maps"] = normalize_anomaly_score(outputs["anomaly_maps"], threshold)
 
         if "box_scores" in outputs:

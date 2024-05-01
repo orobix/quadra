@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import cv2
 import numpy as np
@@ -21,15 +23,15 @@ class SegmentationDatasetArguments:
         classes: Optional list of class names, must be equal to len(train_samples) - 1
     """
 
-    train_samples: List[int]
-    val_samples: Optional[List[int]] = None
-    test_samples: Optional[List[int]] = None
-    classes: Optional[List[str]] = None
+    train_samples: list[int]
+    val_samples: list[int] | None = None
+    test_samples: list[int] | None = None
+    classes: list[str] | None = None
 
 
 def _build_segmentation_dataset(
     tmp_path: Path, dataset_arguments: SegmentationDatasetArguments
-) -> Tuple[str, SegmentationDatasetArguments, Dict[str, int]]:
+) -> tuple[str, SegmentationDatasetArguments, dict[str, int]]:
     """Generate segmentation dataset.
 
     Args:
@@ -56,12 +58,14 @@ def _build_segmentation_dataset(
     classes = [0] + classes
 
     counter = 0
-    for split_name, split_samples in zip(["train", "val", "test"], [train_samples, val_samples, test_samples]):
+    for split_name, split_samples in zip(
+        ["train", "val", "test"], [train_samples, val_samples, test_samples], strict=False
+    ):
         if split_samples is None:
             continue
 
         with open(segmentation_dataset_path / f"{split_name}.txt", "w") as split_file:
-            for class_name, samples in zip(classes, split_samples):
+            for class_name, samples in zip(classes, split_samples, strict=False):
                 for _ in range(samples):
                     image = _random_image(size=(224, 224))
                     mask = np.zeros((224, 224), dtype=np.uint8)
@@ -80,7 +84,7 @@ def _build_segmentation_dataset(
 @pytest.fixture
 def segmentation_dataset(
     tmp_path: Path, dataset_arguments: SegmentationDatasetArguments
-) -> Tuple[str, SegmentationDatasetArguments, Dict[str, int]]:
+) -> tuple[str, SegmentationDatasetArguments, dict[str, int]]:
     """Fixture to dinamically generate a segmentation dataset. By default generated images are 224x224 pixels
         and associated masks contains a 50x50 pixels square with the corresponding image class, so at the current stage
         is not possible to have images with multiple annotations. Split files are saved as train.txt,
@@ -107,7 +111,7 @@ def segmentation_dataset(
 )
 def base_binary_segmentation_dataset(
     tmp_path: Path, request: Any
-) -> Tuple[str, SegmentationDatasetArguments, Dict[str, int]]:
+) -> tuple[str, SegmentationDatasetArguments, dict[str, int]]:
     """Generate a base binary segmentation dataset with the following structure:
         - 3 good and 2 bad samples in train set
         - 2 good and 2 bad samples in validation set
@@ -140,7 +144,7 @@ def base_binary_segmentation_dataset(
 )
 def base_multiclass_segmentation_dataset(
     tmp_path: Path, request: Any
-) -> Tuple[str, SegmentationDatasetArguments, Dict[str, int]]:
+) -> tuple[str, SegmentationDatasetArguments, dict[str, int]]:
     """Generate a base binary segmentation dataset with the following structure:
         - 2 good, 2 defect_1 and 2 defect_2 samples in train set
         - 2 good, 2 defect_1 and 2 defect_2 samples in validation set

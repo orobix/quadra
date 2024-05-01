@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import os
 import pathlib
-from typing import Optional, Tuple, Union
 
 import albumentations
 import pandas as pd
@@ -43,22 +44,22 @@ class AnomalyDataModule(BaseDataModule):
     def __init__(
         self,
         data_path: str,
-        category: Optional[str] = None,
-        image_size: Optional[Union[int, Tuple[int, int]]] = None,
+        category: str | None = None,
+        image_size: int | tuple[int, int] | None = None,
         train_batch_size: int = 32,
         test_batch_size: int = 32,
         num_workers: int = 8,
-        train_transform: Optional[albumentations.Compose] = None,
-        val_transform: Optional[albumentations.Compose] = None,
-        test_transform: Optional[albumentations.Compose] = None,
+        train_transform: albumentations.Compose | None = None,
+        val_transform: albumentations.Compose | None = None,
+        test_transform: albumentations.Compose | None = None,
         seed: int = 0,
         task: str = "segmentation",
-        mask_suffix: Optional[str] = None,
+        mask_suffix: str | None = None,
         create_test_set_if_empty: bool = True,
         phase: str = "train",
         name: str = "anomaly_datamodule",
-        valid_area_mask: Optional[str] = None,
-        crop_area: Optional[Tuple[int, int, int, int]] = None,
+        valid_area_mask: str | None = None,
+        crop_area: tuple[int, int, int, int] | None = None,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -108,7 +109,7 @@ class AnomalyDataModule(BaseDataModule):
             create_test_set_if_empty=self.create_test_set_if_empty,
         )
 
-    def setup(self, stage: Optional[str] = None) -> None:
+    def setup(self, stage: str | None = None) -> None:
         """Setup data module based on stages of training."""
         if stage == "fit" and self.phase == "train":
             self.train_dataset = AnomalyDataset(

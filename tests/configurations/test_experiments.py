@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import glob
 from pathlib import Path
-from typing import List
 
 import pytest
 from hydra import compose, initialize_config_module
@@ -10,10 +11,10 @@ from quadra.utils.utils import load_envs
 from quadra.utils.validator import validate_config
 
 
-def get_experiment_configs(experiment_folder: str) -> List[str]:
+def get_experiment_configs(experiment_folder: str) -> list[str]:
     path = Path(__file__).parent.parent.parent / Path(f"quadra/configs/experiment/{experiment_folder}/**/*.yaml")
     experiment_paths = glob.glob(str(path), recursive=True)
-    experiments: List[str] = []
+    experiments: list[str] = []
     for path in experiment_paths:
         experiment_tag = path.split("experiment/")[-1]
         experiments.append(experiment_tag.split(".yaml")[0])

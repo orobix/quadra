@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 import timm
@@ -15,8 +17,8 @@ class TorchHubNetworkBuilder(BaseNetworkBuilder):
         repo_or_dir: The name of the repository or the path to the directory containing the model.
         model_name: The name of the model within the repository.
         pretrained: Whether to load the pretrained weights for the model.
-        pre_classifier: Pre classifier as a torch.nn.Module. Defaults to nn.Identity().
-        classifier: Classifier as a torch.nn.Module. Defaults to nn.Identity().
+        pre_classifier: Pre classifier as a torch.nn.Module. Defaults to nn.Identity() if None.
+        classifier: Classifier as a torch.nn.Module. Defaults to nn.Identity() if None.
         freeze: Whether to freeze the feature extractor. Defaults to True.
         hyperspherical: Whether to map features to an hypersphere. Defaults to False.
         flatten_features: Whether to flatten the features before the pre_classifier. Defaults to True.
@@ -28,8 +30,8 @@ class TorchHubNetworkBuilder(BaseNetworkBuilder):
         repo_or_dir: str,
         model_name: str,
         pretrained: bool = True,
-        pre_classifier: nn.Module = nn.Identity(),
-        classifier: nn.Module = nn.Identity(),
+        pre_classifier: nn.Module | None = None,
+        classifier: nn.Module | None = None,
         freeze: bool = True,
         hyperspherical: bool = False,
         flatten_features: bool = True,
@@ -55,8 +57,8 @@ class TorchVisionNetworkBuilder(BaseNetworkBuilder):
     Args:
         model_name: Torchvision model function that will be evaluated, for example: torchvision.models.resnet18.
         pretrained: Whether to load the pretrained weights for the model.
-        pre_classifier: Pre classifier as a torch.nn.Module. Defaults to nn.Identity().
-        classifier: Classifier as a torch.nn.Module. Defaults to nn.Identity().
+        pre_classifier: Pre classifier as a torch.nn.Module. Defaults to nn.Identity() if None.
+        classifier: Classifier as a torch.nn.Module. Defaults to nn.Identity() if None.
         freeze: Whether to freeze the feature extractor. Defaults to True.
         hyperspherical: Whether to map features to an hypersphere. Defaults to False.
         flatten_features: Whether to flatten the features before the pre_classifier. Defaults to True.
@@ -67,8 +69,8 @@ class TorchVisionNetworkBuilder(BaseNetworkBuilder):
         self,
         model_name: str,
         pretrained: bool = True,
-        pre_classifier: nn.Module = nn.Identity(),
-        classifier: nn.Module = nn.Identity(),
+        pre_classifier: nn.Module | None = None,
+        classifier: nn.Module | None = None,
         freeze: bool = True,
         hyperspherical: bool = False,
         flatten_features: bool = True,
@@ -95,8 +97,8 @@ class TimmNetworkBuilder(BaseNetworkBuilder):
     Args:
         model_name: Timm model name
         pretrained: Whether to load the pretrained weights for the model.
-        pre_classifier: Pre classifier as a torch.nn.Module. Defaults to nn.Identity().
-        classifier: Classifier as a torch.nn.Module. Defaults to nn.Identity().
+        pre_classifier: Pre classifier as a torch.nn.Module. Defaults to nn.Identity() if None.
+        classifier: Classifier as a torch.nn.Module. Defaults to nn.Identity() if None.
         freeze: Whether to freeze the feature extractor. Defaults to True.
         hyperspherical: Whether to map features to an hypersphere. Defaults to False.
         flatten_features: Whether to flatten the features before the pre_classifier. Defaults to True.
@@ -107,8 +109,8 @@ class TimmNetworkBuilder(BaseNetworkBuilder):
         self,
         model_name: str,
         pretrained: bool = True,
-        pre_classifier: nn.Module = nn.Identity(),
-        classifier: nn.Module = nn.Identity(),
+        pre_classifier: nn.Module | None = None,
+        classifier: nn.Module | None = None,
         freeze: bool = True,
         hyperspherical: bool = False,
         flatten_features: bool = True,

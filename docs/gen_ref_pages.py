@@ -17,7 +17,7 @@ def init_file_imports(init_file: Path) -> bool:
     Returns:
         True if the file imports anything, False otherwise.
     """
-    with open(init_file, "r") as fd:
+    with open(init_file) as fd:
         return any(line.startswith("__all__") for line in fd.readlines())
 
 
@@ -61,7 +61,7 @@ for path in sorted(Path(PACKAGE_NAME).rglob("*.py")):
         full_doc_path = full_doc_path.with_name("index.md")
         readme_file = path.parent / "README.md"
         if readme_file.exists():
-            with open(readme_file, "r") as rfd:
+            with open(readme_file) as rfd:
                 MARKDOWN_CONTENTS += f"{rfd.read()}\n"
         if not init_file_imports(path):
             MARKDOWN_CONTENTS += add_submodules_as_list(path.parent)
@@ -76,14 +76,14 @@ for path in sorted(Path(PACKAGE_NAME).rglob("*.py")):
 
     mkdocs_gen_files.set_edit_path(full_doc_path, path)
 
-with open(Path("README.md"), "r") as read_fd:
+with open(Path("README.md")) as read_fd:
     readme = read_fd.read()
     readme = readme.replace("# Quadra: Deep Learning Experiment Orchestration Library", "# Home")
     readme = readme.replace("docs/", "")
     with mkdocs_gen_files.open("getting_started.md", "w") as nav_file:  # (2)
         nav_file.write(readme)
 
-with open("CHANGELOG.md", "r") as change_fd:
+with open("CHANGELOG.md") as change_fd:
     changelog = change_fd.read()
     changelog = changelog.replace("All notable changes to this project will be documented in this file.", "")
     with mkdocs_gen_files.open("reference/CHANGELOG.md", "w") as nav_file:  # (2)

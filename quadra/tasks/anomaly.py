@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import csv
 import glob
 import json
 import os
 from collections import Counter
-from typing import Any, Dict, Generic, List, Literal, Optional, TypeVar, Union, cast
+from typing import Any, Generic, Literal, TypeVar, cast
 
 import cv2
 import hydra
@@ -50,7 +52,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         self,
         config: DictConfig,
         module_function: DictConfig,
-        checkpoint_path: Optional[str] = None,
+        checkpoint_path: str | None = None,
         run_test: bool = True,
         report: bool = True,
     ):
@@ -64,7 +66,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         self.module_function = module_function
         self.export_folder = "deployment_model"
         self.report_path = ""
-        self.test_results: Optional[List[Dict]] = None
+        self.test_results: list[dict] | None = None
 
     @property
     def module(self) -> AnomalyModule:
@@ -154,11 +156,11 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
                 json.dump(self.test_results[0], f)
 
         all_output = cast(
-            List[Dict], self.trainer.predict(model=self.module, dataloaders=self.datamodule.test_dataloader())
+            list[dict], self.trainer.predict(model=self.module, dataloaders=self.datamodule.test_dataloader())
         )
-        all_output_flatten: Dict[str, Union[torch.Tensor, List]] = {}
+        all_output_flatten: dict[str, torch.Tensor | list] = {}
 
-        for key in all_output[0].keys():
+        for key in all_output[0]:
             if type(all_output[0][key]) == torch.Tensor:
                 tensor_gatherer = torch.cat([x[key] for x in all_output])
                 all_output_flatten[key] = tensor_gatherer
@@ -185,7 +187,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
         gt_labels = [class_to_idx[x] for x in named_labels]
         pred_labels = []
-        for i, x in enumerate(named_labels):
+        for i, _ in enumerate(named_labels):
             pred_label = all_output_flatten["pred_labels"][i].item()
 
             if pred_label == 0:
@@ -209,7 +211,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             exportable_anomaly_scores = anomaly_scores
 
         # Zip the lists together to create rows for the CSV file
-        rows = zip(image_paths, pred_labels, gt_labels, exportable_anomaly_scores)
+        rows = zip(image_paths, pred_labels, gt_labels, exportable_anomaly_scores, strict=False)
         # Specify the CSV file name
         csv_file = "test_predictions.csv"
         # Write the data to the CSV file
@@ -230,11 +232,13 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
 
         # Lightning has a callback attribute but is not inside the __init__ so mypy complains
         if any(
-            isinstance(x, MinMaxNormalizationCallback) for x in self.trainer.callbacks  # type: ignore[attr-defined]
+            isinstance(x, MinMaxNormalizationCallback)
+            for x in self.trainer.callbacks  # type: ignore[attr-defined]
         ):
             threshold = torch.tensor(0.5)
         elif any(
-            isinstance(x, ThresholdNormalizationCallback) for x in self.trainer.callbacks  # type: ignore[attr-defined]
+            isinstance(x, ThresholdNormalizationCallback)
+            for x in self.trainer.callbacks  # type: ignore[attr-defined]
         ):
             threshold = torch.tensor(100.0)
         else:
@@ -287,7 +291,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             mflow_logger.experiment.log_artifact(run_id=mflow_logger.run_id, local_path="test_confusion_matrix.png")
             mflow_logger.experiment.log_artifact(run_id=mflow_logger.run_id, local_path="avg_score_by_label.csv")
 
-            if "visualizer" in self.config.callbacks.keys():
+            if "visualizer" in self.config.callbacks:
                 artifacts = glob.glob(os.path.join(self.config.callbacks.visualizer.output_path, "**", "*"))
                 for a in artifacts:
                     mflow_logger.experiment.log_artifact(
@@ -299,7 +303,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             artifacts.append("test_confusion_matrix.png")
             artifacts.append("avg_score_by_label.csv")
 
-            if "visualizer" in self.config.callbacks.keys():
+            if "visualizer" in self.config.callbacks:
                 artifacts.extend(
                     glob.glob(os.path.join(self.config.callbacks.visualizer.output_path, "**/*"), recursive=True)
                 )
@@ -339,8 +343,8 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         config: DictConfig,
         model_path: str,
         use_training_threshold: bool = False,
-        device: Optional[str] = None,
-        training_threshold_type: Optional[Literal["image", "pixel"]] = None,
+        device: str | None = None,
+        training_threshold_type: Literal["image", "pixel"] | None = None,
     ):
         super().__init__(config=config, model_path=model_path, device=device)
 
@@ -494,6 +498,7 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 self.metadata["image_labels"],
                 anomaly_scores,
                 anomaly_maps,
+                strict=False,
             ),
             total=len(self.metadata["image_paths"]),
         ):

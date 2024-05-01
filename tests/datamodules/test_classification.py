@@ -73,7 +73,7 @@ def test_classification_datamodule_with_splits_phase_test(classification_dataset
     datamodule.prepare_data()
     datamodule.setup("test")
 
-    with open(os.path.join(data_path, "test.txt"), "r") as f:
+    with open(os.path.join(data_path, "test.txt")) as f:
         test_samples_txt = f.read().splitlines()
 
     test_split = datamodule.data["split"] == "test"
@@ -135,31 +135,29 @@ def test_classification_patch_datamodule(classification_patch_dataset: classific
     datamodule.setup("fit")
     datamodule.setup("test")
 
-    with open(os.path.join(data_path, "info.json"), "r") as f:
+    with open(os.path.join(data_path, "info.json")) as f:
         info = PatchDatasetInfo(**json.load(f))
 
     # train samples are named like imagename_class.h5
     train_samples_df = datamodule.train_data["samples"].tolist()
-    datamodule_train_samples = set(
-        [os.path.splitext(os.path.basename("_".join(s.split("_")[0:-1])))[0] for s in train_samples_df]
-    )
+    datamodule_train_samples = {
+        os.path.splitext(os.path.basename("_".join(s.split("_")[0:-1])))[0] for s in train_samples_df
+    }
     # val samples are named like imagename_patchnumber.xyz
     val_samples_df = datamodule.val_data["samples"].tolist()
-    datamodule_val_samples = set(
-        [os.path.splitext("_".join(os.path.basename(s).split("_")[0:-1]))[0] for s in val_samples_df]
-    )
+    datamodule_val_samples = {
+        os.path.splitext("_".join(os.path.basename(s).split("_")[0:-1]))[0] for s in val_samples_df
+    }
     # test samples are named like imagename_patchnumber.xyz and may contain #DISCARD# in the name
     test_samples_df = datamodule.test_data["samples"].tolist()
-    datamodule_test_samples = set(
-        [
-            os.path.splitext("_".join(os.path.basename(s).replace("#DISCARD#", "").split("_")[0:-1]))[0]
-            for s in test_samples_df
-        ]
-    )
+    datamodule_test_samples = {
+        os.path.splitext("_".join(os.path.basename(s).replace("#DISCARD#", "").split("_")[0:-1]))[0]
+        for s in test_samples_df
+    }
 
-    train_filenames = set([os.path.splitext(os.path.basename(s.image_path))[0] for s in info.train_files])
-    val_filenames = set([os.path.splitext(os.path.basename(s.image_path))[0] for s in info.val_files])
-    test_filenames = set([os.path.splitext(os.path.basename(s.image_path))[0] for s in info.test_files])
+    train_filenames = {os.path.splitext(os.path.basename(s.image_path))[0] for s in info.train_files}
+    val_filenames = {os.path.splitext(os.path.basename(s.image_path))[0] for s in info.val_files}
+    test_filenames = {os.path.splitext(os.path.basename(s.image_path))[0] for s in info.test_files}
 
     assert datamodule_train_samples == train_filenames
     assert datamodule_val_samples == val_filenames
@@ -229,23 +227,23 @@ def test_multilabel_classification_datamodule(multilabel_classification_dataset:
     datamodule.setup("fit")
     datamodule.setup("test")
 
-    with open(os.path.join(data_path, "train.txt"), "r") as f:
+    with open(os.path.join(data_path, "train.txt")) as f:
         train_samples = f.read().splitlines()
         train_labels = [s.split(",")[1:] for s in train_samples]
         train_labels = np.array([datamodule.class_to_idx[x] for l in train_labels for x in l])
 
-    with open(os.path.join(data_path, "val.txt"), "r") as f:
+    with open(os.path.join(data_path, "val.txt")) as f:
         val_samples = f.read().splitlines()
         val_labels = [s.split(",")[1:] for s in val_samples]
         val_labels = np.array([datamodule.class_to_idx[x] for l in val_labels for x in l])
 
-    with open(os.path.join(data_path, "test.txt"), "r") as f:
+    with open(os.path.join(data_path, "test.txt")) as f:
         test_samples = f.read().splitlines()
         test_labels = [s.split(",")[1:] for s in test_samples]
         test_labels = np.array([datamodule.class_to_idx[x] for l in test_labels for x in l])
 
     # Verify that the one hot encoded labels count matches the number of labels in the split
-    for split, labels in zip(["train", "val", "test"], [train_labels, val_labels, test_labels]):
+    for split, labels in zip(["train", "val", "test"], [train_labels, val_labels, test_labels], strict=False):
         for l in np.unique(labels):
             train_targets = np.vstack(datamodule.data[datamodule.data["split"] == split]["targets"])
             assert train_targets[:, l].sum() == (labels == l).sum()

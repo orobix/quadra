@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import json
 import os
-from typing import Any, List, Optional, Tuple, cast
+from typing import Any, cast
 
 import hydra
 import torch
@@ -36,7 +38,7 @@ class SSL(LightningTask):
         config: DictConfig,
         run_test: bool = False,
         report: bool = False,
-        checkpoint_path: Optional[str] = None,
+        checkpoint_path: str | None = None,
     ):
         super().__init__(
             config=config,
@@ -49,7 +51,7 @@ class SSL(LightningTask):
         self._lr_scheduler: torch.optim.lr_scheduler._LRScheduler
         self.export_folder = "deployment_model"
 
-    def learnable_parameters(self) -> List[nn.Parameter]:
+    def learnable_parameters(self) -> list[nn.Parameter]:
         """Get the learnable parameters."""
         raise NotImplementedError("This method must be implemented by the subclass")
 
@@ -127,7 +129,7 @@ class Simsiam(SSL):
     def __init__(
         self,
         config: DictConfig,
-        checkpoint_path: Optional[str] = None,
+        checkpoint_path: str | None = None,
         run_test: bool = False,
     ):
         super().__init__(config=config, checkpoint_path=checkpoint_path, run_test=run_test)
@@ -135,7 +137,7 @@ class Simsiam(SSL):
         self.projection_mlp: nn.Module
         self.prediction_mlp: nn.Module
 
-    def learnable_parameters(self) -> List[nn.Parameter]:
+    def learnable_parameters(self) -> list[nn.Parameter]:
         """Get the learnable parameters."""
         return list(
             list(self.backbone.parameters())
@@ -196,14 +198,14 @@ class SimCLR(SSL):
     def __init__(
         self,
         config: DictConfig,
-        checkpoint_path: Optional[str] = None,
+        checkpoint_path: str | None = None,
         run_test: bool = False,
     ):
         super().__init__(config=config, checkpoint_path=checkpoint_path, run_test=run_test)
         self.backbone: nn.Module
         self.projection_mlp: nn.Module
 
-    def learnable_parameters(self) -> List[nn.Parameter]:
+    def learnable_parameters(self) -> list[nn.Parameter]:
         """Get the learnable parameters."""
         return list(self.backbone.parameters()) + list(self.projection_mlp.parameters())
 
@@ -257,7 +259,7 @@ class Barlow(SimCLR):
     def __init__(
         self,
         config: DictConfig,
-        checkpoint_path: Optional[str] = None,
+        checkpoint_path: str | None = None,
         run_test: bool = False,
     ):
         super().__init__(config=config, checkpoint_path=checkpoint_path, run_test=run_test)
@@ -295,7 +297,7 @@ class BYOL(SSL):
     def __init__(
         self,
         config: DictConfig,
-        checkpoint_path: Optional[str] = None,
+        checkpoint_path: str | None = None,
         run_test: bool = False,
         **kwargs: Any,
     ):
@@ -311,7 +313,7 @@ class BYOL(SSL):
         self.student_prediction_mlp: nn.Module
         self.teacher_projection_mlp: nn.Module
 
-    def learnable_parameters(self) -> List[nn.Parameter]:
+    def learnable_parameters(self) -> list[nn.Parameter]:
         """Get the learnable parameters."""
         return list(
             list(self.student_model.parameters())
@@ -377,7 +379,7 @@ class DINO(SSL):
     def __init__(
         self,
         config: DictConfig,
-        checkpoint_path: Optional[str] = None,
+        checkpoint_path: str | None = None,
         run_test: bool = False,
     ):
         super().__init__(config=config, checkpoint_path=checkpoint_path, run_test=run_test)
@@ -386,7 +388,7 @@ class DINO(SSL):
         self.student_projection_mlp: nn.Module
         self.teacher_projection_mlp: nn.Module
 
-    def learnable_parameters(self) -> List[nn.Parameter]:
+    def learnable_parameters(self) -> list[nn.Parameter]:
         """Get the learnable parameters."""
         return list(
             list(self.student_model.parameters()) + list(self.student_projection_mlp.parameters()),
@@ -451,7 +453,7 @@ class EmbeddingVisualization(Task):
         config: DictConfig,
         model_path: str,
         report_folder: str = "embeddings",
-        embedding_image_size: Optional[int] = None,
+        embedding_image_size: int | None = None,
     ):
         super().__init__(config=config)
 
@@ -515,7 +517,7 @@ class EmbeddingVisualization(Task):
         self.datamodule.setup("test")
         dataloader = self.datamodule.test_dataloader()
         images = []
-        metadata: List[Tuple[int, str, str]] = []
+        metadata: list[tuple[int, str, str]] = []
         embeddings = []
         std = torch.tensor(self.config.transforms.std).view(1, -1, 1, 1)
         mean = torch.tensor(self.config.transforms.mean).view(1, -1, 1, 1)
@@ -545,7 +547,7 @@ class EmbeddingVisualization(Task):
                 im = interpolate(im, self.embedding_image_size)
 
             images.append(im.cpu())
-            metadata.extend(zip(targets, class_names, file_paths))
+            metadata.extend(zip(targets, class_names, file_paths, strict=False))
             counter += len(im)
         images = torch.cat(images, dim=0)
         embeddings = torch.cat(embeddings, dim=0)

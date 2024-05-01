@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, Union
+from __future__ import annotations
 
 import torch
 from torch import nn
@@ -17,10 +17,10 @@ class ProjectionHead(torch.nn.Module):
             `non_linearity_layer`.
     """
 
-    def __init__(self, blocks: List[Tuple[Optional[torch.nn.Module], ...]]):
+    def __init__(self, blocks: list[tuple[torch.nn.Module | None, ...]]):
         super().__init__()
 
-        layers: List[nn.Module] = []
+        layers: list[nn.Module] = []
         for linear, batch_norm, non_linearity in blocks:
             if linear:
                 layers.append(linear)
@@ -223,11 +223,11 @@ class DinoProjectionHead(nn.Module):
     ):
         super().__init__()
         num_layers = max(num_layers, 1)
-        self.mlp: Union[nn.Linear, nn.Sequential]
+        self.mlp: nn.Linear | nn.Sequential
         if num_layers == 1:
             self.mlp = nn.Linear(input_dim, bottleneck_dim)
         else:
-            layers: List[nn.Module] = [nn.Linear(input_dim, hidden_dim)]
+            layers: list[nn.Module] = [nn.Linear(input_dim, hidden_dim)]
             if use_bn:
                 layers.append(nn.BatchNorm1d(hidden_dim))
             layers.append(nn.GELU())
@@ -240,7 +240,7 @@ class DinoProjectionHead(nn.Module):
             self.mlp = nn.Sequential(*layers)
         self.apply(self._init_weights)
         self.last_layer = nn.utils.weight_norm(nn.Linear(bottleneck_dim, output_dim, bias=False))
-        self.last_layer.weight_g.data.fill_(1)  # type: ignore[operator]
+        self.last_layer.weight_g.data.fill_(1)
         if norm_last_layer:
             self.last_layer.weight_g.requires_grad = False
 

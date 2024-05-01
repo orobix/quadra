@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import math
 import warnings
-from typing import Callable, List, Optional, Tuple, Type, Union, cast
+from collections.abc import Callable
+from typing import cast
 
 import numpy as np
 import timm
@@ -40,7 +43,7 @@ def net_hat(input_size: int, output_size: int) -> torch.nn.Sequential:
     return torch.nn.Sequential(torch.nn.Linear(input_size, output_size))
 
 
-def create_net_hat(dims: List[int], act_fun: Callable = torch.nn.ReLU, dropout_p: float = 0) -> torch.nn.Sequential:
+def create_net_hat(dims: list[int], act_fun: Callable = torch.nn.ReLU, dropout_p: float = 0) -> torch.nn.Sequential:
     """Create a sequence of linear layers with activation functions and dropout.
 
     Args:
@@ -52,7 +55,7 @@ def create_net_hat(dims: List[int], act_fun: Callable = torch.nn.ReLU, dropout_p
         Sequence of linear layers of dimension specified by the input, each linear layer is followed
             by an activation function and optionally a dropout layer with the input probability
     """
-    components: List[nn.Module] = []
+    components: list[nn.Module] = []
     for i, _ in enumerate(dims[:-2]):
         if dropout_p > 0:
             components.append(torch.nn.Dropout(dropout_p))
@@ -85,14 +88,14 @@ def init_weights(m):
 
 
 def get_feature(
-    feature_extractor: Union[torch.nn.Module, BaseEvaluationModel],
+    feature_extractor: torch.nn.Module | BaseEvaluationModel,
     dl: torch.utils.data.DataLoader,
     iteration_over_training: int = 1,
     gradcam: bool = False,
-    classifier: Optional[ClassifierMixin] = None,
-    input_shape: Optional[Tuple[int, int, int]] = None,
-    limit_batches: Optional[int] = None,
-) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
+    classifier: ClassifierMixin | None = None,
+    input_shape: tuple[int, int, int] | None = None,
+    limit_batches: int | None = None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
     """Given a dataloader and a PyTorch model, extract features with the model and return features and labels.
 
     Args:
@@ -132,9 +135,9 @@ def get_feature(
             )
             for p in feature_extractor.features_extractor.layer4[-1].parameters():
                 p.requires_grad = True
-        elif is_vision_transformer(feature_extractor.features_extractor):  # type: ignore[arg-type]
+        elif is_vision_transformer(feature_extractor.features_extractor):
             grad_rollout = VitAttentionGradRollout(
-                feature_extractor.features_extractor,  # type: ignore[arg-type]
+                feature_extractor.features_extractor,
                 classifier=classifier,
                 example_input=None if input_shape is None else torch.randn(1, *input_shape),
             )
@@ -158,11 +161,9 @@ def get_feature(
                 x1 = x1.to(feature_extractor.device).to(feature_extractor.model_dtype)
 
             if gradcam:
-                y_hat = cast(
-                    Union[List[torch.Tensor], Tuple[torch.Tensor], torch.Tensor], feature_extractor(x1).detach()
-                )
+                y_hat = cast(list[torch.Tensor] | tuple[torch.Tensor] | torch.Tensor, feature_extractor(x1).detach())
                 # mypy can't detect that gradcam is true only if we have a features_extractor
-                if is_vision_transformer(feature_extractor.features_extractor):  # type: ignore[union-attr, arg-type]
+                if is_vision_transformer(feature_extractor.features_extractor):  # type: ignore[union-attr]
                     grayscale_cam_low_res = grad_rollout(
                         input_tensor=x1, targets_list=y1
                     )  # TODO: We are using labels (y1) but it would be better to use preds
@@ -175,7 +176,7 @@ def get_feature(
                 feature_extractor.zero_grad(set_to_none=True)  # type: ignore[union-attr]
             else:
                 with torch.no_grad():
-                    y_hat = cast(Union[List[torch.Tensor], Tuple[torch.Tensor], torch.Tensor], feature_extractor(x1))
+                    y_hat = cast(list[torch.Tensor] | tuple[torch.Tensor] | torch.Tensor, feature_extractor(x1))
                 grayscale_cams = None
 
             if isinstance(y_hat, (list, tuple)):
@@ -275,7 +276,7 @@ def trunc_normal_(tensor: torch.Tensor, mean: float = 0.0, std: float = 1.0, a: 
     return _no_grad_trunc_normal_(tensor, mean, std, a, b)
 
 
-def clip_gradients(model: nn.Module, clip: float) -> List[float]:
+def clip_gradients(model: nn.Module, clip: float) -> list[float]:
     """Args:
         model: The model
         clip: The clip value.
@@ -319,9 +320,7 @@ class AttentionExtractor(torch.nn.Module):
         """Clear the grabbed attentions."""
         self.attentions = torch.zeros((1, 0))
 
-    def get_attention(
-        self, module: nn.Module, input_tensor: torch.Tensor, output: torch.Tensor
-    ):  # pylint: disable=unused-argument
+    def get_attention(self, module: nn.Module, input_tensor: torch.Tensor, output: torch.Tensor):  # pylint: disable=unused-argument
         """Method to be registered to grab attentions."""
         self.attentions = output.detach().clone().cpu()
 
@@ -357,7 +356,7 @@ class AttentionExtractor(torch.nn.Module):
         attentions = F.interpolate(attentions, scale_factor=patch_size, mode="nearest")
         return attentions
 
-    def forward(self, t: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, t: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         self.clear()
         out = self.model(t)
         return (out, self.attentions)  # torch.jit.trace does not complain
@@ -378,7 +377,7 @@ class PositionalEncoding1D(torch.nn.Module):
 
     def __init__(self, d_model: int, temperature: float = 10000.0, dropout: float = 0.0, max_len: int = 5000):
         super().__init__()
-        self.dropout: Union[torch.nn.Dropout, torch.nn.Identity]
+        self.dropout: torch.nn.Dropout | torch.nn.Identity
         if dropout > 0:
             self.dropout = torch.nn.Dropout(p=dropout)
         else:
@@ -431,8 +430,8 @@ class LSABlock(torch.nn.Module):
         drop: float = 0.0,
         attn_drop: float = 0.0,
         drop_path: float = 0.0,
-        act_layer: Type[nn.Module] = torch.nn.GELU,
-        norm_layer: Type[torch.nn.LayerNorm] = torch.nn.LayerNorm,
+        act_layer: type[nn.Module] = torch.nn.GELU,
+        norm_layer: type[torch.nn.LayerNorm] = torch.nn.LayerNorm,
         mask_diagonal: bool = True,
         learnable_temperature: bool = True,
     ):

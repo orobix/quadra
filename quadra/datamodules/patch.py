@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import json
 import os
-from typing import Dict, List, Optional
 
 import albumentations
 import pandas as pd
@@ -35,19 +36,19 @@ class PatchSklearnClassificationDataModule(BaseDataModule):
     def __init__(
         self,
         data_path: str,
-        class_to_idx: Dict,
+        class_to_idx: dict,
         name: str = "patch_classification_datamodule",
         train_filename: str = "dataset.txt",
-        exclude_filter: Optional[List[str]] = None,
-        include_filter: Optional[List[str]] = None,
+        exclude_filter: list[str] | None = None,
+        include_filter: list[str] | None = None,
         seed: int = 42,
         batch_size: int = 32,
         num_workers: int = 6,
-        train_transform: Optional[albumentations.Compose] = None,
-        val_transform: Optional[albumentations.Compose] = None,
-        test_transform: Optional[albumentations.Compose] = None,
+        train_transform: albumentations.Compose | None = None,
+        val_transform: albumentations.Compose | None = None,
+        test_transform: albumentations.Compose | None = None,
         balance_classes: bool = False,
-        class_to_skip_training: Optional[list] = None,
+        class_to_skip_training: list | None = None,
         **kwargs,
     ):
         super().__init__(
@@ -79,12 +80,12 @@ class PatchSklearnClassificationDataModule(BaseDataModule):
     def _prepare_data(self):
         """Prepare data function."""
         if os.path.isfile(os.path.join(self.data_path, "info.json")):
-            with open(os.path.join(self.data_path, "info.json"), "r") as f:
+            with open(os.path.join(self.data_path, "info.json")) as f:
                 self.info = PatchDatasetInfo(**json.load(f))
         else:
             raise FileNotFoundError("No `info.json` file found in the dataset folder")
 
-        split_df_list: List[pd.DataFrame] = []
+        split_df_list: list[pd.DataFrame] = []
         if os.path.isfile(os.path.join(self.train_folder, self.train_filename)):
             train_samples, train_labels = load_train_file(
                 train_file_path=os.path.join(self.train_folder, self.train_filename),
@@ -119,7 +120,7 @@ class PatchSklearnClassificationDataModule(BaseDataModule):
             raise ValueError("No data found in all split folders")
         self.data = pd.concat(split_df_list, axis=0)
 
-    def setup(self, stage: Optional[str] = None) -> None:
+    def setup(self, stage: str | None = None) -> None:
         """Setup function."""
         if stage == "fit":
             self.train_dataset = PatchSklearnClassificationTrainDataset(

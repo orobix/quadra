@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import warnings
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from collections.abc import Callable
 
 import cv2
 import numpy as np
@@ -37,15 +39,15 @@ class ImageClassificationListDataset(Dataset):
 
     def __init__(
         self,
-        samples: List[str],
-        targets: List[Union[str, int]],
-        class_to_idx: Optional[Dict] = None,
-        resize: Optional[int] = None,
-        roi: Optional[Tuple[int, int, int, int]] = None,
-        transform: Optional[Callable] = None,
+        samples: list[str],
+        targets: list[str | int],
+        class_to_idx: dict | None = None,
+        resize: int | None = None,
+        roi: tuple[int, int, int, int] | None = None,
+        transform: Callable | None = None,
         rgb: bool = True,
         channel: int = 3,
-        allow_missing_label: Optional[bool] = False,
+        allow_missing_label: bool | None = False,
     ):
         super().__init__()
         assert len(samples) == len(
@@ -64,6 +66,7 @@ class ImageClassificationListDataset(Dataset):
                     "be careful because None labels will not work inside Dataloaders"
                 ),
                 UserWarning,
+                stacklevel=2,
             )
 
         targets = [-1 if target is None else target for target in targets]
@@ -87,7 +90,7 @@ class ImageClassificationListDataset(Dataset):
 
         self.transform = transform
 
-    def __getitem__(self, idx) -> Tuple[np.ndarray, np.ndarray]:
+    def __getitem__(self, idx) -> tuple[np.ndarray, np.ndarray]:
         path, y = self.samples[idx]
 
         # Load image
@@ -137,12 +140,12 @@ class ClassificationDataset(ImageClassificationListDataset):
 
     def __init__(
         self,
-        samples: List[str],
-        targets: List[Union[str, int]],
-        class_to_idx: Optional[Dict] = None,
-        resize: Optional[int] = None,
-        roi: Optional[Tuple[int, int, int, int]] = None,
-        transform: Optional[Callable] = None,
+        samples: list[str],
+        targets: list[str | int],
+        class_to_idx: dict | None = None,
+        resize: int | None = None,
+        roi: tuple[int, int, int, int] | None = None,
+        transform: Callable | None = None,
         rgb: bool = True,
         channel: int = 3,
         random_padding: bool = False,
@@ -191,10 +194,10 @@ class MultilabelClassificationDataset(torch.utils.data.Dataset):
 
     def __init__(
         self,
-        samples: List[str],
+        samples: list[str],
         targets: np.ndarray,
-        class_to_idx: Optional[Dict] = None,
-        transform: Optional[Callable] = None,
+        class_to_idx: dict | None = None,
+        transform: Callable | None = None,
         rgb: bool = True,
     ):
         super().__init__()
@@ -212,7 +215,7 @@ class MultilabelClassificationDataset(torch.utils.data.Dataset):
             class_to_idx = {c: i for i, c in enumerate(range(unique_targets))}
         self.class_to_idx = class_to_idx
         self.idx_to_class = {v: k for k, v in class_to_idx.items()}
-        self.samples = list(zip(self.x, self.y))
+        self.samples = list(zip(self.x, self.y, strict=False))
         self.rgb = rgb
         self.transform = transform
 

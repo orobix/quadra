@@ -2,11 +2,14 @@
 - https://arxiv.org/pdf/1708.03888.pdf
 - https://github.com/pytorch/pytorch/blob/1.6/torch/optim/sgd.py.
 """
-from typing import Callable, List, Optional
+
+from __future__ import annotations
+
+from collections.abc import Callable
 
 import torch
 from torch.nn import Parameter
-from torch.optim.optimizer import Optimizer, _RequiredParameter, required  # type: ignore[attr-defined]
+from torch.optim.optimizer import Optimizer, _RequiredParameter, required
 
 
 class LARS(Optimizer):
@@ -60,7 +63,7 @@ class LARS(Optimizer):
 
     def __init__(
         self,
-        params: List[Parameter],
+        params: list[Parameter],
         lr: _RequiredParameter = required,
         momentum: float = 0,
         dampening: float = 0,
@@ -69,7 +72,7 @@ class LARS(Optimizer):
         trust_coefficient: float = 0.001,
         eps: float = 1e-8,
     ):
-        if lr is not required and lr < 0.0:
+        if lr is not required and lr < 0.0:  # type: ignore[operator]
             raise ValueError(f"Invalid learning rate: {lr}")
         if momentum < 0.0:
             raise ValueError(f"Invalid momentum value: {momentum}")
@@ -98,7 +101,7 @@ class LARS(Optimizer):
             group.setdefault("nesterov", False)
 
     @torch.no_grad()
-    def step(self, closure: Optional[Callable] = None):
+    def step(self, closure: Callable | None = None):
         """Performs a single optimization step.
 
         Args:
@@ -125,13 +128,12 @@ class LARS(Optimizer):
                 g_norm = torch.norm(p.grad.data)
 
                 # lars scaling + weight decay part
-                if weight_decay != 0:
-                    if p_norm != 0 and g_norm != 0:
-                        lars_lr = p_norm / (g_norm + p_norm * weight_decay + self.eps)
-                        lars_lr *= self.trust_coefficient
+                if weight_decay != 0 and p_norm != 0 and g_norm != 0:
+                    lars_lr = p_norm / (g_norm + p_norm * weight_decay + self.eps)
+                    lars_lr *= self.trust_coefficient
 
-                        d_p = d_p.add(p, alpha=weight_decay)
-                        d_p *= lars_lr
+                    d_p = d_p.add(p, alpha=weight_decay)
+                    d_p *= lars_lr
 
                 # sgd part
                 if momentum != 0:

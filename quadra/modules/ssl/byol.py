@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import math
-from typing import Any, Callable, List, Optional, Sized, Tuple, Union
+from collections.abc import Callable, Sized
+from typing import Any
 
 import sklearn
 import torch
@@ -36,12 +39,12 @@ class BYOL(SSLModule):
         student_prediction_mlp: nn.Module,
         teacher_projection_mlp: nn.Module,
         criterion: nn.Module,
-        classifier: Optional[sklearn.base.ClassifierMixin] = None,
-        optimizer: Optional[Optimizer] = None,
-        lr_scheduler: Optional[object] = None,
-        lr_scheduler_interval: Optional[str] = "epoch",
+        classifier: sklearn.base.ClassifierMixin | None = None,
+        optimizer: Optimizer | None = None,
+        lr_scheduler: object | None = None,
+        lr_scheduler_interval: str | None = "epoch",
         teacher_momentum: float = 0.9995,
-        teacher_momentum_cosine_decay: Optional[bool] = True,
+        teacher_momentum_cosine_decay: bool | None = True,
     ):
         super().__init__(
             model=student,
@@ -107,6 +110,7 @@ class BYOL(SSLModule):
             for student_ps, teacher_ps in zip(
                 list(self.model.parameters()) + list(self.student_projection_mlp.parameters()),
                 list(self.teacher.parameters()) + list(self.teacher_projection_mlp.parameters()),
+                strict=False,
             ):
                 teacher_ps.data = teacher_ps.data * teacher_momentum + (1 - teacher_momentum) * student_ps.data
 
@@ -116,7 +120,7 @@ class BYOL(SSLModule):
         else:
             raise ValueError("BYOL requires `max_epochs` to be set and `train_dataloader` to be initialized.")
 
-    def training_step(self, batch: Tuple[List[torch.Tensor], torch.Tensor], *args: Any) -> torch.Tensor:
+    def training_step(self, batch: tuple[list[torch.Tensor], torch.Tensor], *args: Any) -> torch.Tensor:
         [image1, image2], _ = batch
 
         online_pred_one = self.student_prediction_mlp(self.student_projection_mlp(self.model(image1)))
@@ -137,8 +141,8 @@ class BYOL(SSLModule):
         self,
         epoch: int,
         batch_idx: int,
-        optimizer: Union[Optimizer, LightningOptimizer],
-        optimizer_closure: Optional[Callable[[], Any]] = None,
+        optimizer: Optimizer | LightningOptimizer,
+        optimizer_closure: Callable[[], Any] | None = None,
     ) -> None:
         """Override optimizer step to update the teacher parameters."""
         super().optimizer_step(
@@ -162,7 +166,7 @@ class BYOL(SSLModule):
     def on_test_epoch_start(self) -> None:
         self.fit_estimator()
 
-    def test_step(self, batch, *args: List[Any]) -> None:
+    def test_step(self, batch, *args: list[Any]) -> None:
         """Calculate accuracy on the test set for the given batch."""
         acc = self.calculate_accuracy(batch)
         self.log(name="test_acc", value=acc, on_step=False, on_epoch=True, prog_bar=True)

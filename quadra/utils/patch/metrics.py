@@ -1,12 +1,13 @@
+from __future__ import annotations
+
 import os
 import warnings
-from typing import Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np
 import pandas as pd
 from scipy import ndimage
-from skimage.measure import label, regionprops
+from skimage.measure import label, regionprops  # pylint: disable=no-name-in-module
 from tqdm import tqdm
 
 from quadra.utils import utils
@@ -36,18 +37,18 @@ def get_sorted_patches_by_image(test_results: pd.DataFrame, img_name: str) -> pd
 
 
 def compute_patch_metrics(
-    test_img_info: List[PatchDatasetFileFormat],
+    test_img_info: list[PatchDatasetFileFormat],
     test_results: pd.DataFrame,
     overlap: float,
-    idx_to_class: Dict,
-    patch_num_h: Optional[int] = None,
-    patch_num_w: Optional[int] = None,
-    patch_w: Optional[int] = None,
-    patch_h: Optional[int] = None,
+    idx_to_class: dict,
+    patch_num_h: int | None = None,
+    patch_num_w: int | None = None,
+    patch_w: int | None = None,
+    patch_h: int | None = None,
     return_polygon: bool = False,
     patch_reconstruction_method: str = "priority",
-    annotated_good: Optional[List[int]] = None,
-) -> Tuple[int, int, int, List[Dict]]:
+    annotated_good: list[int] | None = None,
+) -> tuple[int, int, int, list[dict]]:
     """Compute the metrics of a patch dataset.
 
     Args:
@@ -103,7 +104,9 @@ def compute_patch_metrics(
 
     if patch_h is not None and patch_w is not None and patch_num_h is not None and patch_num_w is not None:
         warnings.warn(
-            "Both number of patches and patch dimension are specified, using number of patches by default", UserWarning
+            "Both number of patches and patch dimension are specified, using number of patches by default",
+            UserWarning,
+            stacklevel=2,
         )
 
     log.info("Computing patch metrics!")
@@ -188,7 +191,7 @@ def compute_patch_metrics(
             if annotated_good is not None:
                 gt_img[np.isin(gt_img, annotated_good)] = 0
 
-            gt_img_binary = (gt_img > 0).astype(bool)
+            gt_img_binary = (gt_img > 0).astype(bool)  # type: ignore[operator]
             regions_pred = label(output_mask).astype(np.uint8)
 
             for k in range(1, regions_pred.max() + 1):
@@ -200,8 +203,8 @@ def compute_patch_metrics(
             output_mask = (output_mask > 0).astype(np.uint8)
             gt_img = label(gt_img)
 
-            for i in range(1, gt_img.max() + 1):
-                region = (gt_img == i).astype(bool)
+            for i in range(1, gt_img.max() + 1):  # type: ignore[union-attr]
+                region = (gt_img == i).astype(bool)  # type: ignore[union-attr]
                 if np.sum(np.bitwise_and(region, output_mask)) == 0:
                     false_region_good += 1
                 else:
@@ -211,16 +214,16 @@ def compute_patch_metrics(
 
 
 def reconstruct_patch(
-    input_img_shape: Tuple[int, ...],
-    patch_size: Tuple[int, int],
+    input_img_shape: tuple[int, ...],
+    patch_size: tuple[int, int],
     pred: np.ndarray,
     patch_num_h: int,
     patch_num_w: int,
-    idx_to_class: Dict,
-    step: Tuple[int, int],
+    idx_to_class: dict,
+    step: tuple[int, int],
     return_polygon: bool = True,
     method: str = "priority",
-) -> Tuple[np.ndarray, List[Dict]]:
+) -> tuple[np.ndarray, list[dict]]:
     """Reconstructs the prediction image from the patches.
 
     Args:
@@ -269,15 +272,15 @@ def reconstruct_patch(
 
 
 def _reconstruct_patch_priority(
-    input_img_shape: Tuple[int, ...],
-    patch_size: Tuple[int, int],
+    input_img_shape: tuple[int, ...],
+    patch_size: tuple[int, int],
     pred: np.ndarray,
     patch_num_h: int,
     patch_num_w: int,
-    idx_to_class: Dict,
-    step: Tuple[int, int],
+    idx_to_class: dict,
+    step: tuple[int, int],
     return_polygon: bool = True,
-) -> Tuple[np.ndarray, List[Dict]]:
+) -> tuple[np.ndarray, list[dict]]:
     """Reconstruct patch polygons using the priority method."""
     final_mask = np.zeros([input_img_shape[0], input_img_shape[1]], dtype=np.uint8)
     predicted_defect = []
@@ -333,13 +336,13 @@ def _reconstruct_patch_priority(
 
 
 def _reconstruct_patch_major_voting(
-    input_img_shape: Tuple[int, ...],
-    patch_size: Tuple[int, int],
+    input_img_shape: tuple[int, ...],
+    patch_size: tuple[int, int],
     pred: np.ndarray,
     patch_num_h: int,
     patch_num_w: int,
-    idx_to_class: Dict,
-    step: Tuple[int, int],
+    idx_to_class: dict,
+    step: tuple[int, int],
     return_polygon: bool = True,
 ):
     """Reconstruct patch polygons using the major voting method."""

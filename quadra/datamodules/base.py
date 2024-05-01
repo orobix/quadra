@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import multiprocessing as mp
 import multiprocessing.pool as mpp
 import os
 import pickle as pkl
 import typing
+from collections.abc import Callable, Iterable, Sequence
 from functools import wraps
-from typing import Any, Callable, Dict, Iterable, List, Literal, Optional, Sequence, Tuple, Union, cast
+from typing import Any, Literal, Union, cast
 
 import albumentations
 import numpy as np
@@ -105,7 +108,7 @@ def istarmap(self, func: Callable, iterable: Iterable, chunksize: int = 1):
     """Starmap-version of imap."""
     self._check_running()
     if chunksize < 1:
-        raise ValueError("Chunksize must be 1+, not {0:n}".format(chunksize))
+        raise ValueError(f"Chunksize must be 1+, not {chunksize:n}")
 
     task_batches = mpp.Pool._get_tasks(func, iterable, chunksize)
     result = mpp.IMapIterator(self)
@@ -146,13 +149,13 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
         batch_size: int = 32,
         seed: int = 42,
         load_aug_images: bool = False,
-        aug_name: Optional[str] = None,
-        n_aug_to_take: Optional[int] = None,
-        replace_str_from: Optional[str] = None,
-        replace_str_to: Optional[str] = None,
-        train_transform: Optional[albumentations.Compose] = None,
-        val_transform: Optional[albumentations.Compose] = None,
-        test_transform: Optional[albumentations.Compose] = None,
+        aug_name: str | None = None,
+        n_aug_to_take: int | None = None,
+        replace_str_from: str | None = None,
+        replace_str_to: str | None = None,
+        train_transform: albumentations.Compose | None = None,
+        val_transform: albumentations.Compose | None = None,
+        test_transform: albumentations.Compose | None = None,
         enable_hashing: bool = True,
         hash_size: Literal[32, 64, 128] = 64,
         hash_type: Literal["content", "size"] = "content",
@@ -178,7 +181,7 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
         self.n_aug_to_take = n_aug_to_take
         self.replace_str_from = replace_str_from
         self.replace_str_to = replace_str_to
-        self.extra_args: Dict[str, Any] = {}
+        self.extra_args: dict[str, Any] = {}
         self.train_dataset: TrainDataset
         self.val_dataset: ValDataset
         self.test_dataset: TestDataset
@@ -257,7 +260,7 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
             return
 
         # TODO: We need to find a way to annotate the columns of data.
-        paths_and_hash_length = zip(self.data["samples"], [self.hash_size] * len(self.data))
+        paths_and_hash_length = zip(self.data["samples"], [self.hash_size] * len(self.data), strict=False)
 
         with mp.Pool(min(8, mp.cpu_count() - 1)) as pool:
             self.data["hash"] = list(
@@ -282,7 +285,7 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
         self.hash_data()
         self.save_checkpoint()
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self) -> dict[str, Any]:
         """This method is called when pickling the object.
         It's useful to remove attributes that shouldn't be pickled.
         """
@@ -341,18 +344,18 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
     # TODO: Check if this function can be removed
     def load_augmented_samples(
         self,
-        samples: List[str],
-        targets: List[Any],
-        replace_str_from: Optional[str] = None,
-        replace_str_to: Optional[str] = None,
+        samples: list[str],
+        targets: list[Any],
+        replace_str_from: str | None = None,
+        replace_str_to: str | None = None,
         shuffle: bool = False,
-    ) -> Tuple[List[str], List[str]]:
+    ) -> tuple[list[str], list[str]]:
         """Loads augmented samples."""
         if self.n_aug_to_take is None:
             raise ValueError("`n_aug_to_take` is not set. Cannot load augmented samples.")
         aug_samples = []
         aug_labels = []
-        for sample, label in zip(samples, targets):
+        for sample, label in zip(samples, targets, strict=False):
             aug_samples.append(sample)
             aug_labels.append(label)
             if replace_str_from is not None and replace_str_to is not None:

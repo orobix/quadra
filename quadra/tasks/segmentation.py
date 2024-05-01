@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import json
 import os
 import typing
-from typing import Any, Dict, Generic, List, Optional
+from typing import Any, Generic
 
 import cv2
 import hydra
@@ -42,9 +44,9 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         self,
         config: DictConfig,
         num_viz_samples: int = 5,
-        checkpoint_path: Optional[str] = None,
+        checkpoint_path: str | None = None,
         run_test: bool = False,
-        evaluate: Optional[DictConfig] = None,
+        evaluate: DictConfig | None = None,
         report: bool = False,
     ):
         super().__init__(
@@ -56,7 +58,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         self.evaluate = evaluate
         self.num_viz_samples = num_viz_samples
         self.export_folder: str = "deployment_model"
-        self.exported_model_path: Optional[str] = None
+        self.exported_model_path: str | None = None
         if self.evaluate and any(self.evaluate.values()):
             if (
                 self.config.export is None
@@ -86,13 +88,14 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         """Set the module."""
         log.info("Instantiating model <%s>", module_config.model["_target_"])
 
-        if isinstance(self.datamodule, SegmentationMulticlassDataModule):
-            if module_config.model.num_classes != (len(self.datamodule.idx_to_class) + 1):
-                log.warning(
-                    f"Number of classes in the model ({module_config.model.num_classes}) does not match the number of "
-                    + f"classes in the datamodule ({len(self.datamodule.idx_to_class)}). Updating the model..."
-                )
-                module_config.model.num_classes = len(self.datamodule.idx_to_class) + 1
+        if isinstance(self.datamodule, SegmentationMulticlassDataModule) and module_config.model.num_classes != (
+            len(self.datamodule.idx_to_class) + 1
+        ):
+            log.warning(
+                f"Number of classes in the model ({module_config.model.num_classes}) does not match the number of "
+                + f"classes in the datamodule ({len(self.datamodule.idx_to_class)}). Updating the model..."
+            )
+            module_config.model.num_classes = len(self.datamodule.idx_to_class) + 1
 
         model = hydra.utils.instantiate(module_config.model)
         model = ModelSignatureWrapper(model)
@@ -181,7 +184,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         """Generate a report for the task."""
         if self.evaluate is not None:
             log.info("Generating evaluation report!")
-            eval_tasks: List[SegmentationEvaluation] = []
+            eval_tasks: list[SegmentationEvaluation] = []
             if self.evaluate.analysis:
                 if self.exported_model_path is None:
                     raise ValueError(
@@ -242,7 +245,7 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
         self,
         config: DictConfig,
         model_path: str,
-        device: Optional[str] = "cpu",
+        device: str | None = "cpu",
     ):
         super().__init__(config=config, model_path=model_path, device=device)
         self.config = config
@@ -267,7 +270,7 @@ class SegmentationEvaluation(Evaluation[SegmentationDataModuleT]):
     @torch.no_grad()
     def inference(
         self, dataloader: DataLoader, deployment_model: BaseEvaluationModel, device: torch.device
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Run inference on the dataloader and return the output.
 
         Args:
@@ -306,10 +309,10 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
         self,
         config: DictConfig,
         model_path: str,
-        device: Optional[str] = None,
+        device: str | None = None,
     ):
         super().__init__(config=config, model_path=model_path, device=device)
-        self.test_output: Dict[str, Any] = {}
+        self.test_output: dict[str, Any] = {}
 
     def train(self) -> None:
         """Skip training."""
@@ -325,8 +328,8 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
         """Run testing."""
         log.info("Starting inference for analysis.")
 
-        stages: List[str] = []
-        dataloaders: List[torch.utils.data.DataLoader] = []
+        stages: list[str] = []
+        dataloaders: list[torch.utils.data.DataLoader] = []
 
         # if self.datamodule.train_dataset_available:
         #     stages.append("train")
@@ -338,7 +341,7 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
         if self.datamodule.test_dataset_available:
             stages.append("test")
             dataloaders.append(self.datamodule.test_dataloader())
-        for stage, dataloader in zip(stages, dataloaders):
+        for stage, dataloader in zip(stages, dataloaders, strict=False):
             log.info("Running inference on %s set with batch size: %d", stage, dataloader.batch_size)
             image_list, mask_list, mask_pred_list, label_list = [], [], [], []
             for batch in dataloader:

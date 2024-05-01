@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from __future__ import annotations
 
 import sklearn
 import torch
@@ -26,12 +26,11 @@ class VICReg(SSLModule):
         model: nn.Module,
         projection_mlp: nn.Module,
         criterion: nn.Module,
-        classifier: Optional[sklearn.base.ClassifierMixin] = None,
-        optimizer: Optional[optim.Optimizer] = None,
-        lr_scheduler: Optional[object] = None,
-        lr_scheduler_interval: Optional[str] = "epoch",
+        classifier: sklearn.base.ClassifierMixin | None = None,
+        optimizer: optim.Optimizer | None = None,
+        lr_scheduler: object | None = None,
+        lr_scheduler_interval: str | None = "epoch",
     ):
-
         super().__init__(
             model,
             criterion,
@@ -49,7 +48,7 @@ class VICReg(SSLModule):
         z = self.projection_mlp(x)
         return z
 
-    def training_step(self, batch: Tuple[Tuple[torch.Tensor, torch.Tensor], torch.Tensor], batch_idx: int):
+    def training_step(self, batch: tuple[tuple[torch.Tensor, torch.Tensor], torch.Tensor], batch_idx: int):
         # pylint: disable=unused-argument
         # Compute loss
         (im_x, im_y), _ = batch

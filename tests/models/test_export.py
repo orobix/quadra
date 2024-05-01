@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import pytest
 import torch
@@ -87,7 +88,7 @@ def check_export_model_outputs(
     )
 
     models = []
-    for export_type, model_path in exported_models.items():
+    for _, model_path in exported_models.items():
         model = import_deployment_model(model_path=model_path, inference_config=inference_config, device=device)
         models.append(model)
 

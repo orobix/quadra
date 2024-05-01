@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Tuple
+from typing import Any
 
 import cv2
 import pytest
@@ -20,13 +22,13 @@ class AnomalyDatasetArguments:
     """
 
     train_samples: int
-    val_samples: Tuple[int, int]
-    test_samples: Tuple[int, int]
+    val_samples: tuple[int, int]
+    test_samples: tuple[int, int]
 
 
 def _build_anomaly_dataset(
     tmp_path: Path, dataset_arguments: AnomalyDatasetArguments
-) -> Tuple[str, AnomalyDatasetArguments]:
+) -> tuple[str, AnomalyDatasetArguments]:
     """Generate anomaly dataset in the standard mvtec format.
 
     Args:
@@ -86,7 +88,7 @@ def _build_anomaly_dataset(
 
 
 @pytest.fixture
-def anomaly_dataset(tmp_path: Path, dataset_arguments: AnomalyDatasetArguments) -> Tuple[str, AnomalyDatasetArguments]:
+def anomaly_dataset(tmp_path: Path, dataset_arguments: AnomalyDatasetArguments) -> tuple[str, AnomalyDatasetArguments]:
     """Fixture used to dinamically generate anomaly dataset. By default images are random grayscales with size 10x10.
 
     Args:
@@ -104,7 +106,7 @@ def anomaly_dataset(tmp_path: Path, dataset_arguments: AnomalyDatasetArguments) 
 @pytest.fixture(
     params=[AnomalyDatasetArguments(**{"train_samples": 10, "val_samples": (1, 1), "test_samples": (1, 1)})]
 )
-def base_anomaly_dataset(tmp_path: Path, request: Any) -> Tuple[str, AnomalyDatasetArguments]:
+def base_anomaly_dataset(tmp_path: Path, request: Any) -> tuple[str, AnomalyDatasetArguments]:
     """Generate base anomaly dataset with the following parameters:
         - train_samples: 10
         - val_samples: (10, 10)

@@ -21,10 +21,10 @@ repos:
       - id: ruff
         types_or: [python, pyi, jupyter]
         args: ["--config", "pyproject.toml", "--fix"]
+        exclude: ^(tests|scripts|notebooks|quadra/utils/tests)/
       - id: ruff-format
         types_or: [python, pyi, jupyter]
         args: ["--config", "pyproject.toml"]
-    exclude: ^(tests|scripts|notebooks|quadra/utils/tests)/
   - repo: local
     hooks:
       - id: pylint

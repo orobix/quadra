@@ -39,7 +39,7 @@ def _build_imagenette_dataset(tmp_path: Path, classes: int, class_samples: int) 
 
 @pytest.fixture
 def imagenette_dataset(tmp_path: Path) -> str:
-    """Generate a mock imagenette dataset to test efficient_ad model
+    """Generate a mock imagenette dataset to test efficient_ad model.
 
     Args:
         tmp_path: Path to temporary directory

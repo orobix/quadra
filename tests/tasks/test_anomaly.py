@@ -1,8 +1,10 @@
 # pylint: disable=redefined-outer-name
+from __future__ import annotations
+
 import os
 import shutil
+from collections.abc import Callable, Generator
 from pathlib import Path
-from typing import Callable, Generator, List
 
 import pytest
 from pytest_mock import MockerFixture
@@ -68,7 +70,7 @@ def _run_inference_experiment(data_path: str, train_path: str, test_path: str, e
     execute_quadra_experiment(overrides=test_overrides, experiment_path=test_path)
 
 
-def run_inference_experiments(data_path: str, train_path: str, test_path: str, export_types: List[str]):
+def run_inference_experiments(data_path: str, train_path: str, test_path: str, export_types: list[str]):
     """Run inference experiments for the given export types."""
     for export_type in export_types:
         cwd = os.getcwd()
@@ -179,7 +181,7 @@ def test_efficientad(
         f"model.model.imagenette_dir= {imagenette_path}",
         f"model.dataset.task={task}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
-        f"export.input_shapes=[[3,256,256],[3,256,256]]",
+        "export.input_shapes=[[3,256,256],[3,256,256]]",
     ]
     trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES

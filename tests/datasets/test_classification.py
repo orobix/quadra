@@ -50,11 +50,11 @@ def test_multilabel_classification_dataset(
     data_path, _ = base_multilabel_classification_dataset
 
     samples = glob.glob(os.path.join(data_path, "images", "*"))
-    with open(os.path.join(data_path, "samples.txt"), "r") as f:
+    with open(os.path.join(data_path, "samples.txt")) as f:
         samples_and_targets = [line.strip().split(",") for line in f.readlines()]
         samples_mapping = {os.path.basename(st[0]): st[1:] for st in samples_and_targets}
 
-    targets = set([item for sublist in list(samples_mapping.values()) for item in sublist])
+    targets = {item for sublist in list(samples_mapping.values()) for item in sublist}
 
     class_to_idx = {c: i for i, c in enumerate(targets)}
     one_hot_encoding = np.zeros((len(samples), len(targets)))
@@ -74,7 +74,7 @@ def test_multilabel_classification_dataset(
         assert len(item) == 2
         assert isinstance(item[0], np.ndarray)
         assert isinstance(item[1], torch.Tensor)
-        reverted_classes = set([dataset.idx_to_class[c.item()] for c in torch.where(item[1] == 1)[0]])
+        reverted_classes = {dataset.idx_to_class[c.item()] for c in torch.where(item[1] == 1)[0]}
         assert reverted_classes == set(samples_mapping[os.path.basename(dataset.x[i])])
 
 

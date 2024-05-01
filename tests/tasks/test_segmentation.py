@@ -1,8 +1,9 @@
 # pylint: disable=redefined-outer-name
+from __future__ import annotations
+
 import os
 import shutil
 from pathlib import Path
-from typing import List
 
 import pytest
 
@@ -34,7 +35,7 @@ BASE_EXPORT_TYPES = ["torchscript"] if not ONNX_AVAILABLE else ["torchscript", "
 
 
 def _run_inference_experiment(
-    test_overrides: List[str], data_path: str, train_path: str, test_path: str, export_type: str
+    test_overrides: list[str], data_path: str, train_path: str, test_path: str, export_type: str
 ):
     """Run an inference experiment for the given export type."""
     extension = get_export_extension(export_type)
@@ -46,7 +47,7 @@ def _run_inference_experiment(
 
 
 def run_inference_experiments(
-    test_overrides: List[str], data_path: str, train_path: str, test_path: str, export_types: List[str]
+    test_overrides: list[str], data_path: str, train_path: str, test_path: str, export_types: list[str]
 ):
     """Run inference experiments for the given export types."""
     for export_type in export_types:

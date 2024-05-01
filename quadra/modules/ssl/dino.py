@@ -1,4 +1,7 @@
-from typing import Any, Callable, List, Optional, Tuple, Union
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
 
 import sklearn
 import torch
@@ -39,12 +42,12 @@ class Dino(BYOL):
         teacher_projection_mlp: nn.Module,
         criterion: nn.Module,
         freeze_last_layer: int = 1,
-        classifier: Optional[sklearn.base.ClassifierMixin] = None,
-        optimizer: Optional[Optimizer] = None,
-        lr_scheduler: Optional[object] = None,
-        lr_scheduler_interval: Optional[str] = "epoch",
+        classifier: sklearn.base.ClassifierMixin | None = None,
+        optimizer: Optimizer | None = None,
+        lr_scheduler: object | None = None,
+        lr_scheduler_interval: str | None = "epoch",
         teacher_momentum: float = 0.9995,
-        teacher_momentum_cosine_decay: Optional[bool] = True,
+        teacher_momentum_cosine_decay: bool | None = True,
     ):
         super().__init__(
             student=student,
@@ -93,7 +96,7 @@ class Dino(BYOL):
 
         self.teacher_initialized = True
 
-    def student_multicrop_forward(self, x: List[torch.Tensor]) -> torch.Tensor:
+    def student_multicrop_forward(self, x: list[torch.Tensor]) -> torch.Tensor:
         """Student forward on the multicrop imges.
 
         Args:
@@ -111,7 +114,7 @@ class Dino(BYOL):
         chunks = logits.chunk(n_crops)  # n_crops * (n_samples, out_dim)
         return chunks
 
-    def teacher_multicrop_forward(self, x: List[torch.Tensor]) -> torch.Tensor:
+    def teacher_multicrop_forward(self, x: list[torch.Tensor]) -> torch.Tensor:
         """Teacher forward on the multicrop imges.
 
         Args:
@@ -143,7 +146,7 @@ class Dino(BYOL):
             if "last_layer" in n:
                 p.grad = None
 
-    def training_step(self, batch: Tuple[List[torch.Tensor], torch.Tensor], *args: Any) -> torch.Tensor:
+    def training_step(self, batch: tuple[list[torch.Tensor], torch.Tensor], *args: Any) -> torch.Tensor:
         images, _ = batch
         with torch.no_grad():
             teacher_output = self.teacher_multicrop_forward(images[:2])
@@ -157,8 +160,8 @@ class Dino(BYOL):
     def configure_gradient_clipping(
         self,
         optimizer: Optimizer,
-        gradient_clip_val: Optional[Union[int, float]] = None,
-        gradient_clip_algorithm: Optional[str] = None,
+        gradient_clip_val: int | float | None = None,
+        gradient_clip_algorithm: str | None = None,
     ):
         """Configure gradient clipping for the optimizer."""
         if gradient_clip_algorithm is not None and gradient_clip_val is not None:
@@ -170,8 +173,8 @@ class Dino(BYOL):
         self,
         epoch: int,
         batch_idx: int,
-        optimizer: Union[Optimizer, LightningOptimizer],
-        optimizer_closure: Optional[Callable[[], Any]] = None,
+        optimizer: Optimizer | LightningOptimizer,
+        optimizer_closure: Callable[[], Any] | None = None,
     ) -> None:
         """Override optimizer step to update the teacher parameters."""
         super().optimizer_step(

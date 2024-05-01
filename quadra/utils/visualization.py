@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import copy
 import os
 import random
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+from collections.abc import Callable, Iterable
+from typing import Any
 
 import albumentations
 import matplotlib.pyplot as plt
@@ -43,7 +46,7 @@ class UnNormalize:
             new_t = tensor.detach().clone()
         else:
             new_t = tensor
-        for t, m, s in zip(new_t, self.mean, self.std):
+        for t, m, s in zip(new_t, self.mean, self.std, strict=False):
             t.mul_(s).add_(m)
             # The normalize code -> t.sub_(m).div_(s)
         return new_t
@@ -54,20 +57,20 @@ def create_grid_figure(
     nrows: int,
     ncols: int,
     file_path: str,
-    bounds: List[Tuple[float, float]],
-    row_names: Optional[Iterable[str]] = None,
-    fig_size: Tuple[int, int] = (12, 8),
+    bounds: list[tuple[float, float]],
+    row_names: Iterable[str] | None = None,
+    fig_size: tuple[int, int] = (12, 8),
 ):
     """Create a grid figure with images.
 
     Args:
-        images (Iterable[np.ndarray]): List of images to plot.
-        nrows (int): Number of rows in the grid.
-        ncols (int): Number of columns in the grid.
-        file_path (str): Path to save the figure.
-        row_names (Optional[Iterable[str]], optional): Row names. Defaults to None.
-        fig_size (Tuple[int, int], optional): Figure size. Defaults to (12, 8).
-        bounds (Optional[List[Tuple[float, float]]], optional): Bounds for the images. Defaults to None.
+        images: List of images to plot.
+        nrows: Number of rows in the grid.
+        ncols: Number of columns in the grid.
+        file_path: Path to save the figure.
+        row_names: Row names. Defaults to None.
+        fig_size: Figure size. Defaults to (12, 8).
+        bounds: Bounds for the images. Defaults to None.
     """
     default_plt_backend = plt.get_backend()
     plt.switch_backend("Agg")
@@ -80,7 +83,7 @@ def create_grid_figure(
             ax[i][j].get_xaxis().set_ticks([])
             ax[i][j].get_yaxis().set_ticks([])
     if row_names is not None:
-        for ax, name in zip(ax[:, 0], row_names):
+        for ax, name in zip(ax[:, 0], row_names, strict=False):  # noqa: B020
             ax.set_ylabel(name, rotation=90)
 
     plt.tight_layout()
@@ -138,10 +141,10 @@ def show_mask_on_image(image: np.ndarray, mask: np.ndarray) -> np.ndarray:
 
 def reconstruct_multiclass_mask(
     mask: np.ndarray,
-    image_shape: Tuple[int, ...],
+    image_shape: tuple[int, ...],
     color_map: ListedColormap,
-    ignore_class: Optional[int] = None,
-    ground_truth_mask: Optional[np.ndarray] = None,
+    ignore_class: int | None = None,
+    ground_truth_mask: np.ndarray | None = None,
 ) -> np.ndarray:
     """Reconstruct a multiclass mask from a single channel mask.
 
@@ -172,11 +175,11 @@ def plot_multiclass_prediction(
     image: np.ndarray,
     prediction_image: np.ndarray,
     ground_truth_image: np.ndarray,
-    class_to_idx: Dict[str, int],
+    class_to_idx: dict[str, int],
     plot_original: bool = True,
-    ignore_class: Optional[int] = 0,
+    ignore_class: int | None = 0,
     image_height: int = 10,
-    save_path: Optional[str] = None,
+    save_path: str | None = None,
     color_map: str = "tab20",
 ) -> None:
     """Function used to plot the image predicted.
@@ -247,16 +250,16 @@ def plot_classification_results(
     test_labels: np.ndarray,
     class_name: str,
     original_folder: str,
-    gradcam_folder: Optional[str] = None,
-    grayscale_cams: Optional[np.ndarray] = None,
-    unorm: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
-    idx_to_class: Optional[Dict] = None,
-    what: Optional[str] = None,
-    real_class_to_plot: Optional[int] = None,
-    pred_class_to_plot: Optional[int] = None,
-    rows: Optional[int] = 1,
+    gradcam_folder: str | None = None,
+    grayscale_cams: np.ndarray | None = None,
+    unorm: Callable[[torch.Tensor], torch.Tensor] | None = None,
+    idx_to_class: dict | None = None,
+    what: str | None = None,
+    real_class_to_plot: int | None = None,
+    pred_class_to_plot: int | None = None,
+    rows: int | None = 1,
     cols: int = 4,
-    figsize: Tuple[int, int] = (20, 20),
+    figsize: tuple[int, int] = (20, 20),
     gradcam: bool = False,
 ) -> None:
     """Plot and save images extracted from classification. If gradcam is True, same images

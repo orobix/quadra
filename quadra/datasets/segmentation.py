@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import os
-from typing import Any, Callable, Dict, List, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 import albumentations
 import cv2
@@ -31,16 +34,16 @@ class SegmentationDataset(torch.utils.data.Dataset):
 
     def __init__(
         self,
-        image_paths: List[str],
-        mask_paths: List[str],
-        batch_size: Optional[int] = None,
-        object_masks: Optional[List[Union[np.ndarray, Any]]] = None,
+        image_paths: list[str],
+        mask_paths: list[str],
+        batch_size: int | None = None,
+        object_masks: list[np.ndarray | Any] | None = None,
         resize: int = 224,
-        mask_preprocess: Optional[Callable] = None,
-        labels: Optional[List[str]] = None,
-        transform: Optional[albumentations.Compose] = None,
+        mask_preprocess: Callable | None = None,
+        labels: list[str] | None = None,
+        transform: albumentations.Compose | None = None,
         mask_smoothing: bool = False,
-        defect_transform: Optional[albumentations.Compose] = None,
+        defect_transform: albumentations.Compose | None = None,
     ):
         self.transform = transform
         self.defect_transform = defect_transform
@@ -82,14 +85,13 @@ class SegmentationDataset(torch.utils.data.Dataset):
         else:
             mask_path = self.mask_paths[index]
             mask = cv2.imread(str(mask_path), 0)
-        if self.defect_transform is not None:
-            if label == 1 and np.sum(mask) == 0:
-                if object_mask is not None:
-                    object_mask *= 255
-                aug = self.defect_transform(image=image, mask=mask, object_mask=object_mask, label=label)
-                image = aug["image"]
-                mask = aug["mask"]
-                label = aug["label"]
+        if self.defect_transform is not None and label == 1 and np.sum(mask) == 0:
+            if object_mask is not None:
+                object_mask *= 255
+            aug = self.defect_transform(image=image, mask=mask, object_mask=object_mask, label=label)
+            image = aug["image"]
+            mask = aug["mask"]
+            label = aug["label"]
         if self.mask_preprocess:
             mask = self.mask_preprocess(mask)
             if object_mask is not None:
@@ -151,11 +153,11 @@ class SegmentationDatasetMulticlass(torch.utils.data.Dataset):
 
     def __init__(
         self,
-        image_paths: List[str],
-        mask_paths: List[str],
-        idx_to_class: Dict,
-        batch_size: Optional[int] = None,
-        transform: Optional[albumentations.Compose] = None,
+        image_paths: list[str],
+        mask_paths: list[str],
+        idx_to_class: dict,
+        batch_size: int | None = None,
+        transform: albumentations.Compose | None = None,
         one_hot: bool = False,
     ):
         self.transform = transform

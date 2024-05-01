@@ -2,9 +2,9 @@
 # Title: Explainability for Vision Transformers
 # Source: https://github.com/jacobgil/vit-explain (MIT license)
 # Description: This is a heavily modified version of the original jacobgil code (the underlying math is still the same).
+from __future__ import annotations
 
 import math
-from typing import List, Optional
 
 import numpy as np
 import torch
@@ -12,7 +12,7 @@ from sklearn.linear_model._base import LinearClassifierMixin
 
 
 def rollout(
-    attentions: List[torch.Tensor], discard_ratio: float = 0.9, head_fusion: str = "mean", aspect_ratio: float = 1.0
+    attentions: list[torch.Tensor], discard_ratio: float = 0.9, head_fusion: str = "mean", aspect_ratio: float = 1.0
 ) -> np.ndarray:
     """Apply rollout on Attention matrices.
 
@@ -41,8 +41,8 @@ def rollout(
             flat = attention_heads_fused.view(attention_heads_fused.size(0), -1)
             _, indices = flat.topk(int(flat.size(-1) * discard_ratio), -1, False)
             flat.scatter_(-1, indices, 0)
-            I = torch.eye(attention_heads_fused.size(-1))
-            a = (attention_heads_fused + 1.0 * I) / 2
+            identity_matrix = torch.eye(attention_heads_fused.size(-1))
+            a = (attention_heads_fused + 1.0 * identity_matrix) / 2
             a = a / a.sum(dim=-1).unsqueeze(1)
             result = torch.matmul(a, result)
     # Look at the total attention between the class token and the image patches
@@ -75,7 +75,7 @@ class VitAttentionRollout:
     def __init__(
         self,
         model: torch.nn.Module,
-        attention_layer_names: Optional[List[str]] = None,
+        attention_layer_names: list[str] | None = None,
         head_fusion: str = "mean",
         discard_ratio: float = 0.9,
     ):
@@ -89,15 +89,19 @@ class VitAttentionRollout:
         self.model = model
         self.head_fusion = head_fusion
         self.discard_ratio = discard_ratio
-        self.f_hook_handles: List[torch.utils.hooks.RemovableHandle] = []
+        self.f_hook_handles: list[torch.utils.hooks.RemovableHandle] = []
         for name, module in self.model.named_modules():
             for layer_name in attention_layer_names:
                 if layer_name in name:
                     self.f_hook_handles.append(module.register_forward_hook(self.get_attention))
-        self.attentions: List[torch.Tensor] = []
+        self.attentions: list[torch.Tensor] = []
 
+    # pylint: disable=unused-argument
     def get_attention(
-        self, module: torch.nn.Module, inpt: torch.Tensor, out: torch.Tensor  # pylint: disable=W0613
+        self,
+        module: torch.nn.Module,
+        inpt: torch.Tensor,
+        out: torch.Tensor,
     ) -> None:
         """Hook to return attention.
 
@@ -134,7 +138,7 @@ class VitAttentionRollout:
 
 
 def grad_rollout(
-    attentions: List[torch.Tensor], gradients: List[torch.Tensor], discard_ratio: float = 0.9, aspect_ratio: float = 1.0
+    attentions: list[torch.Tensor], gradients: list[torch.Tensor], discard_ratio: float = 0.9, aspect_ratio: float = 1.0
 ) -> np.ndarray:
     """Apply gradient rollout on Attention matrices.
 
@@ -149,7 +153,7 @@ def grad_rollout(
     """
     result = torch.eye(attentions[0].size(-1))
     with torch.no_grad():
-        for attention, grad in zip(attentions, gradients):
+        for attention, grad in zip(attentions, gradients, strict=False):
             weights = grad
             attention_heads_fused = torch.mean((attention * weights), dim=1)
             attention_heads_fused[attention_heads_fused < 0] = 0
@@ -193,10 +197,10 @@ class VitAttentionGradRollout:
     def __init__(  # pylint: disable=W0102
         self,
         model: torch.nn.Module,
-        attention_layer_names: Optional[List[str]] = None,
+        attention_layer_names: list[str] | None = None,
         discard_ratio: float = 0.9,
-        classifier: Optional[LinearClassifierMixin] = None,
-        example_input: Optional[torch.Tensor] = None,
+        classifier: LinearClassifierMixin | None = None,
+        example_input: torch.Tensor | None = None,
     ):
         if attention_layer_names is None:
             attention_layer_names = [
@@ -221,15 +225,15 @@ class VitAttentionGradRollout:
             self.model = model  # type: ignore[assignment]
 
         self.discard_ratio = discard_ratio
-        self.f_hook_handles: List[torch.utils.hooks.RemovableHandle] = []
-        self.b_hook_handles: List[torch.utils.hooks.RemovableHandle] = []
+        self.f_hook_handles: list[torch.utils.hooks.RemovableHandle] = []
+        self.b_hook_handles: list[torch.utils.hooks.RemovableHandle] = []
         for name, module in self.model.named_modules():
             for layer_name in attention_layer_names:
                 if layer_name in name:
                     self.f_hook_handles.append(module.register_forward_hook(self.get_attention))
                     self.b_hook_handles.append(module.register_backward_hook(self.get_attention_gradient))
-        self.attentions: List[torch.Tensor] = []
-        self.attention_gradients: List[torch.Tensor] = []
+        self.attentions: list[torch.Tensor] = []
+        self.attention_gradients: list[torch.Tensor] = []
         # Activate gradients
         blocks_list = [x.split("blocks")[1].split(".attn")[0] for x in attention_layer_names]
         for name, module in model.named_modules():
@@ -237,8 +241,12 @@ class VitAttentionGradRollout:
                 if "blocks" in name and any(x in name for x in blocks_list):
                     p.requires_grad = True
 
+    # pylint: disable=unused-argument
     def get_attention(
-        self, module: torch.nn.Module, inpt: torch.Tensor, out: torch.Tensor  # pylint: disable=W0613
+        self,
+        module: torch.nn.Module,
+        inpt: torch.Tensor,
+        out: torch.Tensor,
     ) -> None:
         """Hook to return attention.
 
@@ -249,8 +257,12 @@ class VitAttentionGradRollout:
         """
         self.attentions.append(out.detach().clone().cpu())
 
+    # pylint: disable=unused-argument
     def get_attention_gradient(
-        self, module: torch.nn.Module, grad_input: torch.Tensor, grad_output: torch.Tensor  # pylint: disable=W0613
+        self,
+        module: torch.nn.Module,
+        grad_input: torch.Tensor,
+        grad_output: torch.Tensor,
     ) -> None:
         """Hook to return attention.
 
@@ -261,7 +273,7 @@ class VitAttentionGradRollout:
         """
         self.attention_gradients.append(grad_input[0].detach().clone().cpu())
 
-    def __call__(self, input_tensor: torch.Tensor, targets_list: List[int]) -> np.ndarray:
+    def __call__(self, input_tensor: torch.Tensor, targets_list: list[int]) -> np.ndarray:
         """Called when the class instance is used as a function.
 
         Args:

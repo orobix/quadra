@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import os
-from typing import Dict, List, Optional
 
 import cv2
 import matplotlib.pyplot as plt
@@ -15,10 +16,10 @@ log = utils.get_logger(__name__)
 
 
 def plot_patch_reconstruction(
-    reconstruction: Dict,
-    idx_to_class: Dict[int, str],
-    class_to_idx: Dict[str, int],
-    ignore_classes: Optional[List[int]] = None,
+    reconstruction: dict,
+    idx_to_class: dict[int, str],
+    class_to_idx: dict[str, int],
+    ignore_classes: list[int] | None = None,
     is_polygon: bool = True,
 ) -> Figure:
     """Helper function for plotting the patch reconstruction.
@@ -74,7 +75,7 @@ def plot_patch_reconstruction(
                 -1,
                 class_to_idx[c_label],
                 thickness=cv2.FILLED,
-            )
+            )  # type: ignore[call-overload]
     else:
         out = reconstruction["prediction"]
 
@@ -103,9 +104,9 @@ def show_mask_on_image(image: np.ndarray, mask: np.ndarray):
 
 def create_rgb_mask(
     mask: np.ndarray,
-    color_map: Dict,
-    ignore_classes: Optional[List[int]] = None,
-    ground_truth_mask: Optional[np.ndarray] = None,
+    color_map: dict,
+    ignore_classes: list[int] | None = None,
+    ground_truth_mask: np.ndarray | None = None,
 ):
     """Convert index mask to RGB mask."""
     output_mask = np.zeros([mask.shape[0], mask.shape[1], 3])
@@ -123,15 +124,16 @@ def create_rgb_mask(
 def plot_patch_results(
     image: np.ndarray,
     prediction_image: np.ndarray,
-    ground_truth_image: Optional[np.ndarray],
-    class_to_idx: Dict[str, int],
+    ground_truth_image: np.ndarray | None,
+    class_to_idx: dict[str, int],
     plot_original: bool = True,
-    ignore_classes: Optional[List[int]] = None,
+    ignore_classes: list[int] | None = None,
     image_height: int = 10,
-    save_path: Optional[str] = None,
-    cmap: Colormap = get_cmap("tab20"),
+    save_path: str | None = None,
+    cmap: Colormap | None = None,
 ) -> Figure:
-    """Function used to plot the image predicted
+    """Function used to plot the image predicted.
+
     Args:
         prediction_image: The prediction image
         image: The original image to plot
@@ -141,13 +143,16 @@ def plot_patch_results(
         ignore_classes: The classes to ignore, default is 0
         image_height: The height of the output figure
         save_path: The path to save the figure
-        cmap: The colormap to use.
+        cmap: The colormap to use. If None, tab20 is used
 
     Returns:
         The matplotlib figure
     """
     if ignore_classes is None:
         ignore_classes = [0]
+
+    if cmap is None:
+        cmap = get_cmap("tab20")
 
     image = image[0 : prediction_image.shape[0], 0 : prediction_image.shape[1], :]
     idx_to_class = {v: k for k, v in class_to_idx.items()}

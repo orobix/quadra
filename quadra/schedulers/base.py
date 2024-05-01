@@ -1,4 +1,4 @@
-from typing import Tuple
+from __future__ import annotations
 
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
@@ -11,7 +11,7 @@ class LearningRateScheduler(_LRScheduler):
         Do not use this class directly, use one of the sub classes.
     """
 
-    def __init__(self, optimizer: Optimizer, init_lr: Tuple[float, ...]):
+    def __init__(self, optimizer: Optimizer, init_lr: tuple[float, ...]):
         # pylint: disable=super-init-not-called
         self.optimizer = optimizer
         self.init_lr = init_lr
@@ -20,7 +20,7 @@ class LearningRateScheduler(_LRScheduler):
         """Base method, must be implemented by the sub classes."""
         raise NotImplementedError
 
-    def set_lr(self, lr: Tuple[float, ...]):
+    def set_lr(self, lr: tuple[float, ...]):
         """Set the learning rate for the optimizer."""
         if self.optimizer is not None:
             for i, g in enumerate(self.optimizer.param_groups):

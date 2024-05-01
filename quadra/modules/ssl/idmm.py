@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 import sklearn
 import timm
@@ -31,13 +31,12 @@ class IDMM(SSLModule):
         prediction_mlp: torch.nn.Module,
         criterion: torch.nn.Module,
         multiview_loss: bool = True,
-        mixup_fn: Optional[timm.data.Mixup] = None,
-        classifier: Optional[sklearn.base.ClassifierMixin] = None,
-        optimizer: Optional[torch.optim.Optimizer] = None,
-        lr_scheduler: Optional[object] = None,
-        lr_scheduler_interval: Optional[str] = "epoch",
+        mixup_fn: timm.data.Mixup | None = None,
+        classifier: sklearn.base.ClassifierMixin | None = None,
+        optimizer: torch.optim.Optimizer | None = None,
+        lr_scheduler: object | None = None,
+        lr_scheduler_interval: str | None = "epoch",
     ):
-
         super().__init__(
             model,
             criterion,

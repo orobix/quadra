@@ -71,7 +71,7 @@ class BaseEvaluationModel(ABC):
     @device.setter
     def device(self, device: str):
         """Set the device of the model."""
-        if device == "cuda" and not ":" in device:
+        if device == "cuda" and ":" not in device:
             device = f"{device}:0"
 
         self._device = device
@@ -208,7 +208,7 @@ class ONNXEvaluationModel(BaseEvaluationModel):
 
         onnx_inputs: dict[str, np.ndarray | torch.Tensor] = {}
 
-        for onnx_input, current_input in zip(self.model.get_inputs(), inputs):
+        for onnx_input, current_input in zip(self.model.get_inputs(), inputs, strict=False):
             if isinstance(current_input, torch.Tensor):
                 onnx_inputs[onnx_input.name] = current_input
                 use_pytorch = True
