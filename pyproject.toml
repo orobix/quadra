@@ -3,31 +3,31 @@ name = "quadra"
 version = "2.1.3"
 description = "Deep Learning experiment orchestration library"
 authors = [
-  "Federico Belotti <federico.belotti@orobix.com>",
-  "Silvia Bianchetti <silvia.bianchetti@orobix.com>",
-  "Refik Can Malli <refikcan.malli@orobix.com>",
-  "Lorenzo Mammana <lorenzo.mammana@orobix.com>",
-  "Alessandro Polidori <alessandro.polidori@orobix.com>",
+	"Federico Belotti <federico.belotti@orobix.com>",
+	"Silvia Bianchetti <silvia.bianchetti@orobix.com>",
+	"Refik Can Malli <refikcan.malli@orobix.com>",
+	"Lorenzo Mammana <lorenzo.mammana@orobix.com>",
+	"Alessandro Polidori <alessandro.polidori@orobix.com>",
 ]
 license = "Apache-2.0"
 readme = "README.md"
 keywords = ["deep learning", "experiment", "lightning", "hydra-core"]
 classifiers = [
-  "Programming Language :: Python :: 3",
-  "Intended Audience :: Developers",
-  "Intended Audience :: Education",
-  "Intended Audience :: Science/Research",
-  "Topic :: Scientific/Engineering :: Artificial Intelligence",
-  "Topic :: Software Development",
-  "Topic :: Software Development :: Libraries",
-  "Topic :: Software Development :: Libraries :: Python Modules",
-  "License :: OSI Approved :: Apache Software License",
+	"Programming Language :: Python :: 3",
+	"Intended Audience :: Developers",
+	"Intended Audience :: Education",
+	"Intended Audience :: Science/Research",
+	"Topic :: Scientific/Engineering :: Artificial Intelligence",
+	"Topic :: Software Development",
+	"Topic :: Software Development :: Libraries",
+	"Topic :: Software Development :: Libraries :: Python Modules",
+	"License :: OSI Approved :: Apache Software License",
 ]
 homepage = "https://orobix.github.io/quadra"
 repository = "https://github.com/orobix/quadra"
 packages = [
-  { include = "quadra" },
-  { include = "hydra_plugins", from = "quadra_hydra_plugin" },
+	{ include = "quadra" },
+	{ include = "hydra_plugins", from = "quadra_hydra_plugin" },
 ]
 
 [build-system]
@@ -42,10 +42,10 @@ python = ">=3.9,<3.11"
 poetry = "1.7.1"
 
 torch = [
-  { url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp310-cp310-linux_x86_64.whl", markers = "sys_platform == 'linux' and python_version == '3.10'" },
-  { url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp310-cp310-win_amd64.whl", markers = "sys_platform == 'win32' and python_version == '3.10'" },
-  { url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp39-cp39-linux_x86_64.whl", markers = "sys_platform == 'linux' and python_version == '3.9'" },
-  { url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp39-cp39-win_amd64.whl", markers = "sys_platform == 'win32' and python_version == '3.9'" },
+	{ url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp310-cp310-linux_x86_64.whl", markers = "sys_platform == 'linux' and python_version == '3.10'" },
+	{ url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp310-cp310-win_amd64.whl", markers = "sys_platform == 'win32' and python_version == '3.10'" },
+	{ url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp39-cp39-linux_x86_64.whl", markers = "sys_platform == 'linux' and python_version == '3.9'" },
+	{ url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp39-cp39-win_amd64.whl", markers = "sys_platform == 'win32' and python_version == '3.9'" },
 ]
 torchvision = { version = "~0.16", source = "torch_cu121" }
 
@@ -55,8 +55,7 @@ torchmetrics = "~0.10"
 hydra_core = "~1.3"
 hydra_colorlog = "~1.2"
 hydra_optuna_sweeper = "~1.2"
-mlflow = "2.3.1"
-mlflow_skinny = "2.3.1"
+mlflow = "^2.3.1"
 boto3 = "~1.26"
 minio = "~7.1"
 tensorboard = "~2.11"
@@ -107,12 +106,10 @@ hydra-plugins = { path = "quadra_hydra_plugin" }
 # Dev dependencies
 interrogate = "~1.5"
 black = "~22.12"
-isort = "~5.11"
 pre_commit = "~3.0"
 pylint = "~2.16"
 types_pyyaml = "~6.0.12"
-mypy = "~1.0"
-ruff = "0.0.257"
+mypy = "^1.9.0"
 pandas_stubs = "~1.5.3"
 twine = "~4.0"
 poetry-bumpversion = "~0.3"
@@ -152,35 +149,6 @@ onnx = ["onnx", "onnxsim", "onnxruntime_gpu"]
 search = '__version__ = "{current_version}"'
 replace = '__version__ = "{new_version}"'
 
-# Black formatting
-[tool.black]
-line-length = 120
-include = '\.pyi?$'
-exclude = '''
-/(
-      \.eggs         # exclude a few common directories in the
-    | \.git          # root of the project
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
-  )/
-'''
-
-# iSort
-[tool.isort]
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-line_length = 120
-multi_line_output = 3
-include_trailing_comma = true
-skip_gitignore = true
-
 # Pytest
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -210,23 +178,23 @@ quiet = false
 whitelist_regex = []
 color = true
 ignore_regex = [
-  "^get$",
-  "^mock_.*",
-  ".*BaseClass.*",
-  ".*on_train.*",
-  ".*on_validation.*",
-  ".*on_test.*",
-  ".*on_predict.*",
-  ".*forward.*",
-  ".*backward.*",
-  ".*training_step.*",
-  ".*validation_step.*",
-  ".*test_step.*",
-  ".*predict_step.*",
-  ".*train_epoch.*",
-  ".*validation_epoch.*",
-  ".*test_epoch.*",
-  ".*on_fit.*",
+	"^get$",
+	"^mock_.*",
+	".*BaseClass.*",
+	".*on_train.*",
+	".*on_validation.*",
+	".*on_test.*",
+	".*on_predict.*",
+	".*forward.*",
+	".*backward.*",
+	".*training_step.*",
+	".*validation_step.*",
+	".*test_step.*",
+	".*predict_step.*",
+	".*train_epoch.*",
+	".*validation_epoch.*",
+	".*test_epoch.*",
+	".*on_fit.*",
 ]
 generate-badge = "docs/images"
 badge-format = "svg"
@@ -266,22 +234,53 @@ warn_return_any = false
 exclude = ["quadra/utils/tests", "tests"]
 
 [tool.ruff]
-select = ["D"]
-ignore = [
-  "D100",
-  # this is controlled by interrogate with exlude_regex
-  # we can skip it here
-  "D102",
-  "D104",
-  "D105",
-  "D107",
-  # no blank line after summary line. This might be not required.
-  # usually we violate this rule
-  "D205",
-]
-exclude = ["Makefile", ".gitignore"]
+extend-include = ["*.ipynb"]
+target-version = "py39"
+# Orobix guidelines
+line-length = 120
+indent-width = 4
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint]
+select = [
+	# pycodestyle
+	"E",
+	# pycodestyle
+	"W",
+	# Pyflakes
+	"F",
+	# pyupgrade
+	"UP",
+	# flake8-bugbear
+	"B",
+	# flake8-simplify
+	"SIM",
+	# isort
+	"I",
+	# flake8-comprehensions
+	"C4",
+	# docstrings
+	"D",
+]
+
+ignore = [
+	"D100", # Missing docstring in public module
+	# this is controlled by interrogate with exlude_regex
+	# we can skip it here
+	"D102",
+	"D104",   # Missing docstring in public package
+	"D105",   # Missing docstring for magic method (def __*__)
+	"D107",   # Missing docstring in __init__
+	"D205",   # no blank line after summary line. Usually we violate this rule
+	"E731",   # Do not assign a lambda expression, use a def
+	"E741",   # Checks for the use of the characters 'l', 'O', or 'I' as variable names.
+	"E402",   # Module level import not at top of file
+	"SIM108", # https://github.com/astral-sh/ruff/issues/5528
+	"SIM117", # Single with statement instead of multiple with statements
+]
+
+exclude = ["Makefile", ".gitignore", "tests"]
+
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
 [tool.pytest_env]
