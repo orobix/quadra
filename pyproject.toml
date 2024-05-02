@@ -105,7 +105,6 @@ optional = true
 hydra-plugins = { path = "quadra_hydra_plugin" }
 # Dev dependencies
 interrogate = "~1.5"
-black = "~22.12"
 pre_commit = "~3.0"
 pylint = "~2.16"
 types_pyyaml = "~6.0.12"
