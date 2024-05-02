@@ -10,7 +10,11 @@
 </p>
 
 <div align="center">
-
+  <a href="https://github.com/astral-sh/ruff">
+    <img 
+    src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" 
+    alt="ruff"
+  ></a>
   <a href="https://github.com/pre-commit/pre-commit"><img
     src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white"
     alt="pre-commit"
@@ -26,14 +30,6 @@
   <a href="https://mypy-lang.org/"><img
     src="https://www.mypy-lang.org/static/mypy_badge.svg"
     alt="Checked with mypy"
-  /></a>
-  <a href="https://github.com/psf/black"><img
-    src="https://img.shields.io/badge/code%20style-black-000000.svg"
-    alt="black"
-  /></a>
-  <a href="https://pycqa.github.io/isort/"><img
-    src="https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336"
-    alt="isort"
   /></a>
 
 </div>
@@ -251,7 +247,7 @@ First clone the repository from `Github`, then we need to install the package wi
 
 Now you can start developing and the pre-commit hooks will run automatically to prevent you from committing code that does not pass the linting and formatting checks.
 
-We rely on a combination of `Black`, `Pylint`, `Mypy`, `Ruff` and `Isort` to enforce code quality.
+We rely on a combination of `Pylint`, `Mypy` and `Ruff` to enforce code quality.
 
 ## Building Documentations
 
@@ -273,7 +269,7 @@ This project is based on many open-source libraries and frameworks, we would lik
 - Documentation website is using [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) and [MkDocs](https://www.mkdocs.org/). For code documentation we are using [Mkdocstrings](https://mkdocstrings.github.io/). For releasing software versions we combine [Bumpver](https://github.com/mbarkhau/bumpver) and [Mike](https://github.com/jimporter/mike).
 - Models can be exported in different ways (`torchscript` or `torch` file). We have also added [ONNX](https://onnx.ai/) support for some models.
 - Testing framework is based on [Pytest](https://docs.pytest.org/en/) and related plug-ins.
-- Code quality is ensured by [pre-commit](https://pre-commit.com/) hooks. We are using [Black](https://github.com/psf/black) for formatting, [Pylint](https://www.pylint.org/) for linting, [Mypy](https://mypy.readthedocs.io/en/stable/) for type checking, [Isort](https://pycqa.github.io/isort/) for sorting imports, and [Ruff](https://github.com/astral-sh/ruff) for checking futher code and documentation quality.
+- Code quality is ensured by [pre-commit](https://pre-commit.com/) hooks. We are using [Ruff](https://github.com/astral-sh/ruff) for linting, enforcing code quality and formatting, [Pylint](https://www.pylint.org/) for in depth linting and [Mypy](https://mypy.readthedocs.io/en/stable/) for type checking.
 
 ## FAQ
 
