@@ -198,8 +198,8 @@ class ClassificationDataModule(BaseDataModule):
         samples: list[str] = []
         targets: list[str] = []
         idx_to_class = {v: k for k, v in class_to_idx.items()}
+        images_and_targets = [(str(image_path), target) for image_path, target in images_and_targets]
         for image_path, target in images_and_targets:
-            image_path = str(image_path)
             target_class = idx_to_class[target]
             if self.exclude_filter is not None and any(
                 exclude_filter in image_path for exclude_filter in self.exclude_filter

@@ -122,9 +122,8 @@ def save_classification_result(
             if is_polygon:
                 if len(reconstruction["prediction"]) == 0:
                     continue
-            else:
-                if reconstruction["prediction"].sum() == 0:
-                    continue
+            elif reconstruction["prediction"].sum() == 0:
+                continue
 
             if counter > 5:
                 break

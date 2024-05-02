@@ -77,9 +77,8 @@ def create_grid_figure(
     _, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=fig_size, squeeze=False)
     for i, row in enumerate(images):
         for j, image in enumerate(row):
-            if len(image.shape) == 3 and image.shape[0] == 1:
-                image = image[0]
-            ax[i][j].imshow(image, vmin=bounds[i][0], vmax=bounds[i][1])
+            image_to_plot = image[0] if len(image.shape) == 3 and image.shape[0] == 1 else image
+            ax[i][j].imshow(image_to_plot, vmin=bounds[i][0], vmax=bounds[i][1])
             ax[i][j].get_xaxis().set_ticks([])
             ax[i][j].get_yaxis().set_ticks([])
     if row_names is not None:

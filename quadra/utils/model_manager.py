@@ -256,9 +256,8 @@ class MlflowModelManager(AbstractModelManager):
             if mode == "max":
                 if run.data.metrics[metric] > best_run.data.metrics[metric]:
                     best_run = run
-            else:
-                if run.data.metrics[metric] < best_run.data.metrics[metric]:
-                    best_run = run
+            elif run.data.metrics[metric] < best_run.data.metrics[metric]:
+                best_run = run
 
         if best_run is None:
             log.error("No runs found for experiment %s with the given metric", experiment_name)

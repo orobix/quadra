@@ -55,9 +55,11 @@ class PatchDatasetInfo:
         """Convert a list of dict to a list of PatchDatasetFileFormat."""
         mapped_files = []
         for file in files:
+            current_file = file
             if isinstance(file, dict):
-                file = PatchDatasetFileFormat(**file)
-            mapped_files.append(file)
+                current_file = PatchDatasetFileFormat(**current_file)
+            mapped_files.append(current_file)
+
         return mapped_files
 
     def __post_init__(self):
@@ -308,11 +310,10 @@ def __save_patch_dataset(
             missing_classes = set(classes_in_mask).difference(class_to_idx.values())
 
             assert len(missing_classes) == 0, f"Found index in mask that has no corresponding class {missing_classes}"
+    elif mask_patches is not None:
+        reference_classes = {k: str(v) for k, v in enumerate(list(np.unique(mask_patches)))}
     else:
-        if mask_patches is not None:
-            reference_classes = {k: str(v) for k, v in enumerate(list(np.unique(mask_patches)))}
-        else:
-            raise ValueError("If no `class_to_idx` is provided, `mask_patches` must be provided")
+        raise ValueError("If no `class_to_idx` is provided, `mask_patches` must be provided")
 
     log.debug("Classes from mask: %s", reference_classes)
     class_to_idx = {v: k for k, v in reference_classes.items()}

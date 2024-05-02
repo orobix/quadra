@@ -29,11 +29,10 @@ class LearningRateScheduler(_LRScheduler):
                         lr_to_set = self.init_lr[0]
                     else:
                         lr_to_set = self.init_lr[i]
+                elif len(lr) == 1:
+                    lr_to_set = lr[0]
                 else:
-                    if len(lr) == 1:
-                        lr_to_set = lr[0]
-                    else:
-                        lr_to_set = lr[i]
+                    lr_to_set = lr[i]
                 g["lr"] = lr_to_set
 
     def get_lr(self):

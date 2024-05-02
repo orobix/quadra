@@ -177,11 +177,10 @@ class VisualizerCallback(Callback):
                 threshold = pl_module.pixel_metrics.F1Score.threshold
             else:
                 raise AttributeError("Metric has no threshold attribute")
+        elif hasattr(pl_module.image_metrics.F1Score, "threshold"):
+            threshold = pl_module.image_metrics.F1Score.threshold
         else:
-            if hasattr(pl_module.image_metrics.F1Score, "threshold"):
-                threshold = pl_module.image_metrics.F1Score.threshold
-            else:
-                raise AttributeError("Metric has no threshold attribute")
+            raise AttributeError("Metric has no threshold attribute")
 
         for (
             filename,
@@ -202,34 +201,36 @@ class VisualizerCallback(Callback):
                 outputs["pred_scores"],
             )
         ):
-            image = Denormalize()(image.cpu())
-            true_mask = true_mask.cpu().numpy()
-            anomaly_map = anomaly_map.cpu().numpy()
+            denormalized_image = Denormalize()(image.cpu())
+            current_true_mask = true_mask.cpu().numpy()
+            current_anomaly_map = anomaly_map.cpu().numpy()
 
             output_label_folder = "ok" if pred_label == gt_label else "wrong"
 
             if self.plot_only_wrong and output_label_folder == "ok":
                 continue
 
-            heatmap = superimpose_anomaly_map(anomaly_map, image, normalize=not self.inputs_are_normalized)
+            heatmap = superimpose_anomaly_map(
+                current_anomaly_map, denormalized_image, normalize=not self.inputs_are_normalized
+            )
 
             if isinstance(threshold, float):
-                pred_mask = compute_mask(anomaly_map, threshold)
+                pred_mask = compute_mask(current_anomaly_map, threshold)
             else:
                 raise TypeError("Threshold should be float")
-            vis_img = mark_boundaries(image, pred_mask, color=(1, 0, 0), mode="thick")
+            vis_img = mark_boundaries(denormalized_image, pred_mask, color=(1, 0, 0), mode="thick")
             visualizer = Visualizer()
 
             if self.task == "segmentation":
-                visualizer.add_image(image=image, title="Image")
+                visualizer.add_image(image=denormalized_image, title="Image")
                 if "mask" in outputs:
-                    true_mask = true_mask * 255
-                    visualizer.add_image(image=true_mask, color_map="gray", title="Ground Truth")
+                    current_true_mask = current_true_mask * 255
+                    visualizer.add_image(image=current_true_mask, color_map="gray", title="Ground Truth")
                 visualizer.add_image(image=heatmap, title="Predicted Heat Map")
                 visualizer.add_image(image=pred_mask, color_map="gray", title="Predicted Mask")
                 visualizer.add_image(image=vis_img, title="Segmentation Result")
             elif self.task == "classification":
-                gt_im = add_anomalous_label(image) if gt_label else add_normal_label(image)
+                gt_im = add_anomalous_label(denormalized_image) if gt_label else add_normal_label(denormalized_image)
                 visualizer.add_image(gt_im, title="Image/True label")
                 if anomaly_score >= threshold:
                     image_classified = add_anomalous_label(heatmap, anomaly_score)
@@ -239,27 +240,28 @@ class VisualizerCallback(Callback):
 
             visualizer.generate()
             visualizer.figure.suptitle(
-                f"F1 threshold: {threshold}, Mask_max: {anomaly_map.max():.3f}, Anomaly_score: {anomaly_score:.3f}"
+                f"F1 threshold: {threshold}, Mask_max: {current_anomaly_map.max():.3f}, "
+                f"Anomaly_score: {anomaly_score:.3f}"
             )
-            filename = Path(filename)
-            self._add_images(visualizer, filename, output_label_folder)
+            path_filename = Path(filename)
+            self._add_images(visualizer, path_filename, output_label_folder)
             visualizer.close()
 
             if self.plot_raw_outputs:
                 for raw_output, raw_name in zip([heatmap, vis_img], ["heatmap", "segmentation"]):
                     if raw_name == "segmentation":
-                        raw_output = (raw_output * 255).astype(np.uint8)
-                    raw_output = cv2.cvtColor(raw_output, cv2.COLOR_RGB2BGR)
+                        current_raw_output = (raw_output * 255).astype(np.uint8)
+                    current_raw_output = cv2.cvtColor(raw_output, cv2.COLOR_RGB2BGR)
                     raw_filename = (
                         Path(self.output_path)
                         / "images"
                         / output_label_folder
-                        / filename.parent.name
+                        / path_filename.parent.name
                         / "raw_outputs"
-                        / Path(filename.stem + f"_{raw_name}.png")
+                        / Path(path_filename.stem + f"_{raw_name}.png")
                     )
                     raw_filename.parent.mkdir(parents=True, exist_ok=True)
-                    cv2.imwrite(str(raw_filename), raw_output)
+                    cv2.imwrite(str(raw_filename), current_raw_output)
 
     def on_test_end(self, _trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         """Sync logs.

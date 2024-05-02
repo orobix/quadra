@@ -358,9 +358,10 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
         for sample, label in zip(samples, targets):
             aug_samples.append(sample)
             aug_labels.append(label)
+            final_sample = sample
             if replace_str_from is not None and replace_str_to is not None:
-                sample = sample.replace(replace_str_from, replace_str_to)
-            base, ext = os.path.splitext(sample)
+                final_sample = final_sample.replace(replace_str_from, replace_str_to)
+            base, ext = os.path.splitext(final_sample)
             for k in range(self.n_aug_to_take):
                 aug_samples.append(base + "_" + str(k + 1) + ext)
                 aug_labels.append(label)

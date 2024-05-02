@@ -264,12 +264,11 @@ class AnomalyDataset(Dataset):
                 # If good images have no associated mask create an empty one
                 if label_index == 0:
                     mask = np.zeros(shape=original_image_shape[:2])
+                elif os.path.isfile(mask_path):
+                    mask = cv2.imread(mask_path, flags=0) / 255.0  # type: ignore[operator]
                 else:
-                    if os.path.isfile(mask_path):
-                        mask = cv2.imread(mask_path, flags=0) / 255.0  # type: ignore[operator]
-                    else:
-                        # We need ones in the mask to compute correctly at least image level f1 score
-                        mask = np.ones(shape=original_image_shape[:2])
+                    # We need ones in the mask to compute correctly at least image level f1 score
+                    mask = np.ones(shape=original_image_shape[:2])
 
                 if self.valid_area_mask is not None:
                     mask = mask * self.valid_area_mask
