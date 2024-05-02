@@ -259,6 +259,8 @@ select = [
 	"C4",
 	# docstrings
 	"D",
+	# Pylint
+	"PL",
 ]
 
 ignore = [
@@ -275,6 +277,14 @@ ignore = [
 	"E402",   # Module level import not at top of file
 	"SIM108", # https://github.com/astral-sh/ruff/issues/5528
 	"SIM117", # Single with statement instead of multiple with statements
+	# Pylint specific ignores
+	"PLR0912", # too-many-branches
+	"PLR0913", # too-many-arguments
+	"PLR0914", # too-many-locals
+	"PLR0915", # too-many-statements
+	"PLR1702", # too-many-nested-blocks
+	"PLW1514", # unspecified-encoding
+	"PLR2004", # magic-value-comparison
 ]
 
 exclude = ["Makefile", ".gitignore", "tests"]
