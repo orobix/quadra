@@ -2,6 +2,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.4]
+
+#### Updated
+
+- Remove black from pre-commit hooks
+- Use ruff as the main formatter and linting tool
+- Upgrade mypy version
+- Upgrade mlflow version
+- Apply new pre-commits to all tests
+- Update most of typing to py310 style
+
 ### [2.1.3]
 
 #### Updated
