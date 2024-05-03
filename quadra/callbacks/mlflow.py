@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import glob
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Literal
 
 import torch
 from pytorch_lightning import Callback, LightningModule, Trainer
@@ -123,7 +125,7 @@ class LogGradients(Callback):
     def __init__(
         self,
         norm: int = 2,
-        tag: Optional[str] = None,
+        tag: str | None = None,
         sep: str = "/",
         round_to: int = 3,
         log_all_grads: bool = False,
@@ -134,12 +136,9 @@ class LogGradients(Callback):
         self.round_to = round_to
         self.log_all_grads = log_all_grads
 
-    def _grad_norm(self, named_params) -> Dict:
+    def _grad_norm(self, named_params) -> dict:
         """Compute the gradient norm and return it in a dictionary."""
-        if self.tag is None:
-            grad_tag = ""
-        else:
-            grad_tag = "_" + self.tag
+        grad_tag = "" if self.tag is None else "_" + self.tag
         results = {}
         for name, p in named_params:
             if p.requires_grad and p.grad is not None:
@@ -161,7 +160,7 @@ class LogGradients(Callback):
         outputs: STEP_OUTPUT,
         batch: Any,
         batch_idx: int,
-        unused: Optional[int] = 0,
+        unused: int | None = 0,
     ) -> None:
         """Method called at the end of the train batch
         Args:
@@ -259,7 +258,7 @@ class LogLearningRate(LearningRateMonitor):
         log_momentum: If True, log momentum as well.
     """
 
-    def __init__(self, logging_interval: Optional[str] = None, log_momentum: bool = False):
+    def __init__(self, logging_interval: Literal["step", "epoch"] | None = None, log_momentum: bool = False):
         super().__init__(logging_interval=logging_interval, log_momentum=log_momentum)
 
     def on_train_batch_start(self, trainer, *args, **kwargs):

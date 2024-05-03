@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import warnings
-from typing import Optional
 
 import torch
 import torch.nn.functional as F
@@ -9,8 +10,8 @@ from torch import nn
 def one_hot(
     labels: torch.Tensor,
     num_classes: int,
-    device: Optional[torch.device] = None,
-    dtype: Optional[torch.dtype] = None,
+    device: torch.device | None = None,
+    dtype: torch.dtype | None = None,
     eps: float = 1e-6,
 ) -> torch.Tensor:
     r"""Convert an integer label x-D tensor to a one-hot (x+1)-D tensor.
@@ -61,7 +62,7 @@ def focal_loss(
     alpha: float,
     gamma: float = 2.0,
     reduction: str = "none",
-    eps: Optional[float] = None,
+    eps: float | None = None,
 ) -> torch.Tensor:
     r"""Criterion that computes Focal loss.
 
@@ -187,12 +188,12 @@ class FocalLoss(nn.Module):
         >>> output.backward()
     """
 
-    def __init__(self, alpha: float, gamma: float = 2.0, reduction: str = "none", eps: Optional[float] = None) -> None:
+    def __init__(self, alpha: float, gamma: float = 2.0, reduction: str = "none", eps: float | None = None) -> None:
         super().__init__()
         self.alpha: float = alpha
         self.gamma: float = gamma
         self.reduction: str = reduction
-        self.eps: Optional[float] = eps
+        self.eps: float | None = eps
 
     def forward(self, input_tensor: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """Forward call computation."""
@@ -205,7 +206,7 @@ def binary_focal_loss_with_logits(
     alpha: float = 0.25,
     gamma: float = 2.0,
     reduction: str = "none",
-    eps: Optional[float] = None,
+    eps: float | None = None,
 ) -> torch.Tensor:
     r"""Function that computes Binary Focal loss.
 

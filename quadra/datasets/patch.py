@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import os
 import random
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from collections.abc import Callable
 
 import cv2
 import h5py
@@ -33,11 +35,11 @@ class PatchSklearnClassificationTrainDataset(Dataset):
     def __init__(
         self,
         data_path: str,
-        samples: List[str],
-        targets: List[Union[str, int]],
-        class_to_idx: Optional[Dict] = None,
-        resize: Optional[int] = None,
-        transform: Optional[Callable] = None,
+        samples: list[str],
+        targets: list[str | int],
+        class_to_idx: dict | None = None,
+        resize: int | None = None,
+        transform: Callable | None = None,
         rgb: bool = True,
         channel: int = 3,
         balance_classes: bool = False,
@@ -51,8 +53,8 @@ class PatchSklearnClassificationTrainDataset(Dataset):
         if balance_classes:
             samples_array = np.array(samples)
             targets_array = np.array(targets)
-            samples_to_use: List[str] = []
-            targets_to_use: List[Union[str, int]] = []
+            samples_to_use: list[str] = []
+            targets_to_use: list[str | int] = []
 
             cls, counts = np.unique(targets_array, return_counts=True)
             max_count = np.max(counts)
@@ -88,7 +90,7 @@ class PatchSklearnClassificationTrainDataset(Dataset):
 
         self.transform = transform
 
-    def __getitem__(self, idx) -> Tuple[np.ndarray, np.ndarray]:
+    def __getitem__(self, idx) -> tuple[np.ndarray, np.ndarray]:
         path, y = self.samples[idx]
 
         h5_file = h5py.File(path)

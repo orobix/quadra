@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import math
-from typing import List, Optional, Tuple
 
 import torch
 
@@ -10,12 +11,12 @@ log = get_logger(__name__)
 
 
 def cosine_annealing_with_warmup(
-    init_lrs: List[float],
+    init_lrs: list[float],
     step: int,
     total_steps: int,
     warmup_steps: int,
     lr_reduce_factor: float = 0.001,
-) -> List[float]:
+) -> list[float]:
     """Cosine learning rate scheduler with linear warmup helper function.
 
     Args:
@@ -83,14 +84,13 @@ class CosineAnnealingWithLinearWarmUp(LearningRateScheduler):
         optimizer: torch.optim.Optimizer,
         batch_size: int,
         total_epochs: int,
-        init_lr: Tuple[float, ...] = (0.01,),
+        init_lr: tuple[float, ...] = (0.01,),
         lr_scale: float = 256.0,
         linear_warmup_epochs: int = 10,
         lr_reduce_factor: float = 0.001,
-        len_loader: Optional[int] = None,
+        len_loader: int | None = None,
         scheduler_interval: str = "epoch",
     ) -> None:
-
         super().__init__(optimizer, init_lr)
         assert batch_size > 0
         assert total_epochs > 0

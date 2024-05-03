@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import glob
 import itertools
 import json
@@ -6,17 +8,18 @@ import os
 import random
 import shutil
 import warnings
+from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
 from multiprocessing import Pool
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import cv2
 import h5py
 import numpy as np
 from scipy import ndimage
-from skimage.measure import label, regionprops
+from skimage.measure import label, regionprops  # pylint: disable=no-name-in-module
 from skimage.util import view_as_windows
 from skmultilearn.model_selection import iterative_train_test_split
 from tqdm import tqdm
@@ -32,29 +35,31 @@ class PatchDatasetFileFormat:
     """Model representing the content of the patch dataset split_files field in the info.json file."""
 
     image_path: str
-    mask_path: Optional[str] = None
+    mask_path: str | None = None
 
 
 @dataclass
 class PatchDatasetInfo:
     """Model representing the content of the patch dataset info.json file."""
 
-    patch_size: Optional[Tuple[int, int]]
-    patch_number: Optional[Tuple[int, int]]
-    annotated_good: Optional[List[int]]
+    patch_size: tuple[int, int] | None
+    patch_number: tuple[int, int] | None
+    annotated_good: list[int] | None
     overlap: float
-    train_files: List[PatchDatasetFileFormat]
-    val_files: List[PatchDatasetFileFormat]
-    test_files: List[PatchDatasetFileFormat]
+    train_files: list[PatchDatasetFileFormat]
+    val_files: list[PatchDatasetFileFormat]
+    test_files: list[PatchDatasetFileFormat]
 
     @staticmethod
-    def _map_files(files: List[Any]):
+    def _map_files(files: list[Any]):
         """Convert a list of dict to a list of PatchDatasetFileFormat."""
         mapped_files = []
         for file in files:
+            current_file = file
             if isinstance(file, dict):
-                file = PatchDatasetFileFormat(**file)
-            mapped_files.append(file)
+                current_file = PatchDatasetFileFormat(**current_file)
+            mapped_files.append(current_file)
+
         return mapped_files
 
     def __post_init__(self):
@@ -65,10 +70,10 @@ class PatchDatasetInfo:
 
 def get_image_mask_association(
     data_folder: str,
-    mask_folder: Optional[str] = None,
+    mask_folder: str | None = None,
     mask_extension: str = "",
     warning_on_missing_mask: bool = True,
-) -> List[Dict]:
+) -> list[dict]:
     """Function used to match images and mask from a folder or sub-folders.
 
     Args:
@@ -140,7 +145,7 @@ def compute_patch_info(
     patch_num_h: int,
     patch_num_w: int,
     overlap: float = 0.0,
-) -> Tuple[Tuple[int, int], Tuple[int, int]]:
+) -> tuple[tuple[int, int], tuple[int, int]]:
     """Compute the patch size and step size given the number of patches and the overlap.
 
     Args:
@@ -207,7 +212,7 @@ def compute_patch_info_from_patch_dim(
     patch_height: int,
     patch_width: int,
     overlap: float = 0.0,
-) -> Tuple[Tuple[int, int], Tuple[int, int]]:
+) -> tuple[tuple[int, int], tuple[int, int]]:
     """Compute patch info given the patch dimension
     Args:
         img_h: height of the image
@@ -237,7 +242,7 @@ def compute_patch_info_from_patch_dim(
     return (patch_num_h, patch_num_w), (step_h, step_w)
 
 
-def from_rgb_to_idx(img: np.ndarray, class_to_color: Dict, class_to_idx: Dict) -> np.ndarray:
+def from_rgb_to_idx(img: np.ndarray, class_to_color: dict, class_to_idx: dict) -> np.ndarray:
     """Args:
         img: Rgb mask in which each different color is associated with a class
         class_to_color: Dict "key": [R, G, B]
@@ -259,17 +264,17 @@ def from_rgb_to_idx(img: np.ndarray, class_to_color: Dict, class_to_idx: Dict) -
 
 def __save_patch_dataset(
     image_patches: np.ndarray,
-    labelled_patches: Optional[np.ndarray] = None,
-    mask_patches: Optional[np.ndarray] = None,
-    labelled_mask: Optional[np.ndarray] = None,
+    labelled_patches: np.ndarray | None = None,
+    mask_patches: np.ndarray | None = None,
+    labelled_mask: np.ndarray | None = None,
     output_folder: str = "extraction_data",
     image_name: str = "example",
     area_threshold: float = 0.45,
     area_defect_threshold: float = 0.2,
     mask_extension: str = "_mask",
     save_mask: bool = False,
-    mask_output_folder: Optional[str] = None,
-    class_to_idx: Optional[Dict] = None,
+    mask_output_folder: str | None = None,
+    class_to_idx: dict | None = None,
 ) -> None:
     """Given a view_as_window computed patches, masks and labelled mask, save all the images in subdirectory
     divided by name and position in the grid, ambiguous patches i.e. the one that contains defects but with not enough
@@ -305,11 +310,10 @@ def __save_patch_dataset(
             missing_classes = set(classes_in_mask).difference(class_to_idx.values())
 
             assert len(missing_classes) == 0, f"Found index in mask that has no corresponding class {missing_classes}"
+    elif mask_patches is not None:
+        reference_classes = {k: str(v) for k, v in enumerate(list(np.unique(mask_patches)))}
     else:
-        if mask_patches is not None:
-            reference_classes = {k: str(v) for k, v in enumerate(list(np.unique(mask_patches)))}
-        else:
-            raise ValueError("If no `class_to_idx` is provided, `mask_patches` must be provided")
+        raise ValueError("If no `class_to_idx` is provided, `mask_patches` must be provided")
 
     log.debug("Classes from mask: %s", reference_classes)
     class_to_idx = {v: k for k, v in reference_classes.items()}
@@ -412,29 +416,29 @@ def __save_patch_dataset(
 
 
 def generate_patch_dataset(
-    data_dictionary: List[Dict],
-    class_to_idx: Dict,
+    data_dictionary: list[dict],
+    class_to_idx: dict,
     val_size: float = 0.3,
     test_size: float = 0.0,
     seed: int = 42,
-    patch_number: Optional[Tuple[int, int]] = None,
-    patch_size: Optional[Tuple[int, int]] = None,
+    patch_number: tuple[int, int] | None = None,
+    patch_size: tuple[int, int] | None = None,
     overlap: float = 0.0,
     output_folder: str = "extraction_data",
     save_original_images_and_masks: bool = True,
     area_threshold: float = 0.45,
     area_defect_threshold: float = 0.2,
     mask_extension: str = "_mask",
-    mask_output_folder: Optional[str] = None,
+    mask_output_folder: str | None = None,
     save_mask: bool = False,
     clear_output_folder: bool = False,
-    mask_preprocessing: Optional[Callable] = None,
+    mask_preprocessing: Callable | None = None,
     train_filename: str = "dataset.txt",
     repeat_good_images: int = 1,
     balance_defects: bool = True,
-    annotated_good: Optional[List[str]] = None,
+    annotated_good: list[str] | None = None,
     num_workers: int = 1,
-) -> Optional[Dict]:
+) -> dict | None:
     """Giving a data_dictionary as:
     >>> {
     >>>     'base_name': '163931_1_5.jpg',
@@ -486,14 +490,13 @@ def generate_patch_dataset(
 
     """
     if len(data_dictionary) == 0:
-        warnings.warn("Input data dictionary is empty!", UserWarning)
+        warnings.warn("Input data dictionary is empty!", UserWarning, stacklevel=2)
         return None
 
     if val_size < 0 or test_size < 0 or (val_size + test_size) > 1:
         raise ValueError("Validation and Test size must be greater or equal than zero and sum up to maximum 1")
-    if clear_output_folder:
-        if os.path.exists(output_folder):
-            shutil.rmtree(output_folder)
+    if clear_output_folder and os.path.exists(output_folder):
+        shutil.rmtree(output_folder)
     os.makedirs(output_folder, exist_ok=True)
     os.makedirs(os.path.join(output_folder, "original"), exist_ok=True)
     if save_original_images_and_masks:
@@ -588,11 +591,11 @@ def generate_patch_dataset(
 
 def multilabel_stratification(
     output_folder: str,
-    data_dictionary: List[Dict],
+    data_dictionary: list[dict],
     num_classes: int,
     val_size: float,
     test_size: float,
-) -> Tuple[List[Dict], List[Dict], List[Dict]]:
+) -> tuple[list[dict], list[dict], list[dict]]:
     """Split data dictionary using multilabel based stratification, place every sample with None
         mask inside the test set,for all the others read the labels contained in the masks
         to create one-hot encoded labels.
@@ -622,7 +625,9 @@ def multilabel_stratification(
     if len(data_dictionary) == 0:
         # All the item in the data dictionary have None mask, put everything in test
         warnings.warn(
-            "All the images have None mask and the test size is not equal to 1! Put everything in test", UserWarning
+            "All the images have None mask and the test size is not equal to 1! Put everything in test",
+            UserWarning,
+            stacklevel=2,
         )
         return [], [], test_data_dictionary
 
@@ -644,7 +649,7 @@ def multilabel_stratification(
         else:
             y = np.concatenate([y, one_hot])
 
-    x_test: Union[List[Any], np.ndarray]
+    x_test: list[Any] | np.ndarray
 
     if empty_test_size > test_size:
         warnings.warn(
@@ -653,6 +658,7 @@ def multilabel_stratification(
                 f" {empty_test_size}!"
             ),
             UserWarning,
+            stacklevel=2,
         )
         x_train, _, x_val, _ = iterative_train_test_split(np.expand_dims(np.array(x), 1), y, val_size)
         x_test = [q["base_name"] for q in test_data_dictionary]
@@ -689,18 +695,18 @@ def multilabel_stratification(
 
 
 def generate_patch_sliding_window_dataset(
-    data_dictionary: List[Dict],
+    data_dictionary: list[dict],
     subfolder_name: str,
-    patch_number: Optional[Tuple[int, int]] = None,
-    patch_size: Optional[Tuple[int, int]] = None,
+    patch_number: tuple[int, int] | None = None,
+    patch_size: tuple[int, int] | None = None,
     overlap: float = 0.0,
     output_folder: str = "extraction_data",
     area_threshold: float = 0.45,
     area_defect_threshold: float = 0.2,
     mask_extension: str = "_mask",
-    mask_output_folder: Optional[str] = None,
+    mask_output_folder: str | None = None,
     save_mask: bool = False,
-    class_to_idx: Optional[Dict] = None,
+    class_to_idx: dict | None = None,
 ) -> None:
     """Giving a data_dictionary as:
     >>> {
@@ -800,9 +806,9 @@ def generate_patch_sliding_window_dataset(
 
 def extract_patches(
     image: np.ndarray,
-    patch_number: Tuple[int, ...],
-    patch_size: Tuple[int, ...],
-    step: Tuple[int, ...],
+    patch_number: tuple[int, ...],
+    patch_size: tuple[int, ...],
+    step: tuple[int, ...],
     overlap: float,
 ) -> np.ndarray:
     """From an image extract N x M Patch[h, w] if the image is not perfectly divided by the number of patches of given
@@ -910,17 +916,17 @@ def extract_patches(
 
 
 def generate_patch_sampling_dataset(
-    data_dictionary: List[Dict[Any, Any]],
+    data_dictionary: list[dict[Any, Any]],
     output_folder: str,
-    idx_to_class: Dict,
+    idx_to_class: dict,
     overlap: float,
     repeat_good_images: int = 1,
     balance_defects: bool = True,
-    patch_number: Optional[Tuple[int, int]] = None,
-    patch_size: Optional[Tuple[int, int]] = None,
+    patch_number: tuple[int, int] | None = None,
+    patch_size: tuple[int, int] | None = None,
     subfolder_name: str = "train",
     train_filename: str = "dataset.txt",
-    annotated_good: Optional[List[int]] = None,
+    annotated_good: list[int] | None = None,
     num_workers: int = 1,
 ) -> None:
     """Generate a dataset of patches.
@@ -1009,18 +1015,18 @@ def generate_patch_sampling_dataset(
 
 
 def create_h5(
-    data_dictionary: List[Dict[Any, Any]],
-    idx_to_class: Dict,
+    data_dictionary: list[dict[Any, Any]],
+    idx_to_class: dict,
     overlap: float,
     repeat_good_images: int,
     balance_defects: bool,
     output_folder: str,
     labelled_masks_path: str,
     sampling_dataset_folder: str,
-    annotated_good: Optional[List[int]] = None,
-    patch_size: Optional[Tuple[int, int]] = None,
-    patch_number: Optional[Tuple[int, int]] = None,
-) -> List[str]:
+    annotated_good: list[int] | None = None,
+    patch_size: tuple[int, int] | None = None,
+    patch_number: tuple[int, int] | None = None,
+) -> list[str]:
     """Create h5 files for each image in the dataset.
 
     Args:
@@ -1057,7 +1063,7 @@ def create_h5(
             mask = np.zeros([h, w])
         else:
             # this works even if item["mask"] is already an absolute path
-            mask = cv2.imread(os.path.join(output_folder, item["mask"]), 0)
+            mask = cv2.imread(os.path.join(output_folder, item["mask"]), 0)  # type: ignore[assignment]
 
         if patch_size is not None:
             patch_height = patch_size[1]
@@ -1065,7 +1071,11 @@ def create_h5(
         else:
             # Mypy complains because patch_number is Optional, but we already checked that it is not None.
             [patch_height, patch_width], _ = compute_patch_info(
-                h, w, patch_number[0], patch_number[1], overlap  # type: ignore[index]
+                h,
+                w,
+                patch_number[0],  # type: ignore[index]
+                patch_number[1],  # type: ignore[index]
+                overlap,
             )
 
         h5_file_name_good = os.path.join(sampling_dataset_folder, f"{os.path.splitext(item['base_name'])[0]}_good.h5")
@@ -1082,7 +1092,7 @@ def create_h5(
                 f.create_dataset("triangles", data=np.array([], dtype=np.uint8), dtype=np.uint8)
                 f.create_dataset("triangles_weights", data=np.array([], dtype=np.uint8), dtype=np.uint8)
 
-                for i in range(repeat_good_images):
+                for _ in range(repeat_good_images):
                     output_list.append(f"{os.path.basename(h5_file_name_good)},{target}\n")
 
                 continue
@@ -1254,7 +1264,7 @@ def triangle_area(triangle: np.ndarray) -> float:
     return abs(0.5 * (((x2 - x1) * (y3 - y1)) - ((x3 - x1) * (y2 - y1))))
 
 
-def triangulate_region(mask: ndimage) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+def triangulate_region(mask: ndimage) -> tuple[np.ndarray | None, np.ndarray | None]:
     """Extract from a binary image containing a single roi (with or without holes) a list of triangles
     (and their normalized area) that completely subdivide an approximated polygon defined around mask contours,
     the output can be used to easily sample uniformly points that are almost guarantee to lie inside the roi.
@@ -1302,10 +1312,7 @@ def triangulate_region(mask: ndimage) -> Tuple[Optional[np.ndarray], Optional[np
 
         current_triangles = np.array([list(x) for x in current_triangles])
 
-        if triangles is None:
-            triangles = current_triangles
-        else:
-            triangles = np.concatenate([triangles, current_triangles])
+        triangles = current_triangles if triangles is None else np.concatenate([triangles, current_triangles])
 
     if triangles is None:
         return None, None
@@ -1329,10 +1336,10 @@ class InvalidNumWorkersNumberException(Exception):
 
 def load_train_file(
     train_file_path: str,
-    include_filter: Optional[List[str]] = None,
-    exclude_filter: Optional[List[str]] = None,
-    class_to_skip: Optional[list] = None,
-) -> Tuple[List[str], List[str]]:
+    include_filter: list[str] | None = None,
+    exclude_filter: list[str] | None = None,
+    class_to_skip: list | None = None,
+) -> tuple[list[str], list[str]]:
     """Load a train file and return a list of samples and a list of targets. It is expected that train files will be in
         the same location as the train_file_path.
 
@@ -1377,7 +1384,7 @@ def load_train_file(
     return samples, targets
 
 
-def compute_safe_patch_range(sampled_point: int, patch_size: int, image_size: int) -> Tuple[int, int]:
+def compute_safe_patch_range(sampled_point: int, patch_size: int, image_size: int) -> tuple[int, int]:
     """Computes the safe patch size for the given image size.
 
     Args:
@@ -1403,7 +1410,7 @@ def compute_safe_patch_range(sampled_point: int, patch_size: int, image_size: in
     return left, right
 
 
-def trisample(triangle: np.ndarray) -> Tuple[int, int]:
+def trisample(triangle: np.ndarray) -> tuple[int, int]:
     """Sample a point uniformly in a triangle.
 
     Args:

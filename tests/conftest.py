@@ -1,6 +1,6 @@
 import os
+from collections.abc import Callable, Generator
 from pathlib import Path
-from typing import Callable, Generator
 
 import pytest
 import torch

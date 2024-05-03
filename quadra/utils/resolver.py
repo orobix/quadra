@@ -1,4 +1,6 @@
-from typing import Any, Tuple
+from __future__ import annotations
+
+from typing import Any
 
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
@@ -29,7 +31,7 @@ def multirun_subdir_beautify(subdir: str) -> str:
     return subdir
 
 
-def as_tuple(*args: Any) -> Tuple[Any, ...]:
+def as_tuple(*args: Any) -> tuple[Any, ...]:
     """Resolves a list of arguments to a tuple."""
     return tuple(args)
 

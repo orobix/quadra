@@ -1,7 +1,8 @@
 # pylint: disable=redefined-outer-name
+from __future__ import annotations
+
 import glob
 import os
-from typing import Optional
 
 import albumentations as alb
 import numpy as np
@@ -21,7 +22,7 @@ from quadra.utils.tests.fixtures.dataset.segmentation import (
 @pytest.mark.parametrize("batch_size", [None, 32, 256])
 def test_binary_segmentation_dataset(
     base_binary_segmentation_dataset: base_binary_segmentation_dataset,
-    batch_size: Optional[int],
+    batch_size: int | None,
     use_albumentations: bool,
 ):
     data_path, arguments, _ = base_binary_segmentation_dataset
@@ -49,7 +50,7 @@ def test_binary_segmentation_dataset(
 
     count_good = 0
     count_bad = 0
-    for (image, mask, target) in dataset:
+    for image, mask, target in dataset:
         if use_albumentations:
             assert isinstance(image, torch.Tensor)
             assert isinstance(mask, torch.Tensor)
@@ -75,7 +76,7 @@ def test_binary_segmentation_dataset(
         assert count_bad == (arguments.train_samples[1] + arguments.val_samples[1] + arguments.test_samples[1])
 
     dataloader = DataLoader(dataset, batch_size=1)
-    for (image, mask, target) in dataloader:
+    for image, mask, target in dataloader:
         assert isinstance(image, torch.Tensor)
         assert isinstance(mask, torch.Tensor)
         if use_albumentations:
@@ -90,7 +91,7 @@ def test_binary_segmentation_dataset(
 @pytest.mark.parametrize("one_hot", [True, False])
 def test_multiclass_segmentation_dataset(
     base_multiclass_segmentation_dataset: base_multiclass_segmentation_dataset,
-    batch_size: Optional[int],
+    batch_size: int | None,
     use_albumentations: bool,
     one_hot: bool,
 ):
@@ -119,7 +120,7 @@ def test_multiclass_segmentation_dataset(
         one_hot=one_hot,
     )
 
-    for (image, mask, _) in dataset:
+    for image, mask, _ in dataset:
         if use_albumentations:
             assert isinstance(image, torch.Tensor)
             assert isinstance(mask, np.ndarray)
@@ -137,7 +138,7 @@ def test_multiclass_segmentation_dataset(
                 assert len(mask.shape) == 2
 
     dataloader = DataLoader(dataset, batch_size=1)
-    for (image, mask, _) in dataloader:
+    for image, mask, _ in dataloader:
         assert isinstance(image, torch.Tensor)
         assert isinstance(mask, torch.Tensor)
         if use_albumentations:

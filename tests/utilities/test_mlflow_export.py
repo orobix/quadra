@@ -9,7 +9,7 @@ try:
 except ImportError:
     pytest.skip("Mlflow is not installed", allow_module_level=True)
 
-from typing import Sequence
+from collections.abc import Sequence
 
 import torch
 from mlflow.models import infer_signature

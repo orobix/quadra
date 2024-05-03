@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import os
 import shutil
-from typing import Any, Dict, Optional
+from typing import Any
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -46,7 +48,7 @@ class ImagenetteClassificationDataModule(ClassificationDataModule):
         name: str = "imagenette_classification_datamodule",
         imagenette_version: str = "320",
         force_download: bool = False,
-        class_to_idx: Optional[Dict[str, int]] = None,
+        class_to_idx: dict[str, int] | None = None,
         **kwargs: Any,
     ):
         if imagenette_version not in ["320", "160", "full"]:
@@ -135,12 +137,8 @@ class ImagenetteSSLDataModule(ImagenetteClassificationDataModule, SSLDataModule)
 
     def __init__(
         self,
-        *args,
+        *args: Any,
         name="imagenette_ssl",
-        **kwargs,
+        **kwargs: Any,
     ):
-        super().__init__(
-            name=name,
-            *args,
-            **kwargs,
-        )
+        super().__init__(*args, name=name, **kwargs)  # type: ignore[misc]

@@ -71,7 +71,7 @@ class BaseEvaluationModel(ABC):
     @device.setter
     def device(self, device: str):
         """Set the device of the model."""
-        if device == "cuda" and not ":" in device:
+        if device == "cuda" and ":" not in device:
             device = f"{device}:0"
 
         self._device = device
@@ -194,10 +194,11 @@ class ONNXEvaluationModel(BaseEvaluationModel):
                 dict[str, Any], OmegaConf.to_container(self.config.session_options, resolve=True)
             )
             for key, value in session_options_dict.items():
+                final_value = value
                 if isinstance(value, dict) and "_target_" in value:
-                    value = instantiate(value)
+                    final_value = instantiate(final_value)
 
-                setattr(session_options, key, value)
+                setattr(session_options, key, final_value)
 
         return session_options
 
@@ -240,7 +241,7 @@ class ONNXEvaluationModel(BaseEvaluationModel):
         for k, v in input_dict.items():
             if not v.is_contiguous():
                 # If not contiguous onnx give wrong results
-                v = v.contiguous()
+                v = v.contiguous()  # noqa: PLW2901
 
             io_binding.bind_input(
                 name=k,

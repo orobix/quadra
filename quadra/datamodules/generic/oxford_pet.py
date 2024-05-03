@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import os
-from typing import Any, Dict, Optional, Type
+from typing import Any
 
 import albumentations
 import cv2
@@ -36,17 +38,17 @@ class OxfordPetSegmentationDataModule(SegmentationMulticlassDataModule):
     def __init__(
         self,
         data_path: str,
-        idx_to_class: Dict,
+        idx_to_class: dict,
         name: str = "oxford_pet_segmentation_datamodule",
-        dataset: Type[SegmentationDatasetMulticlass] = SegmentationDatasetMulticlass,
+        dataset: type[SegmentationDatasetMulticlass] = SegmentationDatasetMulticlass,
         batch_size: int = 32,
         test_size: float = 0.3,
         val_size: float = 0.3,
         seed: int = 42,
         num_workers: int = 6,
-        train_transform: Optional[albumentations.Compose] = None,
-        test_transform: Optional[albumentations.Compose] = None,
-        val_transform: Optional[albumentations.Compose] = None,
+        train_transform: albumentations.Compose | None = None,
+        test_transform: albumentations.Compose | None = None,
+        val_transform: albumentations.Compose | None = None,
         **kwargs: Any,
     ):
         super().__init__(
@@ -88,11 +90,7 @@ class OxfordPetSegmentationDataModule(SegmentationMulticlassDataModule):
 
     def _check_exists(self, image_folder: str, annotation_folder: str) -> bool:
         """Check if the dataset is already downloaded."""
-        for folder in (image_folder, annotation_folder):
-            if not (os.path.exists(folder) and os.path.isdir(folder)):
-                return False
-
-        return True
+        return all(os.path.exists(folder) and os.path.isdir(folder) for folder in (image_folder, annotation_folder))
 
     def download_data(self):
         """Download the dataset if it is not already downloaded."""
@@ -102,7 +100,7 @@ class OxfordPetSegmentationDataModule(SegmentationMulticlassDataModule):
             for url, md5 in self._RESOURCES:
                 download_and_extract_archive(url, download_root=self.data_path, md5=md5, remove_finished=True)
             log.info("Fixing corrupted files...")
-            images_filenames = list(sorted(os.listdir(image_folder)))
+            images_filenames = sorted(os.listdir(image_folder))
             for filename in images_filenames:
                 file_wo_ext = os.path.splitext(os.path.basename(filename))[0]
                 try:

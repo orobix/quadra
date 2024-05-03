@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import os
 import shutil
-from typing import Any, Optional
+from typing import Any
 
 import cv2
 from torchvision.datasets.mnist import MNIST
@@ -15,7 +17,7 @@ class MNISTAnomalyDataModule(AnomalyDataModule):
     """Standard anomaly datamodule with automatic download of the MNIST dataset."""
 
     def __init__(
-        self, data_path: str, good_number: int, limit_data: int = 100, category: Optional[str] = None, **kwargs: Any
+        self, data_path: str, good_number: int, limit_data: int = 100, category: str | None = None, **kwargs: Any
     ):
         """Initialize the MNIST anomaly datamodule.
 

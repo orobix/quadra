@@ -1,5 +1,7 @@
+from __future__ import annotations
+
+from collections.abc import Callable
 from enum import Enum
-from typing import Callable, Optional, Union
 
 import torch
 import torch.nn.functional as F
@@ -48,20 +50,20 @@ class TLHyperspherical(BaseLightningModule):
     def __init__(
         self,
         model: nn.Module,
-        optimizer: Optional[optim.Optimizer] = None,
-        lr_scheduler: Optional[object] = None,
+        optimizer: optim.Optimizer | None = None,
+        lr_scheduler: object | None = None,
         align_weight: float = 1,
         unifo_weight: float = 1,
         classifier_weight: float = 1,
         align_loss_type: AlignLoss = AlignLoss.L2,
         classifier_loss: bool = False,
-        num_classes: Optional[int] = None,
+        num_classes: int | None = None,
     ):
         super().__init__(model, optimizer, lr_scheduler)
-        self.align_loss_fun: Union[
-            Callable[[torch.Tensor, torch.Tensor, int], torch.Tensor],
-            Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
-        ]
+        self.align_loss_fun: (
+            Callable[[torch.Tensor, torch.Tensor, int], torch.Tensor]
+            | Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
+        )
         self.align_weight = align_weight
         self.unifo_weight = unifo_weight
         self.classifier_weight = classifier_weight
@@ -73,9 +75,8 @@ class TLHyperspherical(BaseLightningModule):
         else:
             raise ValueError("The align loss must be one of 'AlignLoss.L2' (L2 distance) or AlignLoss.COSINE")
 
-        if classifier_loss:
-            if model.classifier is None:
-                raise AssertionError("Classifier is not defined")
+        if classifier_loss and model.classifier is None:
+            raise AssertionError("Classifier is not defined")
 
         self.classifier_loss = classifier_loss
         self.num_classes = num_classes

@@ -1,14 +1,16 @@
-from typing import List, Tuple, cast
+from __future__ import annotations
+
+from typing import cast
 
 import numpy as np
 import torch
 from scipy.optimize import linear_sum_assignment
-from skimage.measure import label, regionprops
+from skimage.measure import label, regionprops  # pylint: disable=no-name-in-module
 
 from quadra.utils.evaluation import dice
 
 
-def _pad_to_shape(a: np.ndarray, shape: Tuple, constant_values: int = 0) -> np.ndarray:
+def _pad_to_shape(a: np.ndarray, shape: tuple, constant_values: int = 0) -> np.ndarray:
     """Pad lower - right with 0s
     Args:
         a: numpy array to pad
@@ -98,7 +100,7 @@ def _get_dice_matrix(
 
 def segmentation_props(
     pred: np.ndarray, mask: np.ndarray
-) -> Tuple[float, float, float, float, List[float], float, int, int, int, int]:
+) -> tuple[float, float, float, float, list[float], float, int, int, int, int]:
     """Return some information regarding a segmentation task.
 
     Args:
@@ -158,7 +160,7 @@ def segmentation_props(
     fn_num = 0
     fp_area = 0.0
     fn_area = 0.0
-    fp_hist: List[float] = []
+    fp_hist: list[float] = []
     if n_labels_pred > 0 and n_labels_mask > 0:
         dice_mat = _get_dice_matrix(labels_pred, n_labels_pred, labels_mask, n_labels_mask)
         # Thresholding over Dice scores
@@ -169,8 +171,7 @@ def segmentation_props(
         # Add dummy Dices so LSA is unique and i can compute FP and FN
         dice_mat = _pad_to_shape(dice_mat, (max_dim, max_dim), 1)
         lsa = linear_sum_assignment(dice_mat, maximize=False)
-        for (row, col) in zip(lsa[0], lsa[1]):
-
+        for row, col in zip(lsa[0], lsa[1]):
             # More preds than GTs --> False Positive
             if row < n_labels_pred and col >= n_labels_mask:
                 min_row = pred_bbox[row][0]

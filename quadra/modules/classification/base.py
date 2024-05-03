@@ -1,4 +1,6 @@
-from typing import Any, List, Optional, Tuple, Union, cast
+from __future__ import annotations
+
+from typing import Any, cast
 
 import numpy as np
 import timm
@@ -37,9 +39,9 @@ class ClassificationModule(BaseLightningModule):
         self,
         model: nn.Module,
         criterion: nn.Module,
-        optimizer: Union[None, optim.Optimizer] = None,
-        lr_scheduler: Union[None, object] = None,
-        lr_scheduler_interval: Optional[str] = "epoch",
+        optimizer: None | optim.Optimizer = None,
+        lr_scheduler: None | object = None,
+        lr_scheduler_interval: str | None = "epoch",
         gradcam: bool = False,
     ):
         super().__init__(model, optimizer, lr_scheduler, lr_scheduler_interval)
@@ -49,8 +51,8 @@ class ClassificationModule(BaseLightningModule):
         self.train_acc = torchmetrics.Accuracy()
         self.val_acc = torchmetrics.Accuracy()
         self.test_acc = torchmetrics.Accuracy()
-        self.cam: Optional[GradCAM] = None
-        self.grad_rollout: Optional[VitAttentionGradRollout] = None
+        self.cam: GradCAM | None = None
+        self.grad_rollout: VitAttentionGradRollout | None = None
 
         if not isinstance(self.model.features_extractor, timm.models.resnet.ResNet) and not is_vision_transformer(
             cast(BaseNetworkBuilder, self.model).features_extractor
@@ -60,12 +62,12 @@ class ClassificationModule(BaseLightningModule):
             )
             self.gradcam = False
 
-        self.original_requires_grads: List[bool] = []
+        self.original_requires_grads: list[bool] = []
 
     def forward(self, x: torch.Tensor):
         return self.model(x)
 
-    def training_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int):
+    def training_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int):
         # pylint: disable=unused-argument
         im, target = batch
         outputs = self(im)
@@ -87,7 +89,7 @@ class ClassificationModule(BaseLightningModule):
         )
         return loss
 
-    def validation_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int):
+    def validation_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int):
         # pylint: disable=unused-argument
         im, target = batch
         outputs = self(im)
@@ -109,7 +111,7 @@ class ClassificationModule(BaseLightningModule):
         )
         return loss
 
-    def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int):
+    def test_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int):
         # pylint: disable=unused-argument
         im, target = batch
         outputs = self(im)
@@ -134,7 +136,7 @@ class ClassificationModule(BaseLightningModule):
     def prepare_gradcam(self) -> None:
         """Instantiate gradcam handlers."""
         if isinstance(self.model.features_extractor, timm.models.resnet.ResNet):
-            target_layers = [cast(BaseNetworkBuilder, self.model).features_extractor.layer4[-1]]  # type: ignore[index]
+            target_layers = [cast(BaseNetworkBuilder, self.model).features_extractor.layer4[-1]]
 
             # Get model current device
             device = next(self.model.parameters()).device
@@ -186,6 +188,7 @@ class ClassificationModule(BaseLightningModule):
 
         return super().on_predict_end()
 
+    # pylint: disable=unused-argument
     def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0) -> Any:
         """Prediction step.
 
@@ -241,9 +244,9 @@ class MultilabelClassificationModule(BaseLightningModule):
         self,
         model: nn.Sequential,
         criterion: nn.Module,
-        optimizer: Union[None, optim.Optimizer] = None,
-        lr_scheduler: Union[None, object] = None,
-        lr_scheduler_interval: Optional[str] = "epoch",
+        optimizer: None | optim.Optimizer = None,
+        lr_scheduler: None | object = None,
+        lr_scheduler_interval: str | None = "epoch",
         gradcam: bool = False,
     ):
         super().__init__(model, optimizer, lr_scheduler, lr_scheduler_interval)

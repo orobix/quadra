@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import random
 from collections.abc import Iterable
 from enum import Enum
-from typing import Tuple, Union
 
 import albumentations as A
 import numpy as np
@@ -29,7 +30,7 @@ class TwoAugmentationDataset(Dataset):
     def __init__(
         self,
         dataset: Dataset,
-        transform: Union[A.Compose, Tuple[A.Compose, A.Compose]],
+        transform: A.Compose | tuple[A.Compose, A.Compose],
         strategy: AugmentationStrategy = AugmentationStrategy.SAME_IMAGE,
     ):
         self.dataset = dataset
@@ -82,7 +83,7 @@ class TwoSetAugmentationDataset(Dataset):
     def __init__(
         self,
         dataset: Dataset,
-        global_transforms: Tuple[A.Compose, A.Compose],
+        global_transforms: tuple[A.Compose, A.Compose],
         local_transform: A.Compose,
         num_local_transforms: int,
     ):

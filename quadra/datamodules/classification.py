@@ -1,7 +1,10 @@
 # pylint: disable=unsupported-assignment-operation,unsubscriptable-object
+from __future__ import annotations
+
 import os
 import random
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type
+from collections.abc import Callable
+from typing import Any
 
 import albumentations
 import numpy as np
@@ -53,29 +56,29 @@ class ClassificationDataModule(BaseDataModule):
     def __init__(
         self,
         data_path: str,
-        dataset: Type[ImageClassificationListDataset] = ImageClassificationListDataset,
+        dataset: type[ImageClassificationListDataset] = ImageClassificationListDataset,
         name: str = "classification_datamodule",
         num_workers: int = 8,
         batch_size: int = 32,
         seed: int = 42,
-        val_size: Optional[float] = 0.2,
+        val_size: float | None = 0.2,
         test_size: float = 0.2,
-        num_data_class: Optional[int] = None,
-        exclude_filter: Optional[List[str]] = None,
-        include_filter: Optional[List[str]] = None,
-        label_map: Optional[Dict[str, Any]] = None,
+        num_data_class: int | None = None,
+        exclude_filter: list[str] | None = None,
+        include_filter: list[str] | None = None,
+        label_map: dict[str, Any] | None = None,
         load_aug_images: bool = False,
-        aug_name: Optional[str] = None,
-        n_aug_to_take: Optional[int] = 4,
-        replace_str_from: Optional[str] = None,
-        replace_str_to: Optional[str] = None,
-        train_transform: Optional[albumentations.Compose] = None,
-        val_transform: Optional[albumentations.Compose] = None,
-        test_transform: Optional[albumentations.Compose] = None,
-        train_split_file: Optional[str] = None,
-        test_split_file: Optional[str] = None,
-        val_split_file: Optional[str] = None,
-        class_to_idx: Optional[Dict[str, int]] = None,
+        aug_name: str | None = None,
+        n_aug_to_take: int | None = 4,
+        replace_str_from: str | None = None,
+        replace_str_to: str | None = None,
+        train_transform: albumentations.Compose | None = None,
+        val_transform: albumentations.Compose | None = None,
+        test_transform: albumentations.Compose | None = None,
+        train_split_file: str | None = None,
+        test_split_file: str | None = None,
+        val_split_file: str | None = None,
+        class_to_idx: dict[str, int] | None = None,
         **kwargs: Any,
     ):
         super().__init__(
@@ -105,7 +108,7 @@ class ClassificationDataModule(BaseDataModule):
         self.train_split_file = train_split_file
         self.test_split_file = test_split_file
         self.val_split_file = val_split_file
-        self.class_to_idx: Optional[Dict[str, int]]
+        self.class_to_idx: dict[str, int] | None
 
         if class_to_idx is not None:
             self.class_to_idx = class_to_idx
@@ -118,7 +121,7 @@ class ClassificationDataModule(BaseDataModule):
             else:
                 self.num_classes = len(self.class_to_idx)
 
-    def _read_split(self, split_file: str) -> Tuple[List[str], List[str]]:
+    def _read_split(self, split_file: str) -> tuple[list[str], list[str]]:
         """Reads split file.
 
         Args:
@@ -128,7 +131,7 @@ class ClassificationDataModule(BaseDataModule):
             List of paths to images.
         """
         samples, targets = [], []
-        with open(split_file, "r") as f:
+        with open(split_file) as f:
             split = f.readlines()
         for row in split:
             csv_values = row.split(",")
@@ -143,7 +146,7 @@ class ClassificationDataModule(BaseDataModule):
                 # log.warning(f"{sample_path} does not exist")
         return samples, targets
 
-    def _find_classes_from_data_path(self, data_path: str) -> Optional[Dict[str, int]]:
+    def _find_classes_from_data_path(self, data_path: str) -> dict[str, int] | None:
         """Given a data_path, build a random class_to_idx from the subdirectories.
 
         Args:
@@ -161,22 +164,27 @@ class ClassificationDataModule(BaseDataModule):
                 item_path = os.path.join(data_path, item)
 
                 # Check if it's a directory and not starting with "."
-                if os.path.isdir(item_path) and not item.startswith("."):
+                if (
+                    os.path.isdir(item_path)
+                    and not item.startswith(".")
                     # Check if there's at least one image file in the subdirectory
-                    if any(
+                    and any(
                         os.path.splitext(file)[1].lower().endswith(tuple(utils.IMAGE_EXTENSIONS))
                         for file in os.listdir(item_path)
-                    ):
-                        subdirectories.append(item)
+                    )
+                ):
+                    subdirectories.append(item)
+
             if len(subdirectories) > 0:
                 return {cl: idx for idx, cl in enumerate(sorted(subdirectories))}
             return None
+
         return None
 
     @staticmethod
     def _find_images_and_targets(
-        root_folder: str, class_to_idx: Optional[Dict[str, int]] = None
-    ) -> Tuple[List[Tuple[str, int]], Dict[str, int]]:
+        root_folder: str, class_to_idx: dict[str, int] | None = None
+    ) -> tuple[list[tuple[str, int]], dict[str, int]]:
         """Collects the samples from item folders."""
         images_and_targets, class_to_idx = find_images_and_targets(
             folder=root_folder, types=utils.IMAGE_EXTENSIONS, class_to_idx=class_to_idx
@@ -184,14 +192,14 @@ class ClassificationDataModule(BaseDataModule):
         return images_and_targets, class_to_idx
 
     def _filter_images_and_targets(
-        self, images_and_targets: List[Tuple[str, int]], class_to_idx: Dict[str, int]
-    ) -> Tuple[List[str], List[str]]:
+        self, images_and_targets: list[tuple[str, int]], class_to_idx: dict[str, int]
+    ) -> tuple[list[str], list[str]]:
         """Filters the images and targets."""
-        samples: List[str] = []
-        targets: List[str] = []
+        samples: list[str] = []
+        targets: list[str] = []
         idx_to_class = {v: k for k, v in class_to_idx.items()}
+        images_and_targets = [(str(image_path), target) for image_path, target in images_and_targets]
         for image_path, target in images_and_targets:
-            image_path = str(image_path)
             target_class = idx_to_class[target]
             if self.exclude_filter is not None and any(
                 exclude_filter in image_path for exclude_filter in self.exclude_filter
@@ -216,12 +224,12 @@ class ClassificationDataModule(BaseDataModule):
         if self.label_map is not None:
             all_targets, _ = group_labels(all_targets, self.label_map)
 
-        samples_train: List[str] = []
-        targets_train: List[str] = []
-        samples_test: List[str] = []
-        targets_test: List[str] = []
-        samples_val: List[str] = []
-        targets_val: List[str] = []
+        samples_train: list[str] = []
+        targets_train: list[str] = []
+        samples_test: list[str] = []
+        targets_test: list[str] = []
+        samples_val: list[str] = []
+        targets_val: list[str] = []
 
         if self.test_size < 1.0:
             samples_train, samples_test, targets_train, targets_test = train_test_split(
@@ -295,7 +303,7 @@ class ClassificationDataModule(BaseDataModule):
         #     )
         unique_targets = [str(t) for t in np.unique(targets_train)]
         if self.class_to_idx is None:
-            sorted_targets = list(sorted(unique_targets, key=natural_key))
+            sorted_targets = sorted(unique_targets, key=natural_key)
             class_to_idx = {c: idx for idx, c in enumerate(sorted_targets)}
             self.class_to_idx = class_to_idx
             log.info("Class_to_idx not provided in config, building it from targets: %s", class_to_idx)
@@ -308,13 +316,13 @@ class ClassificationDataModule(BaseDataModule):
                     "The number of classes in the class_to_idx dictionary does not match the number of unique targets."
                     f" `class_to_idx`: {self.class_to_idx}, `unique_targets`: {unique_targets}"
                 )
-            if not all(c in unique_targets for c in self.class_to_idx.keys()):
+            if not all(c in unique_targets for c in self.class_to_idx):
                 raise ValueError(
                     "The classes in the class_to_idx dictionary do not match the available unique targets in the"
                     " datasset. `class_to_idx`: {self.class_to_idx}, `unique_targets`: {unique_targets}"
                 )
 
-    def setup(self, stage: Optional[str] = None) -> None:
+    def setup(self, stage: str | None = None) -> None:
         """Setup data module based on stages of training."""
         if stage in ["train", "fit"]:
             self.train_dataset = self.dataset(
@@ -447,26 +455,26 @@ class SklearnClassificationDataModule(BaseDataModule):
     def __init__(
         self,
         data_path: str,
-        exclude_filter: Optional[List[str]] = None,
-        include_filter: Optional[List[str]] = None,
+        exclude_filter: list[str] | None = None,
+        include_filter: list[str] | None = None,
         val_size: float = 0.2,
-        class_to_idx: Optional[Dict[str, int]] = None,
-        label_map: Optional[Dict[str, Any]] = None,
+        class_to_idx: dict[str, int] | None = None,
+        label_map: dict[str, Any] | None = None,
         seed: int = 42,
         batch_size: int = 32,
         num_workers: int = 6,
-        train_transform: Optional[albumentations.Compose] = None,
-        val_transform: Optional[albumentations.Compose] = None,
-        test_transform: Optional[albumentations.Compose] = None,
-        roi: Optional[Tuple[int, int, int, int]] = None,
+        train_transform: albumentations.Compose | None = None,
+        val_transform: albumentations.Compose | None = None,
+        test_transform: albumentations.Compose | None = None,
+        roi: tuple[int, int, int, int] | None = None,
         n_splits: int = 1,
         phase: str = "train",
         cache: bool = False,
-        limit_training_data: Optional[int] = None,
-        train_split_file: Optional[str] = None,
-        test_split_file: Optional[str] = None,
+        limit_training_data: int | None = None,
+        train_split_file: str | None = None,
+        test_split_file: str | None = None,
         name: str = "sklearn_classification_datamodule",
-        dataset: Type[ImageClassificationListDataset] = ImageClassificationListDataset,
+        dataset: type[ImageClassificationListDataset] = ImageClassificationListDataset,
         **kwargs: Any,
     ):
         super().__init__(
@@ -496,8 +504,8 @@ class SklearnClassificationDataModule(BaseDataModule):
         self.val_size = val_size
         self.label_map = label_map
         self.full_dataset: ImageClassificationListDataset
-        self.train_dataset: List[ImageClassificationListDataset]
-        self.val_dataset: List[ImageClassificationListDataset]
+        self.train_dataset: list[ImageClassificationListDataset]
+        self.val_dataset: list[ImageClassificationListDataset]
 
     def _prepare_data(self) -> None:
         """Prepares the data for the data module."""
@@ -598,7 +606,7 @@ class SklearnClassificationDataModule(BaseDataModule):
         """Returns a dataloader used for predictions."""
         return self.test_dataloader()
 
-    def train_dataloader(self) -> List[DataLoader]:
+    def train_dataloader(self) -> list[DataLoader]:
         """Returns a list of train dataloader.
 
         Raises:
@@ -624,7 +632,7 @@ class SklearnClassificationDataModule(BaseDataModule):
             )
         return loader
 
-    def val_dataloader(self) -> List[DataLoader]:
+    def val_dataloader(self) -> list[DataLoader]:
         """Returns a list of validation dataloader.
 
         Raises:
@@ -736,23 +744,23 @@ class MultilabelClassificationDataModule(BaseDataModule):
     def __init__(
         self,
         data_path: str,
-        images_and_labels_file: Optional[str] = None,
-        train_split_file: Optional[str] = None,
-        test_split_file: Optional[str] = None,
-        val_split_file: Optional[str] = None,
+        images_and_labels_file: str | None = None,
+        train_split_file: str | None = None,
+        test_split_file: str | None = None,
+        val_split_file: str | None = None,
         name: str = "multilabel_datamodule",
         dataset: Callable = MultilabelClassificationDataset,
-        num_classes: Optional[int] = None,
+        num_classes: int | None = None,
         num_workers: int = 16,
         batch_size: int = 64,
         test_batch_size: int = 64,
         seed: int = 42,
-        val_size: Optional[float] = 0.2,
-        test_size: Optional[float] = 0.2,
-        train_transform: Optional[albumentations.Compose] = None,
-        val_transform: Optional[albumentations.Compose] = None,
-        test_transform: Optional[albumentations.Compose] = None,
-        class_to_idx: Optional[Dict[str, int]] = None,
+        val_size: float | None = 0.2,
+        test_size: float | None = 0.2,
+        train_transform: albumentations.Compose | None = None,
+        val_transform: albumentations.Compose | None = None,
+        test_transform: albumentations.Compose | None = None,
+        class_to_idx: dict[str, int] | None = None,
         **kwargs,
     ):
         super().__init__(
@@ -785,7 +793,7 @@ class MultilabelClassificationDataModule(BaseDataModule):
         self.val_dataset: MultilabelClassificationDataset
         self.test_dataset: MultilabelClassificationDataset
 
-    def _read_split(self, split_file: str) -> Tuple[List[str], List[List[str]]]:
+    def _read_split(self, split_file: str) -> tuple[list[str], list[list[str]]]:
         """Reads split file.
 
         Args:
@@ -895,7 +903,7 @@ class MultilabelClassificationDataModule(BaseDataModule):
         test_df["split"] = "test"
         self.data = pd.concat([train_df, val_df, test_df], axis=0)
 
-    def setup(self, stage: Optional[str] = None) -> None:
+    def setup(self, stage: str | None = None) -> None:
         """Setup data module based on stages of training."""
         if stage in ["train", "fit"]:
             train_samples = self.data[self.data["split"] == "train"]["samples"].tolist()

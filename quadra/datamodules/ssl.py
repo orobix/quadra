@@ -1,5 +1,7 @@
 # pylint: disable=unsubscriptable-object
-from typing import Any, Optional, Union
+from __future__ import annotations
+
+from typing import Any
 
 import numpy as np
 import torch
@@ -28,7 +30,7 @@ class SSLDataModule(ClassificationDataModule):
     def __init__(
         self,
         data_path: str,
-        augmentation_dataset: Union[TwoAugmentationDataset, TwoSetAugmentationDataset],
+        augmentation_dataset: TwoAugmentationDataset | TwoSetAugmentationDataset,
         name: str = "ssl_datamodule",
         split_validation: bool = True,
         **kwargs: Any,
@@ -39,10 +41,10 @@ class SSLDataModule(ClassificationDataModule):
             **kwargs,
         )
         self.augmentation_dataset = augmentation_dataset
-        self.classifier_train_dataset: Optional[torch.utils.data.Dataset] = None
+        self.classifier_train_dataset: torch.utils.data.Dataset | None = None
         self.split_validation = split_validation
 
-    def setup(self, stage: Optional[str] = None) -> None:
+    def setup(self, stage: str | None = None) -> None:
         """Setup data module based on stages of training."""
         if stage == "fit":
             self.train_dataset = self.dataset(

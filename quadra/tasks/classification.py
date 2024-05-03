@@ -6,7 +6,7 @@ import os
 import typing
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Dict, Generic, List, Optional, cast
+from typing import Any, Generic, cast
 
 import cv2
 import hydra
@@ -82,8 +82,8 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         self,
         config: DictConfig,
         output: DictConfig,
-        checkpoint_path: Optional[str] = None,
-        lr_multiplier: Optional[float] = None,
+        checkpoint_path: str | None = None,
+        lr_multiplier: float | None = None,
         gradcam: bool = False,
         report: bool = False,
         run_test: bool = False,
@@ -102,11 +102,11 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         self._model: nn.Module
         self._optimizer: torch.optim.Optimizer
         self._scheduler: torch.optim.lr_scheduler._LRScheduler
-        self.model_json: Optional[Dict[str, Any]] = None
+        self.model_json: dict[str, Any] | None = None
         self.export_folder: str = "deployment_model"
         self.deploy_info_file: str = "model.json"
         self.report_confmat: pd.DataFrame
-        self.best_model_path: Optional[str] = None
+        self.best_model_path: str | None = None
 
     @property
     def optimizer(self) -> torch.optim.Optimizer:
@@ -172,7 +172,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         return self._module
 
     @LightningTask.module.setter
-    def module(self, module_config):
+    def module(self, module_config):  # noqa: F811
         """Set the module of the model."""
         module = hydra.utils.instantiate(
             module_config,
@@ -435,7 +435,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                         else:
                             utils.upload_file_tensorboard(a, tensorboard_logger)
 
-    def freeze_layers_by_name(self, freeze_parameters_name: List[str]):
+    def freeze_layers_by_name(self, freeze_parameters_name: list[str]):
         """Freeze layers specified in freeze_parameters_name.
 
         Args:
@@ -453,7 +453,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
 
         log.info("Frozen %d parameters", count_frozen)
 
-    def freeze_parameters_by_index(self, freeze_parameters_index: List[int]):
+    def freeze_parameters_by_index(self, freeze_parameters_index: list[int]):
         """Freeze parameters specified in freeze_parameters_name.
 
         Args:
@@ -507,7 +507,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self._backbone: ModelSignatureWrapper
         self._trainer: SklearnClassificationTrainer
         self._model: ClassifierMixin
-        self.metadata: Dict[str, Any] = {
+        self.metadata: dict[str, Any] = {
             "test_confusion_matrix": [],
             "test_accuracy": [],
             "test_results": [],
@@ -516,8 +516,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         }
         self.export_folder = "deployment_model"
         self.deploy_info_file = "model.json"
-        self.train_dataloader_list: List[torch.utils.data.DataLoader] = []
-        self.test_dataloader_list: List[torch.utils.data.DataLoader] = []
+        self.train_dataloader_list: list[torch.utils.data.DataLoader] = []
+        self.test_dataloader_list: list[torch.utils.data.DataLoader] = []
         self.automatic_batch_size = automatic_batch_size
         self.save_model_summary = save_model_summary
         self.half_precision = half_precision
@@ -866,7 +866,7 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
     """
 
     def __init__(
-        self,  # pylint: disable=W0613
+        self,
         config: DictConfig,
         output: DictConfig,
         model_path: str,
@@ -879,10 +879,10 @@ class SklearnTestClassification(Evaluation[SklearnClassificationDataModuleT]):
         self.output = output
         self._backbone: BaseEvaluationModel
         self._classifier: ClassifierMixin
-        self.class_to_idx: Dict[str, int]
-        self.idx_to_class: Dict[int, str]
+        self.class_to_idx: dict[str, int]
+        self.idx_to_class: dict[int, str]
         self.test_dataloader: torch.utils.data.DataLoader
-        self.metadata: Dict[str, Any] = {
+        self.metadata: dict[str, Any] = {
             "test_confusion_matrix": None,
             "test_accuracy": None,
             "test_results": None,
@@ -1050,7 +1050,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         model_path: str,
         report: bool = True,
         gradcam: bool = False,
-        device: Optional[str] = None,
+        device: str | None = None,
     ):
         super().__init__(config=config, model_path=model_path, device=device)
         self.report_path = "test_output"
@@ -1199,7 +1199,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
                             grayscale_cam = ndimage.zoom(grayscale_cam_low_res, zoom_factors, order=1)
                             grayscale_cams_list.append(torch.from_numpy(grayscale_cam))
 
-        grayscale_cams: Optional[torch.Tensor] = None
+        grayscale_cams: torch.Tensor | None = None
         if self.gradcam:
             grayscale_cams = torch.cat(grayscale_cams_list, dim=0)
 

@@ -4,7 +4,8 @@ import math
 import os
 import random
 import re
-from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Sequence, Tuple, Union
+from collections.abc import Generator, Sequence
+from typing import TYPE_CHECKING, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,7 +29,7 @@ log = utils.get_logger(__name__)
 
 
 def get_file_condition(
-    file_name: str, root: str, exclude_filter: Optional[List[str]] = None, include_filter: Optional[List[str]] = None
+    file_name: str, root: str, exclude_filter: list[str] | None = None, include_filter: list[str] | None = None
 ):
     """Check if a file should be included or excluded based on the filters provided.
 
@@ -45,9 +46,10 @@ def get_file_condition(
         if any(fil in root for fil in exclude_filter):
             return False
 
-    if include_filter is not None:
-        if not any(fil in file_name for fil in include_filter) and not any(fil in root for fil in include_filter):
-            return False
+    if include_filter is not None and (
+        not any(fil in file_name for fil in include_filter) and not any(fil in root for fil in include_filter)
+    ):
+        return False
 
     return True
 
@@ -59,14 +61,14 @@ def natural_key(string_):
 
 def find_images_and_targets(
     folder: str,
-    types: Optional[list] = None,
-    class_to_idx: Optional[Dict[str, int]] = None,
+    types: list | None = None,
+    class_to_idx: dict[str, int] | None = None,
     leaf_name_only: bool = True,
     sort: bool = True,
-    exclude_filter: Optional[list] = None,
-    include_filter: Optional[list] = None,
-    label_map: Optional[Dict[str, Any]] = None,
-) -> Tuple[np.ndarray, np.ndarray, dict]:
+    exclude_filter: list | None = None,
+    include_filter: list | None = None,
+    label_map: dict[str, Any] | None = None,
+) -> tuple[np.ndarray, np.ndarray, dict]:
     """Given a folder, extract the absolute path of all the files with a valid extension.
     Then assign a label based on subfolder name.
 
@@ -125,7 +127,7 @@ def find_images_and_targets(
     if class_to_idx is None:
         # building class index
         unique_labels = set(labels)
-        sorted_labels = list(sorted(unique_labels, key=natural_key))
+        sorted_labels = sorted(unique_labels, key=natural_key)
         class_to_idx = {str(c): idx for idx, c in enumerate(sorted_labels)}
 
     images_and_targets = [(f, l) for f, l in zip(filenames, labels) if l in class_to_idx]
@@ -138,13 +140,13 @@ def find_images_and_targets(
 
 def find_test_image(
     folder: str,
-    types: Optional[List[str]] = None,
-    exclude_filter: Optional[List[str]] = None,
-    include_filter: Optional[List[str]] = None,
+    types: list[str] | None = None,
+    exclude_filter: list[str] | None = None,
+    include_filter: list[str] | None = None,
     include_none_class: bool = True,
-    test_split_file: Optional[str] = None,
+    test_split_file: str | None = None,
     label_map=None,
-) -> Tuple[List[str], List[Optional[str]]]:
+) -> tuple[list[str], list[str | None]]:
     """Given a path extract images and labels with filters, labels are based on the parent folder name of the images
     Args:
         folder: root directory containing the images
@@ -163,11 +165,8 @@ def find_test_image(
     filenames = []
 
     for root, _, files in os.walk(folder, topdown=False, followlinks=True):
-        if root != folder:
-            rel_path = os.path.relpath(root, folder)
-        else:
-            rel_path = ""
-        label: Optional[str] = os.path.basename(rel_path)
+        rel_path = os.path.relpath(root, folder) if root != folder else ""
+        label: str | None = os.path.basename(rel_path)
         for f in files:
             if not get_file_condition(
                 file_name=f, root=root, exclude_filter=exclude_filter, include_filter=include_filter
@@ -195,7 +194,7 @@ def find_test_image(
         if not os.path.exists(test_split_file):
             raise FileNotFoundError(f"test_split_file {test_split_file} does not exist")
 
-        with open(test_split_file, "r") as test_file:
+        with open(test_split_file) as test_file:
             test_split = test_file.read().splitlines()
 
         file_samples = []
@@ -230,9 +229,7 @@ def find_test_image(
     return filenames, labels
 
 
-def group_labels(
-    labels: Sequence[Optional[str]], class_mapping: Dict[str, Union[Optional[str], List[str]]]
-) -> Tuple[List, Dict]:
+def group_labels(labels: Sequence[str | None], class_mapping: dict[str, str | None | list[str]]) -> tuple[list, dict]:
     """Group labels based on class_mapping.
 
     Raises:
@@ -258,8 +255,8 @@ def group_labels(
         ```
     """
     grouped_labels = []
-    specified_targets = [k for k in class_mapping.keys() if class_mapping[k] is not None]
-    non_specified_targets = [k for k in class_mapping.keys() if class_mapping[k] is None]
+    specified_targets = [k for k in class_mapping if class_mapping[k] is not None]
+    non_specified_targets = [k for k in class_mapping if class_mapping[k] is None]
     if len(non_specified_targets) > 1:
         raise ValueError(f"More than one non specified target: {non_specified_targets}")
     for label in labels:
@@ -282,7 +279,7 @@ def group_labels(
     return grouped_labels, class_to_idx
 
 
-def filter_with_file(list_of_full_paths: List[str], file_path: str, root_path: str) -> Tuple[List[str], List[bool]]:
+def filter_with_file(list_of_full_paths: list[str], file_path: str, root_path: str) -> tuple[list[str], list[bool]]:
     """Filter a list of items using a file containing the items to keep. Paths inside file
     should be relative to root_path not absolute to avoid user related issues.
 
@@ -298,7 +295,7 @@ def filter_with_file(list_of_full_paths: List[str], file_path: str, root_path: s
     filtered_full_paths = []
     filter_mask = []
 
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         for relative_path in f.read().splitlines():
             full_path = os.path.join(root_path, relative_path)
             if full_path in list_of_full_paths:
@@ -312,17 +309,17 @@ def filter_with_file(list_of_full_paths: List[str], file_path: str, root_path: s
 
 def get_split(
     image_dir: str,
-    exclude_filter: Optional[List[str]] = None,
-    include_filter: Optional[List[str]] = None,
+    exclude_filter: list[str] | None = None,
+    include_filter: list[str] | None = None,
     test_size: float = 0.3,
     random_state: int = 42,
-    class_to_idx: Optional[Dict[str, int]] = None,
-    label_map: Optional[Dict] = None,
+    class_to_idx: dict[str, int] | None = None,
+    label_map: dict | None = None,
     n_splits: int = 1,
     include_none_class: bool = False,
-    limit_training_data: Optional[int] = None,
-    train_split_file: Optional[str] = None,
-) -> Tuple[np.ndarray, np.ndarray, Generator[List, None, None], Dict]:
+    limit_training_data: int | None = None,
+    train_split_file: str | None = None,
+) -> tuple[np.ndarray, np.ndarray, Generator[list, None, None], dict]:
     """Given a folder, extract the absolute path of all the files with a valid extension and name
     and split them into train/test.
 
@@ -364,7 +361,7 @@ def get_split(
             class_to_idx.pop(_cl)
 
     if train_split_file is not None:
-        with open(train_split_file, "r") as f:
+        with open(train_split_file) as f:
             train_split = f.read().splitlines()
 
         file_samples = []
@@ -413,9 +410,9 @@ def save_classification_result(
     test_dataloader: DataLoader,
     config: DictConfig,
     output: DictConfig,
-    accuracy: Optional[float] = None,
-    confmat: Optional[pd.DataFrame] = None,
-    grayscale_cams: Optional[np.ndarray] = None,
+    accuracy: float | None = None,
+    confmat: pd.DataFrame | None = None,
+    grayscale_cams: np.ndarray | None = None,
 ):
     """Save csv results, confusion matrix and example images.
 
@@ -468,9 +465,8 @@ def save_classification_result(
             os.makedirs(original_images_folder)
 
         gradcam_folder = os.path.join(images_folder, "gradcam")
-        if save_gradcams:
-            if not os.path.isdir(gradcam_folder):
-                os.makedirs(gradcam_folder)
+        if save_gradcams and not os.path.isdir(gradcam_folder):
+            os.makedirs(gradcam_folder)
 
         for v in np.unique([results["real_label"], results["pred_label"]]):
             if np.isnan(v) or v == -1:
@@ -518,11 +514,11 @@ def save_classification_result(
 
 
 def get_results(
-    test_labels: Union[np.ndarray, List[int]],
-    pred_labels: Union[np.ndarray, List[int]],
-    idx_to_labels: Optional[Dict] = None,
+    test_labels: np.ndarray | list[int],
+    pred_labels: np.ndarray | list[int],
+    idx_to_labels: dict | None = None,
     cl_rep_digits: int = 3,
-) -> Tuple[Union[str, Dict], pd.DataFrame, float]:
+) -> tuple[str | dict, pd.DataFrame, float]:
     """Get prediction results from predicted and test labels.
 
     Args:

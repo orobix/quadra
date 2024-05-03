@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import glob
 import os
 import random
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import cv2
 import numpy as np
@@ -25,10 +27,10 @@ class ClassificationDatasetArguments:
         test_size: test set size
     """
 
-    samples: List[int]
-    classes: Optional[List[str]] = None
-    val_size: Optional[float] = None
-    test_size: Optional[float] = None
+    samples: list[int]
+    classes: list[str] | None = None
+    val_size: float | None = None
+    test_size: float | None = None
 
 
 @dataclass
@@ -43,11 +45,11 @@ class ClassificationMultilabelDatasetArguments:
         percentage_other_classes: probability of adding other classes to the labels of each sample
     """
 
-    samples: List[int]
-    classes: Optional[List[str]] = None
-    val_size: Optional[float] = None
-    test_size: Optional[float] = None
-    percentage_other_classes: Optional[float] = 0.0
+    samples: list[int]
+    classes: list[str] | None = None
+    val_size: float | None = None
+    test_size: float | None = None
+    percentage_other_classes: float | None = 0.0
 
 
 @dataclass
@@ -65,19 +67,19 @@ class ClassificationPatchDatasetArguments:
         annotated_good: list of class names that are considered as good annotations (E.g. ["good"])
     """
 
-    samples: List[int]
+    samples: list[int]
     overlap: float
-    patch_size: Optional[Tuple[int, int]] = None
-    patch_number: Optional[Tuple[int, int]] = None
-    classes: Optional[List[str]] = None
-    val_size: Optional[float] = 0.0
-    test_size: Optional[float] = 0.0
-    annotated_good: Optional[List[str]] = None
+    patch_size: tuple[int, int] | None = None
+    patch_number: tuple[int, int] | None = None
+    classes: list[str] | None = None
+    val_size: float | None = 0.0
+    test_size: float | None = 0.0
+    annotated_good: list[str] | None = None
 
 
 def _build_classification_dataset(
     tmp_path: Path, dataset_arguments: ClassificationDatasetArguments
-) -> Tuple[str, ClassificationDatasetArguments]:
+) -> tuple[str, ClassificationDatasetArguments]:
     """Generate classification dataset. If val_size or test_size are set, it will generate a train.txt, val.txt and
         test.txt file in the dataset directory. By default generated images are 10x10 pixels.
 
@@ -129,7 +131,7 @@ def _build_classification_dataset(
 @pytest.fixture
 def classification_dataset(
     tmp_path: Path, dataset_arguments: ClassificationDatasetArguments
-) -> Tuple[str, ClassificationDatasetArguments]:
+) -> tuple[str, ClassificationDatasetArguments]:
     """Generate classification dataset. If val_size or test_size are set, it will generate a train.txt, val.txt and
         test.txt file in the dataset directory. By default generated images are 10x10 pixels.
 
@@ -152,7 +154,7 @@ def classification_dataset(
         )
     ]
 )
-def base_classification_dataset(tmp_path: Path, request: Any) -> Tuple[str, ClassificationDatasetArguments]:
+def base_classification_dataset(tmp_path: Path, request: Any) -> tuple[str, ClassificationDatasetArguments]:
     """Generate base classification dataset with the following parameters:
         - 10 samples per class
         - 2 classes (class_1 and class_2)
@@ -172,7 +174,7 @@ def base_classification_dataset(tmp_path: Path, request: Any) -> Tuple[str, Clas
 
 def _build_multilabel_classification_dataset(
     tmp_path: Path, dataset_arguments: ClassificationMultilabelDatasetArguments
-) -> Tuple[str, ClassificationMultilabelDatasetArguments]:
+) -> tuple[str, ClassificationMultilabelDatasetArguments]:
     """Generate a multilabel classification dataset.
         Generates a samples.txt file in the dataset directory containing the path to the image and the corresponding
         classes. If val_size or test_size are set, it will generate a train.txt, val.txt and test.txt file in the
@@ -236,7 +238,7 @@ def _build_multilabel_classification_dataset(
 @pytest.fixture
 def multilabel_classification_dataset(
     tmp_path: Path, dataset_arguments: ClassificationMultilabelDatasetArguments
-) -> Tuple[str, ClassificationMultilabelDatasetArguments]:
+) -> tuple[str, ClassificationMultilabelDatasetArguments]:
     """Fixture to dinamically generate a multilabel classification dataset.
         Generates a samples.txt file in the dataset directory containing the path to the image and the corresponding
         classes. If val_size or test_size are set, it will generate a train.txt, val.txt and test.txt file in the
@@ -269,7 +271,7 @@ def multilabel_classification_dataset(
 )
 def base_multilabel_classification_dataset(
     tmp_path: Path, request: Any
-) -> Tuple[str, ClassificationMultilabelDatasetArguments]:
+) -> tuple[str, ClassificationMultilabelDatasetArguments]:
     """Fixture to generate base multilabel classification dataset with the following parameters:
         - 10 samples per class
         - 3 classes (class_1, class_2 and class_3)
@@ -292,7 +294,7 @@ def base_multilabel_classification_dataset(
 
 def _build_classification_patch_dataset(
     tmp_path: Path, dataset_arguments: ClassificationDatasetArguments
-) -> Tuple[str, ClassificationDatasetArguments, Dict[str, int]]:
+) -> tuple[str, ClassificationDatasetArguments, dict[str, int]]:
     """Generate a classification patch dataset. By default generated images are 224x224 pixels
         and associated masks contains a 50x50 pixels square with the corresponding image class, so at the current stage
         is not possible to have images with multiple annotations. The patch dataset will be generated using the standard
@@ -350,7 +352,7 @@ def _build_classification_patch_dataset(
 @pytest.fixture
 def classification_patch_dataset(
     tmp_path: Path, dataset_arguments: ClassificationDatasetArguments
-) -> Tuple[str, ClassificationDatasetArguments, Dict[str, int]]:
+) -> tuple[str, ClassificationDatasetArguments, dict[str, int]]:
     """Fixture to dinamically generate a classification patch dataset.
 
         By default generated images are 224x224 pixels
@@ -386,7 +388,7 @@ def classification_patch_dataset(
 )
 def base_patch_classification_dataset(
     tmp_path: Path, request: Any
-) -> Tuple[str, ClassificationDatasetArguments, Dict[str, int]]:
+) -> tuple[str, ClassificationDatasetArguments, dict[str, int]]:
     """Generate a classification patch dataset with the following parameters:
         - 3 classes named bg, a and b
         - 5, 5 and 5 samples for each class

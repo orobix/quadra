@@ -1,8 +1,10 @@
 # pylint: disable=unsubscriptable-object,unsupported-assignment-operation,unsupported-membership-test
+from __future__ import annotations
+
 import glob
 import os
 import random
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any
 
 import albumentations
 import cv2
@@ -48,16 +50,16 @@ class SegmentationDataModule(BaseDataModule):
         test_size: float = 0.3,
         val_size: float = 0.3,
         seed: int = 42,
-        dataset: Type[SegmentationDataset] = SegmentationDataset,
+        dataset: type[SegmentationDataset] = SegmentationDataset,
         batch_size: int = 32,
         num_workers: int = 6,
-        train_transform: Optional[albumentations.Compose] = None,
-        test_transform: Optional[albumentations.Compose] = None,
-        val_transform: Optional[albumentations.Compose] = None,
-        train_split_file: Optional[str] = None,
-        test_split_file: Optional[str] = None,
-        val_split_file: Optional[str] = None,
-        num_data_class: Optional[int] = None,
+        train_transform: albumentations.Compose | None = None,
+        test_transform: albumentations.Compose | None = None,
+        val_transform: albumentations.Compose | None = None,
+        train_split_file: str | None = None,
+        test_split_file: str | None = None,
+        val_split_file: str | None = None,
+        num_data_class: int | None = None,
         exclude_good: bool = False,
         **kwargs: Any,
     ):
@@ -104,7 +106,7 @@ class SegmentationDataModule(BaseDataModule):
 
         return 1
 
-    def _read_folder(self, data_path: str) -> Tuple[List[str], List[int], List[str]]:
+    def _read_folder(self, data_path: str) -> tuple[list[str], list[int], list[str]]:
         """Read a folder containing images and masks subfolders.
 
         Args:
@@ -137,7 +139,7 @@ class SegmentationDataModule(BaseDataModule):
 
         return samples, targets, masks
 
-    def _read_split(self, split_file: str) -> Tuple[List[str], List[int], List[str]]:
+    def _read_split(self, split_file: str) -> tuple[list[str], list[int], list[str]]:
         """Reads split file.
 
         Args:
@@ -147,7 +149,7 @@ class SegmentationDataModule(BaseDataModule):
             List of paths to images, List of labels.
         """
         samples, targets, masks = [], [], []
-        with open(split_file, "r") as f:
+        with open(split_file) as f:
             split = f.read().splitlines()
         for sample in split:
             sample_path = os.path.join(self.data_path, sample)
@@ -398,22 +400,22 @@ class SegmentationMulticlassDataModule(BaseDataModule):
     def __init__(
         self,
         data_path: str,
-        idx_to_class: Dict,
+        idx_to_class: dict,
         name: str = "multiclass_segmentation_datamodule",
-        dataset: Type[SegmentationDatasetMulticlass] = SegmentationDatasetMulticlass,
+        dataset: type[SegmentationDatasetMulticlass] = SegmentationDatasetMulticlass,
         batch_size: int = 32,
         test_size: float = 0.3,
         val_size: float = 0.3,
         seed: int = 42,
         num_workers: int = 6,
-        train_transform: Optional[albumentations.Compose] = None,
-        test_transform: Optional[albumentations.Compose] = None,
-        val_transform: Optional[albumentations.Compose] = None,
-        train_split_file: Optional[str] = None,
-        test_split_file: Optional[str] = None,
-        val_split_file: Optional[str] = None,
+        train_transform: albumentations.Compose | None = None,
+        test_transform: albumentations.Compose | None = None,
+        val_transform: albumentations.Compose | None = None,
+        train_split_file: str | None = None,
+        test_split_file: str | None = None,
+        val_split_file: str | None = None,
         exclude_good: bool = False,
-        num_data_train: Optional[int] = None,
+        num_data_train: int | None = None,
         one_hot_encoding: bool = False,
         **kwargs: Any,
     ):
@@ -471,7 +473,7 @@ class SegmentationMulticlassDataModule(BaseDataModule):
 
         return one_hot
 
-    def _read_folder(self, data_path: str) -> Tuple[List[str], List[np.ndarray], List[str]]:
+    def _read_folder(self, data_path: str) -> tuple[list[str], list[np.ndarray], list[str]]:
         """Read a folder containing images and masks subfolders.
 
         Args:
@@ -504,7 +506,7 @@ class SegmentationMulticlassDataModule(BaseDataModule):
 
         return samples, targets, masks
 
-    def _read_split(self, split_file: str) -> Tuple[List[str], List[np.ndarray], List[str]]:
+    def _read_split(self, split_file: str) -> tuple[list[str], list[np.ndarray], list[str]]:
         """Reads split file.
 
         Args:
@@ -514,7 +516,7 @@ class SegmentationMulticlassDataModule(BaseDataModule):
             List of paths to images, labels and mask paths.
         """
         samples, targets, masks = [], [], []
-        with open(split_file, "r") as f:
+        with open(split_file) as f:
             split = f.read().splitlines()
         for sample in split:
             sample_path = os.path.join(self.data_path, sample)

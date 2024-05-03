@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import os
 from pathlib import Path
-from typing import List, Tuple
 
 import numpy as np
 import torch
@@ -12,12 +13,12 @@ from quadra.utils.export import get_export_extension
 
 
 # taken from hydra unit tests
-def _random_image(size: Tuple[int, int] = (10, 10)) -> np.ndarray:
+def _random_image(size: tuple[int, int] = (10, 10)) -> np.ndarray:
     """Generate random image."""
     return np.random.randint(0, 255, size=size, dtype=np.uint8)
 
 
-def execute_quadra_experiment(overrides: List[str], experiment_path: Path) -> None:
+def execute_quadra_experiment(overrides: list[str], experiment_path: Path) -> None:
     """Execute quadra experiment."""
     with initialize_config_module(config_module="quadra.configs", version_base="1.3.0"):
         if not experiment_path.exists():
@@ -49,7 +50,7 @@ def get_quadra_test_device():
     return os.environ.get("QUADRA_TEST_DEVICE", "cpu")
 
 
-def setup_trainer_for_lightning() -> List[str]:
+def setup_trainer_for_lightning() -> list[str]:
     """Setup trainer for lightning depending on the device. If cuda is used, the device index is also set.
     If cpu is used, the trainer is set to lightning_cpu.
 

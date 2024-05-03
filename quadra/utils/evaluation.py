@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import os
 from ast import literal_eval
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -33,7 +35,7 @@ def dice(
     target: torch.Tensor,
     smooth: float = 1.0,
     eps: float = 1e-8,
-    reduction: Optional[str] = "mean",
+    reduction: str | None = "mean",
 ) -> torch.Tensor:
     """Dice loss computation function.
 
@@ -94,12 +96,12 @@ def calculate_mask_based_metrics(
     show_orj_predictions: bool = False,
     metric: Callable = score_dice,
     multilabel: bool = False,
-    n_classes: Optional[int] = None,
-) -> Tuple[
-    Dict[str, float],
-    Dict[str, List[np.ndarray]],
-    Dict[str, List[np.ndarray]],
-    Dict[str, List[Union[str, float]]],
+    n_classes: int | None = None,
+) -> tuple[
+    dict[str, float],
+    dict[str, list[np.ndarray]],
+    dict[str, list[np.ndarray]],
+    dict[str, list[str | float]],
 ]:
     """Calculate metrics based on masks and predictions.
 
@@ -154,13 +156,13 @@ def calculate_mask_based_metrics(
     result["num_good_image"] = 0
     result["num_bad_image"] = 0
     bad_dice, good_dice = [], []
-    fg: Dict[str, List[np.ndarray]] = {"image": [], "mask": [], "thresh_pred": []}
-    fb: Dict[str, List[np.ndarray]] = {"image": [], "mask": [], "thresh_pred": []}
+    fg: dict[str, list[np.ndarray]] = {"image": [], "mask": [], "thresh_pred": []}
+    fb: dict[str, list[np.ndarray]] = {"image": [], "mask": [], "thresh_pred": []}
     if show_orj_predictions:
         fg["pred"] = []
         fb["pred"] = []
 
-    area_graph: Dict[str, List[Union[str, float]]] = {
+    area_graph: dict[str, list[str | float]] = {
         "Defect Area Percentage": [],
         "Accuracy": [],
     }
@@ -220,7 +222,7 @@ def calculate_mask_based_metrics(
 
 def create_mask_report(
     stage: str,
-    output: Dict[str, torch.Tensor],
+    output: dict[str, torch.Tensor],
     mean: npt.ArrayLike,
     std: npt.ArrayLike,
     report_path: str,
@@ -231,7 +233,7 @@ def create_mask_report(
     threshold: float = 0.5,
     metric: Callable = score_dice,
     show_orj_predictions: bool = False,
-) -> List[str]:
+) -> list[str]:
     """Create report for segmentation experiment
     Args:
         stage: stage name. Train, validation or test

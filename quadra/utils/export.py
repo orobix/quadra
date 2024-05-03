@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import os
-from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, TypeVar, Union, cast
+from collections.abc import Sequence
+from typing import Any, Literal, TypeVar, cast
 
 import torch
 from anomalib.models.cflow import CflowLightning
@@ -29,12 +32,12 @@ BaseDeploymentModelT = TypeVar("BaseDeploymentModelT", bound=BaseEvaluationModel
 
 
 def generate_torch_inputs(
-    input_shapes: List[Any],
-    device: Union[str, torch.device],
+    input_shapes: list[Any],
+    device: str | torch.device,
     half_precision: bool = False,
     dtype: torch.dtype = torch.float32,
     batch_size: int = 1,
-) -> Union[List[Any], Tuple[Any, ...], torch.Tensor]:
+) -> list[Any] | tuple[Any, ...] | torch.Tensor:
     """Given a list of input shapes that can contain either lists, tuples or dicts, with tuples being the input shapes
     of the model, generate a list of torch tensors with the given device and dtype.
     """
@@ -71,11 +74,11 @@ def generate_torch_inputs(
 
 
 def extract_torch_model_inputs(
-    model: Union[nn.Module, ModelSignatureWrapper],
-    input_shapes: Optional[List[Any]] = None,
+    model: nn.Module | ModelSignatureWrapper,
+    input_shapes: list[Any] | None = None,
     half_precision: bool = False,
     batch_size: int = 1,
-) -> Optional[Tuple[Union[List[Any], Tuple[Any, ...], torch.Tensor], List[Any]]]:
+) -> tuple[list[Any] | tuple[Any, ...] | torch.Tensor, list[Any]] | None:
     """Extract the input shapes for the given model and generate a list of torch tensors with the
     given device and dtype.
 
@@ -85,9 +88,8 @@ def extract_torch_model_inputs(
         half_precision: If True, the model will be exported with half precision
         batch_size: Batch size for the input shapes
     """
-    if isinstance(model, ModelSignatureWrapper):
-        if input_shapes is None:
-            input_shapes = model.input_shapes
+    if isinstance(model, ModelSignatureWrapper) and input_shapes is None:
+        input_shapes = model.input_shapes
 
     if input_shapes is None:
         log.warning(
@@ -112,10 +114,10 @@ def extract_torch_model_inputs(
 def export_torchscript_model(
     model: nn.Module,
     output_path: str,
-    input_shapes: Optional[List[Any]] = None,
+    input_shapes: list[Any] | None = None,
     half_precision: bool = False,
     model_name: str = "model.pt",
-) -> Optional[Tuple[str, Any]]:
+) -> tuple[str, Any] | None:
     """Export a PyTorch model with TorchScript.
 
     Args:
@@ -175,10 +177,10 @@ def export_onnx_model(
     model: nn.Module,
     output_path: str,
     onnx_config: DictConfig,
-    input_shapes: Optional[List[Any]] = None,
+    input_shapes: list[Any] | None = None,
     half_precision: bool = False,
     model_name: str = "model.onnx",
-) -> Optional[Tuple[str, Any]]:
+) -> tuple[str, Any] | None:
     """Export a PyTorch model with ONNX.
 
     Args:
@@ -240,16 +242,15 @@ def export_onnx_model(
 
     if hasattr(onnx_config, "fixed_batch_size") and onnx_config.fixed_batch_size is not None:
         dynamic_axes = None
-    else:
-        if dynamic_axes is None:
-            dynamic_axes = {}
-            for i, _ in enumerate(input_names):
-                dynamic_axes[input_names[i]] = {0: "batch_size"}
+    elif dynamic_axes is None:
+        dynamic_axes = {}
+        for i, _ in enumerate(input_names):
+            dynamic_axes[input_names[i]] = {0: "batch_size"}
 
-            for i, _ in enumerate(output_names):
-                dynamic_axes[output_names[i]] = {0: "batch_size"}
+        for i, _ in enumerate(output_names):
+            dynamic_axes[output_names[i]] = {0: "batch_size"}
 
-    onnx_config = cast(Dict[str, Any], OmegaConf.to_container(onnx_config, resolve=True))
+    onnx_config = cast(dict[str, Any], OmegaConf.to_container(onnx_config, resolve=True))
 
     onnx_config["input_names"] = input_names
     onnx_config["output_names"] = output_names
@@ -331,10 +332,10 @@ def export_model(
     model: Any,
     export_folder: str,
     half_precision: bool,
-    input_shapes: Optional[List[Any]] = None,
-    idx_to_class: Optional[Dict[int, str]] = None,
+    input_shapes: list[Any] | None = None,
+    idx_to_class: dict[int, str] | None = None,
     pytorch_model_type: Literal["backbone", "model"] = "model",
-) -> Tuple[Dict[str, Any], Dict[str, str]]:
+) -> tuple[dict[str, Any], dict[str, str]]:
     """Generate deployment models for the task.
 
     Args:
@@ -427,7 +428,7 @@ def import_deployment_model(
     model_path: str,
     inference_config: DictConfig,
     device: str,
-    model_architecture: Optional[nn.Module] = None,
+    model_architecture: nn.Module | None = None,
 ) -> BaseEvaluationModel:
     """Try to import a model for deployment, currently only supports torchscript .pt files and
     state dictionaries .pth files.
@@ -444,7 +445,7 @@ def import_deployment_model(
     log.info("Importing trained model")
 
     file_extension = os.path.splitext(os.path.basename(model_path))[1]
-    deployment_model: Optional[BaseEvaluationModel] = None
+    deployment_model: BaseEvaluationModel | None = None
 
     if file_extension == ".pt":
         deployment_model = TorchscriptEvaluationModel(config=inference_config.torchscript)

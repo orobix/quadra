@@ -2,6 +2,8 @@
 Some of them are mostly based on https://github.com/ashleve/lightning-hydra-template.
 """
 
+from __future__ import annotations
+
 import glob
 import json
 import logging
@@ -9,7 +11,8 @@ import os
 import subprocess
 import sys
 import warnings
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, cast
+from collections.abc import Iterable, Iterator, Sequence
+from typing import Any, cast
 
 import cv2
 import dotenv
@@ -39,7 +42,7 @@ except ImportError:
     ONNX_AVAILABLE = False
 
 
-IMAGE_EXTENSIONS: List[str] = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pbm", ".pgm", ".ppm", ".pxm", ".pnm"]
+IMAGE_EXTENSIONS: list[str] = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pbm", ".pgm", ".ppm", ".pxm", ".pnm"]
 
 
 def get_logger(name=__name__) -> logging.Logger:
@@ -183,28 +186,23 @@ def log_hyperparameters(
     hparams["command"] = config.core.command
     hparams["library/version"] = str(quadra.__version__)
 
-    # pylint: disable=consider-using-with
-    if (
-        subprocess.call(
-            ["git", "-C", get_original_cwd(), "status"], stderr=subprocess.STDOUT, stdout=open(os.devnull, "w")
-        )
-        == 0
-    ):
-        try:
-            hparams["git/commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
-            hparams["git/branch"] = (
-                subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("ascii").strip()
-            )
-            hparams["git/remote"] = (
-                subprocess.check_output(["git", "remote", "get-url", "origin"]).decode("ascii").strip()
-            )
-        except subprocess.CalledProcessError:
-            log.warning(
-                "Could not get git commit, branch or remote information, the repository might not have any commits yet "
-                "or it might be initialized wrongly."
-            )
-    else:
-        log.warning("Could not find git repository, skipping git commit and branch info")
+    with open(os.devnull, "w") as fnull:
+        if subprocess.call(["git", "-C", get_original_cwd(), "status"], stderr=subprocess.STDOUT, stdout=fnull) == 0:
+            try:
+                hparams["git/commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
+                hparams["git/branch"] = (
+                    subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("ascii").strip()
+                )
+                hparams["git/remote"] = (
+                    subprocess.check_output(["git", "remote", "get-url", "origin"]).decode("ascii").strip()
+                )
+            except subprocess.CalledProcessError:
+                log.warning(
+                    "Could not get git commit, branch or remote information, the repository might not have any commits "
+                    " yet or it might have been initialized wrongly."
+                )
+        else:
+            log.warning("Could not find git repository, skipping git commit and branch info")
 
     # send hparams to all loggers
     trainer.logger.log_hyperparams(hparams)
@@ -221,18 +219,18 @@ def upload_file_tensorboard(file_path: str, tensorboard_logger: TensorBoardLogge
     ext = os.path.splitext(file_path)[1].lower()
 
     if ext == ".json":
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             json_content = json.load(f)
 
             json_content = f"```json\n{json.dumps(json_content, indent=4)}\n```"
             tensorboard_logger.experiment.add_text(tag=tag, text_string=json_content, global_step=0)
     elif ext in [".yaml", ".yml"]:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             yaml_content = f.read()
             yaml_content = f"```yaml\n{yaml_content}\n```"
             tensorboard_logger.experiment.add_text(tag=tag, text_string=yaml_content, global_step=0)
     else:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             tensorboard_logger.experiment.add_text(tag=tag, text_string=f.read().replace("\n", "  \n"), global_step=0)
 
     tensorboard_logger.experiment.flush()
@@ -243,8 +241,8 @@ def finish(
     module: pl.LightningModule,
     datamodule: pl.LightningDataModule,
     trainer: pl.Trainer,
-    callbacks: List[pl.Callback],
-    logger: List[pl.loggers.Logger],
+    callbacks: list[pl.Callback],
+    logger: list[pl.loggers.Logger],
     export_folder: str,
 ) -> None:
     """Upload config files to MLFlow server.
@@ -284,10 +282,10 @@ def finish(
                 )
 
             deployed_models = glob.glob(os.path.join(export_folder, "*"))
-            model_json: Optional[Dict[str, Any]] = None
+            model_json: dict[str, Any] | None = None
 
             if os.path.exists(os.path.join(export_folder, "model.json")):
-                with open(os.path.join(export_folder, "model.json"), "r") as json_file:
+                with open(os.path.join(export_folder, "model.json")) as json_file:
                     model_json = json.load(json_file)
 
             if model_json is not None:
@@ -297,7 +295,7 @@ def finish(
                     # Input size is not a list of lists
                     input_size = [input_size]
                 inputs = cast(
-                    List[Any],
+                    list[Any],
                     quadra_export.generate_torch_inputs(input_size, device=device, half_precision=half_precision),
                 )
                 types_to_upload = config.core.get("upload_models")
@@ -353,7 +351,7 @@ def finish(
             tensorboard_logger.experiment.flush()
 
 
-def load_envs(env_file: Optional[str] = None) -> None:
+def load_envs(env_file: str | None = None) -> None:
     """Load all the environment variables defined in the `env_file`.
     This is equivalent to `. env_file` in bash.
 
@@ -366,7 +364,7 @@ def load_envs(env_file: Optional[str] = None) -> None:
     dotenv.load_dotenv(dotenv_path=env_file, override=True)
 
 
-def model_type_from_path(model_path: str) -> Optional[str]:
+def model_type_from_path(model_path: str) -> str | None:
     """Determine the type of the machine learning model based on its file extension.
 
     Parameters:
@@ -422,7 +420,7 @@ def get_device(cuda: bool = True) -> str:
     return "cpu"
 
 
-def nested_set(dic: Dict, keys: List[str], value: str) -> None:
+def nested_set(dic: dict, keys: list[str], value: str) -> None:
     """Assign the value of a dictionary using nested keys."""
     for key in keys[:-1]:
         dic = dic.setdefault(key, {})
@@ -430,16 +428,16 @@ def nested_set(dic: Dict, keys: List[str], value: str) -> None:
     dic[keys[-1]] = value
 
 
-def flatten_list(l: Iterable[Any]) -> Iterator[Any]:
+def flatten_list(input_list: Iterable[Any]) -> Iterator[Any]:
     """Return an iterator over the flattened list.
 
     Args:
-        l: the list to be flattened
+        input_list: the list to be flattened
 
     Yields:
-        Iterator[Any]: the iterator over the flattend list
+        The iterator over the flattend list
     """
-    for v in l:
+    for v in input_list:
         if isinstance(v, Iterable) and not isinstance(v, (str, bytes)):
             yield from flatten_list(v)
         else:
@@ -451,9 +449,8 @@ class HydraEncoder(json.JSONEncoder):
 
     def default(self, o):
         """Convert OmegaConf objects to base python objects."""
-        if o is not None:
-            if OmegaConf.is_config(o):
-                return OmegaConf.to_container(o)
+        if o is not None and OmegaConf.is_config(o):
+            return OmegaConf.to_container(o)
         return json.JSONEncoder.default(self, o)
 
 
@@ -508,7 +505,7 @@ def concat_all_gather(tensor):
     return output
 
 
-def get_tensorboard_logger(trainer: pl.Trainer) -> Optional[TensorBoardLogger]:
+def get_tensorboard_logger(trainer: pl.Trainer) -> TensorBoardLogger | None:
     """Safely get tensorboard logger from Lightning Trainer loggers.
 
     Args:

@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from torch import nn
 
@@ -11,8 +11,8 @@ class BaseNetworkBuilder(nn.Module):
 
     Args:
         features_extractor: Feature extractor as a toch.nn.Module.
-        pre_classifier: Pre classifier as a torch.nn.Module. Defaults to nn.Identity().
-        classifier: Classifier as a torch.nn.Module. Defaults to nn.Identity().
+        pre_classifier: Pre classifier as a torch.nn.Module. Defaults to nn.Identity() if None.
+        classifier: Classifier as a torch.nn.Module. Defaults to nn.Identity() if None.
         freeze: Whether to freeze the feature extractor. Defaults to True.
         hyperspherical: Whether to map features to an hypersphere. Defaults to False.
         flatten_features: Whether to flatten the features before the pre_classifier. May be required if your model
@@ -22,13 +22,19 @@ class BaseNetworkBuilder(nn.Module):
     def __init__(
         self,
         features_extractor: nn.Module,
-        pre_classifier: nn.Module = nn.Identity(),
-        classifier: nn.Module = nn.Identity(),
+        pre_classifier: nn.Module | None = None,
+        classifier: nn.Module | None = None,
         freeze: bool = True,
         hyperspherical: bool = False,
         flatten_features: bool = True,
     ):
         super().__init__()
+        if pre_classifier is None:
+            pre_classifier = nn.Identity()
+
+        if classifier is None:
+            classifier = nn.Identity()
+
         self.features_extractor = features_extractor
         self.freeze = freeze
         self.hyperspherical = hyperspherical
@@ -36,7 +42,7 @@ class BaseNetworkBuilder(nn.Module):
         self.classifier = classifier
         self.flatten: bool = False
         self._hyperspherical: bool = False
-        self.l2: Optional[L2Norm] = None
+        self.l2: L2Norm | None = None
         self.flatten_features = flatten_features
 
         self.freeze = freeze

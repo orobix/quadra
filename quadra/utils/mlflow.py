@@ -8,7 +8,8 @@ try:
 except ImportError:
     MLFLOW_AVAILABLE = False
 
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import torch
 from pytorch_lightning import Trainer

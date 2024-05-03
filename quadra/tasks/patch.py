@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, cast
+from typing import Any, cast
 
 import hydra
 import torch
@@ -48,11 +50,11 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         self.device: str = device
         self.output: DictConfig = output
         self.return_polygon: bool = True
-        self.reconstruction_results: Dict[str, Any]
+        self.reconstruction_results: dict[str, Any]
         self._backbone: ModelSignatureWrapper
         self._trainer: SklearnClassificationTrainer
         self._model: ClassifierMixin
-        self.metadata: Dict[str, Any] = {
+        self.metadata: dict[str, Any] = {
             "test_confusion_matrix": [],
             "test_accuracy": [],
             "test_results": [],
@@ -131,9 +133,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         self.datamodule.setup(stage="fit")
         class_to_keep = None
         if hasattr(self.datamodule, "class_to_skip_training") and self.datamodule.class_to_skip_training is not None:
-            class_to_keep = [
-                x for x in self.datamodule.class_to_idx.keys() if x not in self.datamodule.class_to_skip_training
-            ]
+            class_to_keep = [x for x in self.datamodule.class_to_idx if x not in self.datamodule.class_to_skip_training]
 
         self.model = self.config.model
         self.trainer.change_classifier(self.model)
@@ -165,7 +165,7 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
 
         datamodule: PatchSklearnClassificationDataModule = self.datamodule
-        val_img_info: List[PatchDatasetFileFormat] = datamodule.info.val_files
+        val_img_info: list[PatchDatasetFileFormat] = datamodule.info.val_files
         for img_info in val_img_info:
             if not os.path.isabs(img_info.image_path):
                 img_info.image_path = os.path.join(datamodule.data_path, img_info.image_path)
@@ -293,16 +293,16 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
         self.output = output
         self._backbone: BaseEvaluationModel
         self._classifier: ClassifierMixin
-        self.class_to_idx: Dict[str, int]
-        self.idx_to_class: Dict[int, str]
-        self.metadata: Dict[str, Any] = {
+        self.class_to_idx: dict[str, int]
+        self.idx_to_class: dict[int, str]
+        self.metadata: dict[str, Any] = {
             "test_confusion_matrix": None,
             "test_accuracy": None,
             "test_results": None,
             "test_labels": None,
         }
-        self.class_to_skip: List[str] = []
-        self.reconstruction_results: Dict[str, Any]
+        self.class_to_skip: list[str] = []
+        self.reconstruction_results: dict[str, Any]
         self.return_polygon: bool = True
 
     def prepare(self) -> None:
@@ -336,7 +336,7 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
         class_to_keep = None
 
         if self.class_to_skip is not None:
-            class_to_keep = [x for x in self.datamodule.class_to_idx.keys() if x not in self.class_to_skip]
+            class_to_keep = [x for x in self.datamodule.class_to_idx if x not in self.class_to_skip]
         _, pd_cm, accuracy, res, _ = self.trainer.test(
             test_dataloader=test_dataloader,
             idx_to_class=self.idx_to_class,
