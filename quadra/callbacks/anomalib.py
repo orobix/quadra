@@ -249,9 +249,10 @@ class VisualizerCallback(Callback):
 
             if self.plot_raw_outputs:
                 for raw_output, raw_name in zip([heatmap, vis_img], ["heatmap", "segmentation"]):
+                    current_raw_output = raw_output
                     if raw_name == "segmentation":
                         current_raw_output = (raw_output * 255).astype(np.uint8)
-                    current_raw_output = cv2.cvtColor(raw_output, cv2.COLOR_RGB2BGR)
+                    current_raw_output = cv2.cvtColor(current_raw_output, cv2.COLOR_RGB2BGR)
                     raw_filename = (
                         Path(self.output_path)
                         / "images"
