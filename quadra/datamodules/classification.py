@@ -384,7 +384,7 @@ class ClassificationDataModule(BaseDataModule):
         return DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
-            shuffle=True,
+            shuffle=False,
             num_workers=self.num_workers,
             drop_last=False,
             pin_memory=True,
@@ -965,9 +965,9 @@ class MultilabelClassificationDataModule(BaseDataModule):
         if not self.val_dataset_available:
             raise ValueError("Validation dataset is not initialized")
         return DataLoader(
-            self.train_dataset,
+            self.val_dataset,
             batch_size=self.batch_size,
-            shuffle=True,
+            shuffle=False,
             num_workers=self.num_workers,
             drop_last=False,
             pin_memory=True,

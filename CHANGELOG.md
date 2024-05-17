@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.5]
+
+#### Fixed
+
+- Fix classification val_dataloader shuffling data when it shouldn't
+
 ### [2.1.4]
 
 #### Updated
