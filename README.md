@@ -97,7 +97,7 @@ source myenv/bin/activate
 
     * **Install the `quadra` package** with poetry:
       ```shell
-      pip install poetry
+      curl -sSL https://install.python-poetry.org | python3 -
       poetry add git+https://github.com/orobix/quadra.git
       ```
 
@@ -241,9 +241,15 @@ First clone the repository from Github
 First clone the repository from `Github`, then we need to install the package with optional dependencies (generally in editable mode) and enable the pre-commit hooks.
 
 1. `git clone https://github.com/orobix/quadra.git && cd quadra` 
-1. Install `quadra` package in editable mode `poetry install --with test,dev,docs --all-extras`
-2. Install pre-commit hooks `pre-commit install`
-3. (Optional) Eventually build documentation by calling required commands (see below).
+2. Install poetry `curl -sSL https://install.python-poetry.org | python3 -`
+3. Install the required poetry plugins
+  ```
+  poetry self add poetry-bumpversion
+  poetry self add poetry-dotenv-plugin
+  ```
+4. Install `quadra` package in editable mode `poetry install --with test,dev,docs --all-extras`
+5. Install pre-commit hooks `pre-commit install`
+6. (Optional) Eventually build documentation by calling required commands (see below).
 
 Now you can start developing and the pre-commit hooks will run automatically to prevent you from committing code that does not pass the linting and formatting checks.
 

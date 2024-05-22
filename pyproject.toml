@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quadra"
-version = "2.1.5"
+version = "2.1.6"
 description = "Deep Learning experiment orchestration library"
 authors = [
 	"Federico Belotti <federico.belotti@orobix.com>",
@@ -39,7 +39,6 @@ quadra = "quadra.main:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
-poetry = "1.7.1"
 
 torch = [
 	{ url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp310-cp310-linux_x86_64.whl", markers = "sys_platform == 'linux' and python_version == '3.10'" },
@@ -111,7 +110,7 @@ types_pyyaml = "~6.0.12"
 mypy = "^1.9.0"
 pandas_stubs = "~1.5.3"
 twine = "~4.0"
-poetry-bumpversion = "~0.3"
+
 
 # Test dependencies
 [tool.poetry.group.test]
