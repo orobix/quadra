@@ -2,6 +2,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.6]
+
+#### Updated
+
+- Remove poetry dependencies from quadra toml
+- Update readme to explain how to use poetry properly
+
 ### [2.1.5]
 
 #### Fixed
