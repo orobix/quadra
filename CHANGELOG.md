@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.7]
+
+#### Fixed
+
+- Fix lightning implementation of batch size finder not working properly when the initial batch size is bigger than the dataset length, now also the code checks that the last iteration works properly.
+
 ### [2.1.6]
 
 #### Updated
