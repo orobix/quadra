@@ -7,6 +7,7 @@ from typing import Any, Literal, TypeVar, cast
 import torch
 from anomalib.models.cflow import CflowLightning
 from omegaconf import DictConfig, ListConfig, OmegaConf
+from onnxconverter_common import auto_convert_mixed_precision
 from torch import nn
 
 from quadra.models.base import ModelSignatureWrapper
@@ -250,14 +251,14 @@ def export_onnx_model(
         for i, _ in enumerate(output_names):
             dynamic_axes[output_names[i]] = {0: "batch_size"}
 
-    onnx_config = cast(dict[str, Any], OmegaConf.to_container(onnx_config, resolve=True))
+    modified_onnx_config = cast(dict[str, Any], OmegaConf.to_container(onnx_config, resolve=True))
 
-    onnx_config["input_names"] = input_names
-    onnx_config["output_names"] = output_names
-    onnx_config["dynamic_axes"] = dynamic_axes
+    modified_onnx_config["input_names"] = input_names
+    modified_onnx_config["output_names"] = output_names
+    modified_onnx_config["dynamic_axes"] = dynamic_axes
 
-    simplify = onnx_config.pop("simplify", False)
-    _ = onnx_config.pop("fixed_batch_size", None)
+    simplify = modified_onnx_config.pop("simplify", False)
+    _ = modified_onnx_config.pop("fixed_batch_size", None)
 
     if len(inp) == 1:
         inp = inp[0]
@@ -269,7 +270,7 @@ def export_onnx_model(
         raise ValueError("ONNX export does not support model with dict inputs")
 
     try:
-        torch.onnx.export(model=model, args=inp, f=model_path, **onnx_config)
+        torch.onnx.export(model=model, args=inp, f=model_path, **modified_onnx_config)
 
         onnx_model = onnx.load(model_path)
         # Check if ONNX model is valid
@@ -279,6 +280,19 @@ def export_onnx_model(
         return None
 
     log.info("ONNX model saved to %s", os.path.join(os.getcwd(), model_path))
+
+    if half_precision:
+        is_export_ok = _safe_export_half_precision_onnx(
+            model=model,
+            export_model_path=model_path,
+            inp=inp,
+            onnx_config=onnx_config,
+            input_shapes=input_shapes,
+            input_names=input_names,
+        )
+
+        if not is_export_ok:
+            return None
 
     if simplify:
         log.info("Attempting to simplify ONNX model")
@@ -300,6 +314,82 @@ def export_onnx_model(
             log.info("Simplified ONNX model saved to %s", os.path.join(os.getcwd(), model_path))
 
     return os.path.join(os.getcwd(), model_path), input_shapes
+
+
+def _safe_export_half_precision_onnx(
+    model: nn.Module,
+    export_model_path: str,
+    inp: torch.Tensor | list[torch.Tensor] | tuple[torch.Tensor, ...],
+    onnx_config: DictConfig,
+    input_shapes: list[Any],
+    input_names: list[str],
+):
+    """Check that the exported half precision ONNX model does not contain NaN values. If it does, attempt to export
+    the model with a more stable export and overwrite the original model.
+
+    Args:
+        model: PyTorch model to be exported
+        export_model_path: Path to save the model
+        inp: Input tensors for the model
+        onnx_config: ONNX export configuration
+        input_shapes: Input shapes for the model
+        input_names: Input names for the model
+
+    Returns:
+        True if the model is stable or it was possible to export a more stable model, False otherwise.
+    """
+    test_fp_16_model: BaseEvaluationModel = import_deployment_model(
+        export_model_path, OmegaConf.create({"onnx": {}}), "cuda:0"
+    )
+    if not isinstance(inp, Sequence):
+        inp = [inp]
+
+    test_output = test_fp_16_model(*inp)
+
+    if not isinstance(test_output, Sequence):
+        test_output = [test_output]
+
+    # Check if there are nan values in any of the outputs
+    is_broken_model = any(torch.isnan(out).any() for out in test_output)
+
+    if is_broken_model:
+        try:
+            log.warning(
+                "The exported half precision ONNX model contains NaN values, attempting with a more stable export..."
+            )
+            # Cast back the fp16 model to fp32 to simulate the export with fp32
+            model = model.float()
+            log.info("Starting to export model in full precision")
+            export_output = export_onnx_model(
+                model=model,
+                output_path=os.path.dirname(export_model_path),
+                onnx_config=onnx_config,
+                input_shapes=input_shapes,
+                half_precision=False,
+                model_name=os.path.basename(export_model_path),
+            )
+            if export_output is not None:
+                export_model_path, _ = export_output
+            else:
+                log.warning("Failed to export model")
+                return False
+
+            model_fp32 = onnx.load(export_model_path)
+            test_data = {input_names[i]: inp[i].float().cpu().numpy() for i in range(len(inp))}
+            log.warning("Attempting to convert model in mixed precision, this may take a while...")
+            model_fp16 = auto_convert_mixed_precision(model_fp32, test_data, rtol=0.01, atol=0.001, keep_io_types=False)
+            onnx.save(model_fp16, export_model_path)
+
+            onnx_model = onnx.load(export_model_path)
+            # Check if ONNX model is valid
+            onnx.checker.check_model(onnx_model)
+            return True
+        except Exception as e:
+            log.debug("Failed to export model with mixed precision with error: %s", e)
+            return False
+    else:
+        log.info("Exported half precision ONNX model does not contain NaN values, model is stable")
+        return True
 
 
 def export_pytorch_model(model: nn.Module, output_path: str, model_name: str = "model.pth") -> str:
