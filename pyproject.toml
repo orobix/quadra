@@ -86,6 +86,7 @@ typing_extensions = { version = "4.11.0", python = "<3.10" }
 onnx = { version = "1.15.0", optional = true }
 onnxsim = { version = "0.4.28", optional = true }
 onnxruntime_gpu = { version = "1.17.0", optional = true, source = "onnx_cu12" }
+onnxconverter-common = { version = "^1.14.0", optional = true }
 
 [[tool.poetry.source]]
 name = "torch_cu121"
@@ -141,7 +142,7 @@ mike = "1.1.2"
 cairosvg = "2.7.0"
 
 [tool.poetry.extras]
-onnx = ["onnx", "onnxsim", "onnxruntime_gpu"]
+onnx = ["onnx", "onnxsim", "onnxruntime_gpu", "onnxconverter-common"]
 
 [tool.poetry_bumpversion.file."quadra/__init__.py"]
 search = '__version__ = "{current_version}"'
