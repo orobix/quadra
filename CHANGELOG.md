@@ -2,6 +2,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.8]
+
+#### Added
+
+- Add onnxconverter-common to the dependencies in order to allow exporting onnx models in mixed precision if issues
+are encountered exporting the model entirely in half precision.
+
 ### [2.1.7]
 
 #### Fixed
