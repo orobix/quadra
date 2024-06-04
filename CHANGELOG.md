@@ -2,6 +2,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.9]
+
+#### Updated
+
+- Update anomalib to v0.7.0+obx.1.3.3
+- Update network builders to support loading model checkpoints from disk
+
 ### [2.1.8]
 
 #### Added
