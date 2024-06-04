@@ -4,10 +4,14 @@ from typing import Any
 
 import timm
 import torch
+from timm.models.helpers import load_checkpoint
 from torch import nn
 from torchvision import models
 
 from quadra.models.classification.base import BaseNetworkBuilder
+from quadra.utils.logger import get_logger
+
+log = get_logger(__name__)
 
 
 class TorchHubNetworkBuilder(BaseNetworkBuilder):
@@ -22,6 +26,7 @@ class TorchHubNetworkBuilder(BaseNetworkBuilder):
         freeze: Whether to freeze the feature extractor. Defaults to True.
         hyperspherical: Whether to map features to an hypersphere. Defaults to False.
         flatten_features: Whether to flatten the features before the pre_classifier. Defaults to True.
+        checkpoint_path: Path to a checkpoint to load after the model is initialized. Defaults to None.
         **torch_hub_kwargs: Additional arguments to pass to torch.hub.load
     """
 
@@ -35,12 +40,17 @@ class TorchHubNetworkBuilder(BaseNetworkBuilder):
         freeze: bool = True,
         hyperspherical: bool = False,
         flatten_features: bool = True,
+        checkpoint_path: str | None = None,
         **torch_hub_kwargs: Any,
     ):
         self.pretrained = pretrained
         features_extractor = torch.hub.load(
             repo_or_dir=repo_or_dir, model=model_name, pretrained=self.pretrained, **torch_hub_kwargs
         )
+        if checkpoint_path:
+            log.info("Loading checkpoint from %s", checkpoint_path)
+            load_checkpoint(model=features_extractor, checkpoint_path=checkpoint_path)
+
         super().__init__(
             features_extractor=features_extractor,
             pre_classifier=pre_classifier,
@@ -62,6 +72,7 @@ class TorchVisionNetworkBuilder(BaseNetworkBuilder):
         freeze: Whether to freeze the feature extractor. Defaults to True.
         hyperspherical: Whether to map features to an hypersphere. Defaults to False.
         flatten_features: Whether to flatten the features before the pre_classifier. Defaults to True.
+        checkpoint_path: Path to a checkpoint to load after the model is initialized. Defaults to None.
         **torchvision_kwargs: Additional arguments to pass to the model function.
     """
 
@@ -74,11 +85,16 @@ class TorchVisionNetworkBuilder(BaseNetworkBuilder):
         freeze: bool = True,
         hyperspherical: bool = False,
         flatten_features: bool = True,
+        checkpoint_path: str | None = None,
         **torchvision_kwargs: Any,
     ):
         self.pretrained = pretrained
         model_function = models.__dict__[model_name]
         features_extractor = model_function(pretrained=self.pretrained, progress=True, **torchvision_kwargs)
+        if checkpoint_path:
+            log.info("Loading checkpoint from %s", checkpoint_path)
+            load_checkpoint(model=features_extractor, checkpoint_path=checkpoint_path)
+
         # Remove classifier
         features_extractor.classifier = nn.Identity()
         super().__init__(
@@ -102,6 +118,7 @@ class TimmNetworkBuilder(BaseNetworkBuilder):
         freeze: Whether to freeze the feature extractor. Defaults to True.
         hyperspherical: Whether to map features to an hypersphere. Defaults to False.
         flatten_features: Whether to flatten the features before the pre_classifier. Defaults to True.
+        checkpoint_path: Path to a checkpoint to load after the model is initialized. Defaults to None.
         **timm_kwargs: Additional arguments to pass to timm.create_model
     """
 
@@ -114,10 +131,13 @@ class TimmNetworkBuilder(BaseNetworkBuilder):
         freeze: bool = True,
         hyperspherical: bool = False,
         flatten_features: bool = True,
+        checkpoint_path: str | None = None,
         **timm_kwargs: Any,
     ):
         self.pretrained = pretrained
-        features_extractor = timm.create_model(model_name, pretrained=self.pretrained, num_classes=0, **timm_kwargs)
+        features_extractor = timm.create_model(
+            model_name, pretrained=self.pretrained, num_classes=0, checkpoint_path=checkpoint_path, **timm_kwargs
+        )
 
         super().__init__(
             features_extractor=features_extractor,
