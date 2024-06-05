@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.10]
+
+#### Fixed
+
+- Fix anomaly visualizer callback showing wrong heatmaps after anomaly score refactoring
+
 ### [2.1.9]
 
 #### Updated
