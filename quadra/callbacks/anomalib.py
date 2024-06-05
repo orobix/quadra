@@ -22,6 +22,8 @@ from pytorch_lightning.utilities.types import STEP_OUTPUT
 from skimage.segmentation import mark_boundaries
 from tqdm import tqdm
 
+from quadra.utils.anomaly import MapOrValue
+
 
 class Visualizer:
     """Anomaly Visualization.
@@ -204,6 +206,12 @@ class VisualizerCallback(Callback):
             denormalized_image = Denormalize()(image.cpu())
             current_true_mask = true_mask.cpu().numpy()
             current_anomaly_map = anomaly_map.cpu().numpy()
+            # Normalize the map and rescale it to 0-1 range
+            # In this case we are saying that the anomaly map is in the range [normalized_th - 50, normalized_th + 50]
+            # This allow to have a stronger color for the anomalies and a lighter one for really normal regions
+            # It's also independent from the max or min anomaly score!
+            normalized_map: MapOrValue = (current_anomaly_map - (threshold - 50)) / 100
+            normalized_map = np.clip(normalized_map, 0, 1)
 
             output_label_folder = "ok" if pred_label == gt_label else "wrong"
 
@@ -211,7 +219,7 @@ class VisualizerCallback(Callback):
                 continue
 
             heatmap = superimpose_anomaly_map(
-                current_anomaly_map, denormalized_image, normalize=not self.inputs_are_normalized
+                normalized_map, denormalized_image, normalize=not self.inputs_are_normalized
             )
 
             if isinstance(threshold, float):
