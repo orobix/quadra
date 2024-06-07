@@ -12,3 +12,9 @@ hydra:
         exclude_keys:
           - trainer.devices
     chdir: true
+    env_set:
+      OMP_NUM_THREADS: 8
+      OPENBLAS_NUM_THREADS: 8
+      MKL_NUM_THREADS: 8
+      VECLIB_MAXIMUM_THREADS: 8
+      NUMEXPR_NUM_THREADS: 8
