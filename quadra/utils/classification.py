@@ -601,11 +601,12 @@ def automatic_batch_size_computation(
             log.info("Trying batch size: %d", datamodule.batch_size)
             _ = get_feature(feature_extractor=backbone, dl=base_dataloader, iteration_over_training=1, limit_batches=1)
         except RuntimeError as e:
-            if "CUDA out of memory" in str(e):
+            if batch_size > 1:
                 batch_size = batch_size // 2
                 optimal = False
                 continue
 
+            log.error("Unable to run the model with batch size 1")
             raise e
 
         log.info("Found optimal batch size: %d", datamodule.batch_size)

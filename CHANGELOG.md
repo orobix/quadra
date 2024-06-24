@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.11]
+
+#### Fixed
+
+- Fix sklearn automatic batch finder not working properly with ONNX backbones
+
 ### [2.1.10]
 
 #### Fixed
