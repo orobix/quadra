@@ -386,10 +386,11 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 batch_labels = batch_item["label"]
                 image_labels.extend(batch_labels.tolist())
                 image_paths.extend(batch_item["image_path"])
+                batch_images = batch_images.to(device=self.device, dtype=self.deployment_model.model_dtype)
                 if self.model_data.get("anomaly_method") == "efficientad":
-                    model_output = self.deployment_model(batch_images.to(self.device), None)
+                    model_output = self.deployment_model(batch_images, None)
                 else:
-                    model_output = self.deployment_model(batch_images.to(self.device))
+                    model_output = self.deployment_model(batch_images)
                 anomaly_map, anomaly_score = model_output[0], model_output[1]
                 anomaly_map = anomaly_map.cpu()
                 anomaly_score = anomaly_score.cpu()
