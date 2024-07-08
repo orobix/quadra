@@ -1169,7 +1169,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         with torch.set_grad_enabled(self.gradcam):
             for batch_item in tqdm(test_dataloader):
                 im, target = batch_item
-                im = im.to(self.device).detach()
+                im = im.to(self.device).to(self.deployment_model.model_dtype).detach()
 
                 if self.gradcam:
                     # When gradcam is used we need to remove gradients

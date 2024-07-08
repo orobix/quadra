@@ -346,10 +346,7 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
             image_list, mask_list, mask_pred_list, label_list = [], [], [], []
             for batch in dataloader:
                 images, masks, labels = batch
-                images = images.to(self.device)
-                # TODO: This can be problematic for the future considering bfloat16 or float16-true.
-                if "16" in str(self.deployment_model.model_dtype):
-                    images = images.half()
+                images = images.to(self.device).to(self.deployment_model.model_dtype)
                 if len(masks.shape) == 3:  # BxHxW -> Bx1xHxW
                     masks = masks.unsqueeze(1)
                 with torch.no_grad():
