@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.12]
+
+#### Fixed
+
+- Fix wrong dtype used when evaluating finetuning or anomaly models trained in fp16 precision
+
 ### [2.1.11]
 
 #### Fixed
