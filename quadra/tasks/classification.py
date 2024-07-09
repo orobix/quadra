@@ -41,7 +41,6 @@ from quadra.tasks.base import Evaluation, LightningTask, Task
 from quadra.trainers.classification import SklearnClassificationTrainer
 from quadra.utils import utils
 from quadra.utils.classification import (
-    automatic_batch_size_computation,
     get_results,
     save_classification_result,
 )
@@ -539,15 +538,6 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="fit")
 
-        if not self.automatic_batch_size.disable and self.device != "cpu":
-            self.datamodule.batch_size = automatic_batch_size_computation(
-                datamodule=self.datamodule,
-                backbone=self.backbone,
-                starting_batch_size=self.automatic_batch_size.starting_batch_size,
-            )
-
-        self.train_dataloader_list = list(self.datamodule.train_dataloader())
-        self.test_dataloader_list = list(self.datamodule.val_dataloader())
         self.trainer = self.config.trainer
 
     @property
@@ -601,6 +591,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self._trainer = trainer
 
     @typing.no_type_check
+    @automatic_datamodule_batch_size(batch_size_attribute_name="batch_size")
     def train(self) -> None:
         """Train the model."""
         log.info("Starting training...!")
@@ -608,6 +599,9 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         all_labels = None
 
         class_to_keep = None
+
+        self.train_dataloader_list = list(self.datamodule.train_dataloader())
+        self.test_dataloader_list = list(self.datamodule.val_dataloader())
 
         if hasattr(self.datamodule, "class_to_keep_training") and self.datamodule.class_to_keep_training is not None:
             class_to_keep = self.datamodule.class_to_keep_training
@@ -729,6 +723,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
 
             break
 
+    @automatic_datamodule_batch_size(batch_size_attribute_name="batch_size")
     def train_full_data(self):
         """Train the model on train + validation."""
         # Reinit classifier
@@ -743,6 +738,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         # train module to handle cross validation
 
     @typing.no_type_check
+    @automatic_datamodule_batch_size(batch_size_attribute_name="batch_size")
     def test_full_data(self) -> None:
         """Test model trained on full dataset."""
         self.config.datamodule.class_to_idx = self.datamodule.full_dataset.class_to_idx

@@ -2,6 +2,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.1.13]
+
+- Improve safe batch size computation for sklearn based classification tasks
+
 ### [2.1.12]
 
 #### Fixed
