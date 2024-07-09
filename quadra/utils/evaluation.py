@@ -418,6 +418,28 @@ def automatic_datamodule_batch_size(batch_size_attribute_name: str = "batch_size
         def wrapper(self, *args, **kwargs):
             """Wrapper function."""
             is_func_finished = False
+            starting_batch_size = None
+            automatic_batch_size_completed = False
+
+            if hasattr(self, "automatic_batch_size_completed"):
+                automatic_batch_size_completed = self.automatic_batch_size_completed
+
+            if hasattr(self, "automatic_batch_size"):
+                if not hasattr(self.automatic_batch_size, "disable") or not hasattr(
+                    self.automatic_batch_size, "starting_batch_size"
+                ):
+                    raise ValueError(
+                        "The automatic_batch_size attribute should have the disable and starting_batch_size attributes"
+                    )
+                starting_batch_size = (
+                    self.automatic_batch_size.starting_batch_size if not self.automatic_batch_size.disable else None
+                )
+
+            if starting_batch_size is not None and not automatic_batch_size_completed:
+                # If we already tried to reduce the batch size, we will start from the last batch size
+                log.info("Performing automatic batch size scaling from %d", starting_batch_size)
+                setattr(self.datamodule, batch_size_attribute_name, starting_batch_size)
+
             while not is_func_finished:
                 valid_exceptions = (RuntimeError,)
 
@@ -426,25 +448,26 @@ def automatic_datamodule_batch_size(batch_size_attribute_name: str = "batch_size
 
                 try:
                     func(self, *args, **kwargs)
+                    is_func_finished = True
+                    self.automatic_batch_size_completed = True
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
                 except valid_exceptions as e:
-                    if "out of memory" in str(e) or "Failed to allocate memory" in str(e):
-                        current_batch_size = getattr(self.datamodule, batch_size_attribute_name)
-                        setattr(self.datamodule, batch_size_attribute_name, current_batch_size // 2)
-                        log.warning(
-                            "The function %s went out of memory, trying to reduce the batch size to %d",
-                            func.__name__,
-                            self.datamodule.batch_size,
-                        )
+                    current_batch_size = getattr(self.datamodule, batch_size_attribute_name)
+                    setattr(self.datamodule, batch_size_attribute_name, current_batch_size // 2)
+                    log.warning(
+                        "The function %s went out of memory, trying to reduce the batch size to %d",
+                        func.__name__,
+                        self.datamodule.batch_size,
+                    )
 
-                        if self.datamodule.batch_size == 0:
-                            raise RuntimeError(
-                                f"Unable to run {func.__name__} with batch size 1, the program will exit"
-                            ) from e
-                        continue
+                    if self.datamodule.batch_size == 0:
+                        raise RuntimeError(
+                            f"Unable to run {func.__name__} with batch size 1, the program will exit"
+                        ) from e
 
-                    raise e
-
-                is_func_finished = True
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
 
         return wrapper
 
