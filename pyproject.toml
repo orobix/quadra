@@ -40,12 +40,7 @@ quadra = "quadra.main:main"
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 
-torch = [
-	{ url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp310-cp310-linux_x86_64.whl", markers = "sys_platform == 'linux' and python_version == '3.10'" },
-	{ url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp310-cp310-win_amd64.whl", markers = "sys_platform == 'win32' and python_version == '3.10'" },
-	{ url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp39-cp39-linux_x86_64.whl", markers = "sys_platform == 'linux' and python_version == '3.9'" },
-	{ url = "https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp39-cp39-win_amd64.whl", markers = "sys_platform == 'win32' and python_version == '3.9'" },
-]
+torch = { version = "2.1.2", source = "torch_cu121" }
 torchvision = { version = "~0.16", source = "torch_cu121" }
 
 pytorch_lightning = "~2.1"
@@ -75,9 +70,9 @@ scikit_multilearn = "~0.2"
 tripy = "~1.0"
 h5py = "~3.8"
 timm = "0.9.12"
-# Right now only this ref supports timm 0.9.12
-segmentation_models_pytorch = { git = "https://github.com/qubvel/segmentation_models.pytorch", rev = "7b381f899ed472a477a89d381689caf535b5d0a6" }
-anomalib = { git = "https://github.com/orobix/anomalib.git", tag = "v0.7.0+obx.1.3.3" }
+
+segmentation_models_pytorch-orobix = "0.3.3.dev1"
+anomalib-orobix = "0.7.0.dev134"
 xxhash = "~3.2"
 torchinfo = "~1.8"
 typing_extensions = { version = "4.11.0", python = "<3.10" }
