@@ -1,6 +1,6 @@
 <h1></h1>
 <p align="center">
-  <img src="docs/images/quadra_text_logo.png" alt="Quadra Logo" width="100%">
+  <img src="https://github.com/orobix/quadra/raw/main/docs/images/quadra_text_logo.png" alt="Quadra Logo" width="100%">
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
     alt="pre-commit"
   /></a>
   <a href="https://github.com/econchick/interrogate"><img
-    src="docs/images/interrogate_badge.svg"
+    src="https://github.com/orobix/quadra/raw/main/docs/images/interrogate_badge.svg"
     alt="interrogate"
   /></a>
   <a href="https://github.com/PyCQA/pylint"><img
@@ -42,16 +42,14 @@ ______________________________________________________________________
 
 ## Quick Start Guide
 
-Currently we support installing from source since the library is not yet available on `PyPI` and currently supported Python versions are `3.9` and `3.10`.
-
-If you use pip to manage your packages, you can install `quadra` from source by running the following command:
+If you use pip to manage your packages, you can install `quadra` from PyPi by running the following command:
 ```shell
-pip install git+https://github.com/orobix/quadra.git
+pip install quadra
 ```
 
-If instead you prefer to use poetry, you can install `quadra` from source by running the following command:
+If instead you prefer to use poetry, you can install `quadra` from PyPi by running the following command:
 ```shell
-poetry add git+https://github.com/orobix/quadra.git
+poetry add quadra
 ```
 
 If you don't have virtual environment ready, Let's set up our environment for using the `quadra` library. We have two parts in this guide: Common setup and Environment-specific setup.
@@ -92,13 +90,13 @@ source myenv/bin/activate
 
     * **Install the `quadra` package** with pip:
       ```shell
-      pip install git+https://github.com/orobix/quadra.git
+      pip install quadra
       ```
 
     * **Install the `quadra` package** with poetry:
       ```shell
       curl -sSL https://install.python-poetry.org | python3 -
-      poetry add git+https://github.com/orobix/quadra.git
+      poetry add quadra
       ```
 
 4. **Run from CLI**:
