@@ -2,7 +2,21 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.2.1]
+
+#### Updated
+
+- Update anomalib version, improve release workflow
+
+### [2.2.0]
+
+#### Updated
+
+- Update dependencies to support publishing Quadra to PyPI
+
 ### [2.1.13]
+
+#### Updated
 
 - Improve safe batch size computation for sklearn based classification tasks
 
