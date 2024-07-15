@@ -72,7 +72,7 @@ h5py = "~3.8"
 timm = "0.9.12"
 
 segmentation_models_pytorch-orobix = "0.3.3.dev1"
-anomalib-orobix = "0.7.0.dev134"
+anomalib-orobix = "0.7.0.dev140"
 xxhash = "~3.2"
 torchinfo = "~1.8"
 typing_extensions = { version = "4.11.0", python = "<3.10" }
