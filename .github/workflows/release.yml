@@ -27,10 +27,10 @@ jobs:
       id-token: write # IMPORTANT: mandatory for trusted publishing
     steps:
       - uses: actions/checkout@v3
-      - name: Publish on pypi
+      - name: Build distribution 📦
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
-          poetry publish --build
+          poetry build
       - name: Publish distribution 📦 to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
