@@ -2,6 +2,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.2.2]
+
+- Fix default quadra installation requiring extra dependencies incorrectly
+
 ### [2.2.1]
 
 #### Updated
