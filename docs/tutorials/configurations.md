@@ -231,7 +231,7 @@ callbacks:
 
 In the experiment configuration we aggregate the various building blocks of the framework using the `defaults` key. In this case we are using the `classification` datamodule, a `resnet18` backbone, the `cross_entropy` loss, the `classification` model (Lightning Module), `adam` as optimizer, the `classification` task, the reduce on plateau (`rop`) scheduler and the `default_resize` transform.
 
- We can also see that we are overriding some of the parameters of the different modules. For example, we are overriding the `lr_scheduler_interval` of the backbone to be `epoch` instead of `step`. We are also overriding the `max_epochs` of the trainer to be 200 instead of the default value.
+ We can also see that we are overriding some of the parameters of the different modules. For example, we are overriding the `lr_scheduler_interval` of the backbone to be `step` instead of `epoch`. We are also overriding the `max_epochs` of the trainer to be 200 instead of the default value.
 
 The experiment is the most important configuration file as it is the one actually telling the framework what to do!
 
@@ -307,7 +307,7 @@ classifier:
   out_features: ${model.num_classes}
 module:
   _target_: quadra.modules.classification.ClassificationModule
-  lr_scheduler_interval: "epoch"
+  lr_scheduler_interval: "step"
   criterion: ${loss}
   gradcam: true
 ```
