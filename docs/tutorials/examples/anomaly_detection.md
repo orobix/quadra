@@ -31,7 +31,7 @@ MNIST/
 
 MNIST doesn't have ground truth masks for defects, by default we will use empty masks for good images and full white masks for anomalies.
 
-The standard datamodule configuration for anomaly is found under `datamodule/anomaly/base.yaml`.
+The standard datamodule configuration for anomaly is found under `datamodule/base/anomaly.yaml`.
 
 ```yaml
 _target_: quadra.datamodules.AnomalyDataModule
