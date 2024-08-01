@@ -7,7 +7,6 @@ from typing import Any, Literal, TypeVar, cast
 import torch
 from anomalib.models.cflow import CflowLightning
 from omegaconf import DictConfig, ListConfig, OmegaConf
-from onnxconverter_common import auto_convert_mixed_precision
 from torch import nn
 
 from quadra.models.base import ModelSignatureWrapper
@@ -22,6 +21,7 @@ from quadra.utils.logger import get_logger
 try:
     import onnx  # noqa
     from onnxsim import simplify as onnx_simplify  # noqa
+    from onnxconverter_common import auto_convert_mixed_precision  # noqa
 
     ONNX_AVAILABLE = True
 except ImportError:

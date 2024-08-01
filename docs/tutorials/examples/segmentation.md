@@ -218,7 +218,7 @@ defaults:
 Assuming that you have created a virtual environment and installed the `quadra` library, you can run the experiment by running the following command:
 
 ```bash
-quadra experiment=custom_experiment/smp_multiclass
+quadra experiment=segmentation/custom_experiment/smp_multiclass
 ```
 
 ### Run (Advanced)
@@ -226,7 +226,7 @@ quadra experiment=custom_experiment/smp_multiclass
 Lets assume that you would like to run the experiment with different models and with/without freezing the encoder part of the model, thanks to `hydra` multi-run option we can run as follows:
 
 ```bash
-quadra experiment=custom_experiment/smp_multiclass \
+quadra experiment=segmentation/custom_experiment/smp_multiclass \
 backbone.model.arch=unet,unetplusplus \
 backbone.model.encoder_name=resnet18,resnet50 \
 backbone.model.freeze_encoder=False,True \

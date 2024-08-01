@@ -172,7 +172,7 @@ On the same dataset we can run a simple SSL training using the BYOL algorithm wi
 quadra experiment=generic/imagenette/ssl/byol logger=csv
 ```
 
-BYOL is not the only SSL algorithm available, you can find a list of all the available algorithms under `quadra/experiment/generic/imagenette/ssl` folder.
+BYOL is not the only SSL algorithm available, you can find a list of all the available algorithms under `quadra/configs/experiment/generic/imagenette/ssl` folder.
 
 
 ### Anomaly Detection Training
@@ -185,11 +185,11 @@ quadra experiment=generic/mnist/anomaly/padim logger=csv
 
 This will run an anomaly detection considering on of the classes as good (default is the number 9) and the rest as anomalies.
 
-This will make use of the [anomalib](https://github.com/openvinotoolkit/anomalib) library to train the model. Many different algorithms are available, you can find them under `quadra/experiment/generic/mnist/anomaly` folder.
+This will make use of the [anomalib](https://github.com/openvinotoolkit/anomalib) library to train the model. Many different algorithms are available, you can find them under `quadra/configs/experiment/generic/mnist/anomaly` folder.
 
 ## Running with Custom Datasets
 
-Each task comes with a default configuration file that can be customized for your needs. Each example experiment we have seen so far uses a default configuration file that can be found under `quadra/experiment/base/<task>/<config_name>.yaml`. 
+Each task comes with a default configuration file that can be customized for your needs. Each example experiment we have seen so far uses a default configuration file that can be found under `quadra/configs/experiment/base/<task>/<config_name>.yaml`. 
 
 Let's see how we can customize the configuration file to run the classification experiment on a custom dataset.
 

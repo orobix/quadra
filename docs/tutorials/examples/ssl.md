@@ -63,7 +63,7 @@ We will make some changes to the datamodule in the experiment configuration file
 
 ### Experiment
 
-First, let's check how base experiment configuration file is defined for BYOL algorithm located in `configs/experiment/base/ssl/BYOL.yaml`.
+First, let's check how base experiment configuration file is defined for BYOL algorithm located in `configs/experiment/base/ssl/byol.yaml`.
 
 ```yaml
 # @package _global_
