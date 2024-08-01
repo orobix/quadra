@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ### [2.2.2]
 
+#### Fixed
+
 - Fix default quadra installation requiring extra dependencies incorrectly
+- Fix documentation errors
 
 ### [2.2.1]
 
