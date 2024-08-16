@@ -1,6 +1,7 @@
 import time
 
 import hydra
+import matplotlib
 from omegaconf import DictConfig
 from pytorch_lightning import seed_everything
 
@@ -12,6 +13,8 @@ from quadra.utils.validator import validate_config
 load_envs()
 register_resolvers()
 
+
+matplotlib.use("Agg")
 log = get_logger(__name__)
 
 
