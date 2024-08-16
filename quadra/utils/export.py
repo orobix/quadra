@@ -385,8 +385,9 @@ def _safe_export_half_precision_onnx(
             onnx.checker.check_model(onnx_model)
             return True
         except Exception as e:
-            log.debug("Failed to export model with mixed precision with error: %s", e)
-            return False
+            raise RuntimeError(
+                "Failed to export model with automatic mixed precision, check your model or disable ONNX export"
+            ) from e
     else:
         log.info("Exported half precision ONNX model does not contain NaN values, model is stable")
         return True
