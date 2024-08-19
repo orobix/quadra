@@ -286,6 +286,10 @@ def test_fastflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, ta
     shutil.rmtree(tmp_path)
 
 
+@pytest.mark.skip(
+    reason="This test requires anomalib with imgaug installed which we don't want to include in the dependencies as it "
+    "requires the non headless version of opencv-python"
+)
 @pytest.mark.slow
 @pytest.mark.usefixtures("mock_training")
 @pytest.mark.parametrize("task", ["classification", "segmentation"])
