@@ -1138,7 +1138,6 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             self.cam = GradCAM(
                 model=self.deployment_model.model,
                 target_layers=target_layers,
-                use_cuda=(self.device != "cpu"),
             )
             for p in self.deployment_model.model.features_extractor.layer4[-1].parameters():
                 p.requires_grad = True

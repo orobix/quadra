@@ -131,7 +131,6 @@ def get_feature(
             cam = GradCAM(
                 model=feature_extractor,
                 target_layers=target_layers,
-                use_cuda=torch.cuda.is_available(),
             )
             for p in feature_extractor.features_extractor.layer4[-1].parameters():
                 p.requires_grad = True
