@@ -7,7 +7,6 @@ from typing import Any, Literal, TypeVar, cast
 import torch
 from anomalib.models.cflow import CflowLightning
 from omegaconf import DictConfig, ListConfig, OmegaConf
-from onnxconverter_common import auto_convert_mixed_precision
 from torch import nn
 
 from quadra.models.base import ModelSignatureWrapper
@@ -22,6 +21,7 @@ from quadra.utils.logger import get_logger
 try:
     import onnx  # noqa
     from onnxsim import simplify as onnx_simplify  # noqa
+    from onnxconverter_common import auto_convert_mixed_precision  # noqa
 
     ONNX_AVAILABLE = True
 except ImportError:
@@ -385,8 +385,9 @@ def _safe_export_half_precision_onnx(
             onnx.checker.check_model(onnx_model)
             return True
         except Exception as e:
-            log.debug("Failed to export model with mixed precision with error: %s", e)
-            return False
+            raise RuntimeError(
+                "Failed to export model with automatic mixed precision, check your model or disable ONNX export"
+            ) from e
     else:
         log.info("Exported half precision ONNX model does not contain NaN values, model is stable")
         return True

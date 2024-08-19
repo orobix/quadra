@@ -2,6 +2,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.2.2]
+
+#### Updated
+
+- Terminate quadra with error if it's not possible to export an ONNX model with automatic mixed precision instead of falling back to full precision
+
+#### Fixed
+
+- Fix default quadra installation requiring extra dependencies incorrectly
+- Fix matplotlib using interactive backend by default
+- Fix documentation errors
+
 ### [2.2.1]
 
 #### Updated
