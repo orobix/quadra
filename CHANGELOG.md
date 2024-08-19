@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.2.3]
+
+#### Updated
+
+- Keep only opencv-python-headless as a dependency for quadra to avoid conflicts with the non-headless version
+
 ### [2.2.2]
 
 #### Updated
