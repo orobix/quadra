@@ -138,13 +138,9 @@ class ClassificationModule(BaseLightningModule):
         if isinstance(self.model.features_extractor, timm.models.resnet.ResNet):
             target_layers = [cast(BaseNetworkBuilder, self.model).features_extractor.layer4[-1]]
 
-            # Get model current device
-            device = next(self.model.parameters()).device
-
             self.cam = GradCAM(
                 model=self.model,
                 target_layers=target_layers,
-                use_cuda=device.type == "cuda",
             )
             # Activating gradients
             for p in self.model.features_extractor.layer4[-1].parameters():
@@ -262,7 +258,7 @@ class MultilabelClassificationModule(BaseLightningModule):
                 self.gradcam = False
             else:
                 target_layers = [model[0].features_extractor.layer4[-1]]
-                self.cam = GradCAM(model=model, target_layers=target_layers, use_cuda=torch.cuda.is_available())
+                self.cam = GradCAM(model=model, target_layers=target_layers)
 
     def forward(self, x):
         return self.model(x)
