@@ -63,5 +63,22 @@ batch_size_finder:
   max_trials: 5 # Max 64
   batch_arg_name: train_batch_size
   disable: true
+
+model_pruning:
+  _target_: pytorch_lightning.callbacks.ModelPruning
+  pruning_fn: "l1_unstructured"
+  parameters_to_prune: null # Prune all parameters
+  parameter_names: [weight] # Prune only weights
+  use_global_unstructured: true # Disable for structured pruning
+  amount: 0.05 # Iteratively prune 5% of the weights
+  apply_pruning: true
+  make_pruning_permanent: true # Store the pruned weights at the end of training
+  use_lottery_ticket_hypothesis: true
+  resample_parameters: false
+  pruning_dim: null # For structured pruning
+  pruning_norm: null # For structured pruning
+  verbose: 1
+  prune_on_train_epoch_end: true
+  disable: true # Quadra specific
 #gpu_stats: TODO: This is not working with the current PL version
 #  _target_: nvitop.callbacks.lightning.GpuStatsLogger
