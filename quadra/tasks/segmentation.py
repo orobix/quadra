@@ -120,6 +120,47 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         super().prepare()
         self.module = self.config.model
 
+        from pytorch_lightning.callbacks.pruning import ModelPruning
+
+        if any(isinstance(callback, ModelPruning) for callback in self.callbacks):
+            # Reinstantiate model pruning with the correct model parameters
+            # First remove the existing model pruning callback
+            self._callbacks = [callback for callback in self.callbacks if not isinstance(callback, ModelPruning)]
+
+            # Then add the model pruning callback with the correct model parameters
+            for _, cb_conf in self.config.callbacks.items():
+                if "_target_" in cb_conf and cb_conf["_target_"] == "pytorch_lightning.callbacks.ModelPruning":
+                    parameters_to_prune_keys = cb_conf.get("parameters_to_prune", None)
+                    parameters_to_prune_names = cb_conf.get("parameter_names", ["weight", "bias"])
+                    parameters_to_prune: list[tuple[torch.nn.Module, str]] | None = None
+
+                    if parameters_to_prune_keys is not None:
+                        parameters_to_prune = []
+                        for key in parameters_to_prune_keys:
+                            current_named_module: torch.nn.Module | None = None
+                            for name in key.split("."):
+                                if current_named_module is None:
+                                    current_named_module = getattr(self.module.model, name)
+                                elif hasattr(current_named_module, name):
+                                    current_named_module = getattr(current_named_module, name)
+                                else:
+                                    raise RuntimeError(f"Could not find the module {key} in the network")
+
+                            if current_named_module is None:
+                                raise RuntimeError(f"Could not find the module {key} in the network")
+
+                            for name in parameters_to_prune_names:
+                                parameters_to_prune.append((current_named_module, name))
+
+                    pruning_callback = hydra.utils.instantiate(cb_conf, parameters_to_prune=[])
+                    # Hydra is not happy if I pass the parameters_to_prune directly to the callback as it converts
+                    # tuples to lists, so I need to set the parameters_to_prune attribute directly
+                    pruning_callback._parameters_to_prune = parameters_to_prune
+                    self._callbacks.append(pruning_callback)
+
+            # Finally reinitialize the trainer with the new callbacks
+            self.trainer = self.config.trainer
+
     def export(self) -> None:
         """Generate a deployment model for the task."""
         log.info("Exporting model ready for deployment")

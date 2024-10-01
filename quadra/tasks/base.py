@@ -189,7 +189,10 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
                     continue
 
                 log.info("Instantiating callback <%s>", cb_conf["_target_"])
-                instatiated_callbacks.append(hydra.utils.instantiate(cb_conf))
+                if cb_conf["_target_"] == "pytorch_lightning.callbacks.ModelPruning":
+                    instatiated_callbacks.append(hydra.utils.instantiate(cb_conf, parameters_to_prune=[]))
+                else:
+                    instatiated_callbacks.append(hydra.utils.instantiate(cb_conf))
         self._callbacks = instatiated_callbacks
         if len(instatiated_callbacks) <= 0:
             log.warning("No callback found in configuration.")
