@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.2.4]
+
+#### Updated
+
+- Update anomalib to v0.7.0.dev142 that improves the memory footprint of patchcore model training.
+
 ### [2.2.3]
 
 #### Updated
