@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import os
 from collections.abc import Sequence
 from typing import Any, Literal, TypeVar, cast
@@ -377,7 +378,11 @@ def _safe_export_half_precision_onnx(
             model_fp32 = onnx.load(export_model_path)
             test_data = {input_names[i]: inp[i].float().cpu().numpy() for i in range(len(inp))}
             log.warning("Attempting to convert model in mixed precision, this may take a while...")
-            model_fp16 = auto_convert_mixed_precision(model_fp32, test_data, rtol=0.01, atol=0.001, keep_io_types=False)
+            with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+                # This function prints a lot of information that is not useful for the user
+                model_fp16 = auto_convert_mixed_precision(
+                    model_fp32, test_data, rtol=0.01, atol=0.001, keep_io_types=False
+                )
             onnx.save(model_fp16, export_model_path)
 
             onnx_model = onnx.load(export_model_path)
