@@ -187,13 +187,13 @@ test = ["flake8 (==3.7.9)", "mock (==2.0.0)", "pylint (==1.9.3)"]
 
 [[package]]
 name = "anomalib-orobix"
-version = "0.7.0.dev142"
+version = "0.7.0.dev143"
 description = "Orobix anomalib fork"
 optional = false
 python-versions = "<3.11,>=3.9"
 files = [
-    {file = "anomalib_orobix-0.7.0.dev142-py3-none-any.whl", hash = "sha256:dae7550da75bdf209abc45754621210dc8abe4b594fe897c6414a4ba207482b4"},
-    {file = "anomalib_orobix-0.7.0.dev142.tar.gz", hash = "sha256:9e16319d04de06aeb7db752297366f848d06332f75f2e6b3728e9a43952fd227"},
+    {file = "anomalib_orobix-0.7.0.dev143-py3-none-any.whl", hash = "sha256:5d2d3d4e5cc5efb4249de3edb8f7d117c4b3cae919bb1eb5d403517a013cb3a9"},
+    {file = "anomalib_orobix-0.7.0.dev143.tar.gz", hash = "sha256:d3f3a9f8e451a7430ccdacaaea5ee7d2720cc9bd1365c37287c75112dbf0959e"},
 ]
 
 [package.dependencies]
@@ -6584,4 +6584,4 @@ onnx = ["onnx", "onnxconverter-common", "onnxruntime_gpu", "onnxsim"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "d61aa4013bbd83a768417c4a78628112f6b5a97def9351b8113d50d1b2326f2f"
+content-hash = "560c839eb4d3d4bd896d68d592e1a67394b9635f4afd9f6c1df2457251232695"
