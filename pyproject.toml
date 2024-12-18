@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quadra"
-version = "2.2.5"
+version = "2.3.0"
 description = "Deep Learning experiment orchestration library"
 authors = [
 	"Federico Belotti <federico.belotti@orobix.com>",
@@ -59,7 +59,7 @@ opencv_python_headless = "~4.7.0"
 python_dotenv = "~0.21"
 rich = "~13.2"
 scikit_learn = "~1.2"
-pydantic = "1.10.10"
+pydantic = ">=1.10.10"
 grad-cam-orobix = "1.5.3.dev001"
 matplotlib = "~3.6"
 seaborn = "~0.12"
@@ -80,17 +80,12 @@ typing_extensions = { version = "4.11.0", python = "<3.10" }
 # ONNX dependencies
 onnx = { version = "1.15.0", optional = true }
 onnxsim = { version = "0.4.28", optional = true }
-onnxruntime_gpu = { version = "1.17.0", optional = true, source = "onnx_cu12" }
+onnxruntime_gpu = { version = "1.20.0", optional = true }
 onnxconverter-common = { version = "^1.14.0", optional = true }
 
 [[tool.poetry.source]]
 name = "torch_cu121"
 url = "https://download.pytorch.org/whl/cu121"
-priority = "explicit"
-
-[[tool.poetry.source]]
-name = "onnx_cu12"
-url = "https://pkgs.dev.azure.com/onnxruntime/onnxruntime/_packaging/onnxruntime-cuda-12/pypi/simple/"
 priority = "explicit"
 
 [tool.poetry.group.dev]
