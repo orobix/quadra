@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.3.0]
+
+#### Updated
+
+- Update onnxruntime from 1.17.0 to 1.20.0. Be aware that it's now required to manually install CUDNN 9 to use onnxruntime-gpu.
+
 ### [2.2.5]
 
 #### Updated

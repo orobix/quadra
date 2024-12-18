@@ -105,6 +105,11 @@ source myenv/bin/activate
   quadra experiment=default
   ```
 
+## Setup CUDNN 9 for ONNX inference (Optional)
+
+If you want to use onnruntime for inference, you need to install cudnn 9.X. For example for CUDA 12.2 on linux, you can install [this](https://developer.nvidia.com/cudnn-9-0-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local).
+Follow the instructions on the page to install the package.
+
 ### Setup `Mlflow` (Optional)
 
 To use Mlflow and leverage its functionalities such as saving models, logging metrics, saving artifacts, and visualizing results, you need to ensure that the Mlflow server is running. You can find more information about Mlflow [here](https://mlflow.org/).
