@@ -25,9 +25,13 @@ jobs:
       id-token: write # IMPORTANT: mandatory for trusted publishing
     steps:
       - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
       - name: Build distribution 📦
         run: |
-          curl -sSL https://install.python-poetry.org | python3 - --version 1.8.4
+          curl -sSL https://install.python-poetry.org | python3 -
           poetry build
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
