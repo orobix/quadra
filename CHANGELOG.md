@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 #### Fixed
 
-- Avoid upgrading poetry to 2.0 as it breaks the pipelines
+- Install python3.10 in release pipelines to avoid errors with new poetry, minor pipelines improvements
 
 ### [2.2.6]
 
