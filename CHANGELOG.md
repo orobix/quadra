@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file.
 
 #### Updated
 
-- Disable gradients logging callback in mlflow by default to avoid slowing down the training process
+- Remove gradients logging callback from default configs to avoid slowing down the training process
+- Add automatic batch size calculator as default in `all` callback configuration
 
 ### [2.2.5]
 
