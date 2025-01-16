@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.2.6]
+
+#### Updated
+
+- Disable gradients logging callback in mlflow by default to avoid slowing down the training process
+
 ### [2.2.5]
 
 #### Updated
