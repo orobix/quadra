@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.2.7]
+
+#### Fixed
+
+- Avoid upgrading poetry to 2.0 as it breaks the pipelines
+
 ### [2.2.6]
 
 #### Updated
