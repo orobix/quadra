@@ -9,10 +9,6 @@ model_checkpoint:
   filename: "epoch_{epoch:03d}"
   auto_insert_metric_name: False
 
-log_gradients:
-  _target_: quadra.callbacks.mlflow.LogGradients
-  norm: 2
-  disable: True
 lr_monitor:
   _target_: pytorch_lightning.callbacks.LearningRateMonitor
   logging_interval: "epoch"
