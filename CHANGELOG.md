@@ -2,6 +2,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.2.6]
+
+#### Updated
+
+- Remove gradients logging callback from default configs to avoid slowing down the training process
+- Add automatic batch size calculator as default in `all` callback configuration
+
 ### [2.2.5]
 
 #### Updated

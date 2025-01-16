@@ -44,9 +44,6 @@ upload_ckpts_as_artifact:
   upload_best_only: true
   delete_after_upload: true
   upload: false
-log_gradients:
-  _target_: quadra.callbacks.mlflow.LogGradients
-  norm: 2
 lr_monitor:
   _target_: pytorch_lightning.callbacks.LearningRateMonitor
   logging_interval: "epoch"
