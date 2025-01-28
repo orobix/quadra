@@ -69,3 +69,4 @@ test-output.xml
 external/
 site/
 local/
+.mypy_cache/
