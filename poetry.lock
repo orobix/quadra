@@ -182,26 +182,24 @@ name = "anomalib-orobix"
 version = "0.7.0.dev150"
 description = "Orobix anomalib fork"
 optional = false
-python-versions = ">=3.10,<3.11"
-files = []
-develop = false
+python-versions = "<3.11,>=3.10"
+files = [
+    {file = "anomalib_orobix-0.7.0.dev150-py3-none-any.whl", hash = "sha256:bbf018c6cede939e8b48aea66c5d93a7eb0f21ac19de0d086fdcc9e55b35eda2"},
+    {file = "anomalib_orobix-0.7.0.dev150.tar.gz", hash = "sha256:835f9930c5807d469083bf363f17dfb784d65bdc40feeca6029f034007e010ea"},
+]
 
 [package.dependencies]
-einops = "~0.6"
-freia = "~0.2"
-jsonargparse = {version = "~4.3.0", extras = ["signatures"]}
+einops = ">=0.6,<0.7"
+freia = ">=0.2,<0.3"
+jsonargparse = {version = ">=4.3.0,<4.4.0", extras = ["signatures"]}
 kornia = "0.6.5"
 line-profiler = "3.5.1"
-omegaconf = "~2.3"
+omegaconf = ">=2.3,<2.4"
 
 [package.extras]
 augmentation = ["imgaug (==0.4.0)"]
 ui = ["gradio (==3.0.2)"]
 wandb = ["wandb (==0.12.17)"]
-
-[package.source]
-type = "directory"
-url = "../anomalib"
 
 [[package]]
 name = "antlr4-python3-runtime"
@@ -7039,4 +7037,4 @@ onnx = ["onnx", "onnxconverter-common", "onnxruntime_gpu", "onnxsim"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11"
-content-hash = "5c0c63e326871534e64af9922f5d65ff3723874ebef4b0f932013da630dd6781"
+content-hash = "7d03cc44fa2431faa981553847f877f6ab191761efb9ee4ae228e607c0171c0c"
