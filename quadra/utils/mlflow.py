@@ -11,6 +11,7 @@ except ImportError:
 from collections.abc import Sequence
 from typing import Any
 
+import numpy as np
 import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import MLFlowLogger
@@ -45,6 +46,7 @@ def infer_signature_input(input_tensor: Any) -> Any:
     Raises:
         ValueError: If the input type is not supported or when nested dicts or sequences are encountered.
     """
+    signature: dict[str, Any] | np.ndarray
     if isinstance(input_tensor, Sequence):
         # Mlflow currently does not support sequence outputs, so we use a dict instead
         signature = {}

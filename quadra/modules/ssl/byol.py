@@ -110,6 +110,7 @@ class BYOL(SSLModule):
             for student_ps, teacher_ps in zip(
                 list(self.model.parameters()) + list(self.student_projection_mlp.parameters()),
                 list(self.teacher.parameters()) + list(self.teacher_projection_mlp.parameters()),
+                strict=False,
             ):
                 teacher_ps.data = teacher_ps.data * teacher_momentum + (1 - teacher_momentum) * student_ps.data
 

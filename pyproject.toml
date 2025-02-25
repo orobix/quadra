@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quadra"
-version = "2.3.0"
+version = "2.3.0a3"
 description = "Deep Learning experiment orchestration library"
 authors = [
 	"Federico Belotti <federico.belotti@orobix.com>",
@@ -228,7 +228,7 @@ exclude = ["quadra/utils/tests", "tests"]
 
 [tool.ruff]
 extend-include = ["*.ipynb"]
-target-version = "py39"
+target-version = "py310"
 # Orobix guidelines
 line-length = 120
 indent-width = 4

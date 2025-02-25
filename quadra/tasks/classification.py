@@ -623,7 +623,9 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             all_labels = all_labels[sorted_indices]
 
         # cycle over all train/test split
-        for train_dataloader, test_dataloader in zip(self.train_dataloader_list, self.test_dataloader_list):
+        for train_dataloader, test_dataloader in zip(
+            self.train_dataloader_list, self.test_dataloader_list, strict=False
+        ):
             # Reinit classifier
             self.model = self.config.model
             self.trainer.change_classifier(self.model)
@@ -685,7 +687,7 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             dl: PyTorch dataloader
             feature_extractor: PyTorch backbone
         """
-        if isinstance(feature_extractor, (TorchEvaluationModel, TorchscriptEvaluationModel)):
+        if isinstance(feature_extractor, TorchEvaluationModel | TorchscriptEvaluationModel):
             # TODO: I'm not sure torchinfo supports torchscript models
             # If we are working with torch based evaluation models we need to extract the model
             feature_extractor = feature_extractor.model

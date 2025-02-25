@@ -46,12 +46,10 @@ def get_file_condition(
         if any(fil in root for fil in exclude_filter):
             return False
 
-    if include_filter is not None and (
-        not any(fil in file_name for fil in include_filter) and not any(fil in root for fil in include_filter)
-    ):
-        return False
-
-    return True
+    return not (
+        include_filter is not None
+        and (not any(fil in file_name for fil in include_filter) and not any(fil in root for fil in include_filter))
+    )
 
 
 def natural_key(string_):
@@ -130,7 +128,7 @@ def find_images_and_targets(
         sorted_labels = sorted(unique_labels, key=natural_key)
         class_to_idx = {str(c): idx for idx, c in enumerate(sorted_labels)}
 
-    images_and_targets = [(f, l) for f, l in zip(filenames, labels) if l in class_to_idx]
+    images_and_targets = [(f, l) for f, l in zip(filenames, labels, strict=False) if l in class_to_idx]
 
     if sort:
         images_and_targets = sorted(images_and_targets, key=lambda k: natural_key(k[0]))
@@ -210,7 +208,7 @@ def find_test_image(
             file_samples.append(sample_path)
 
         test_split = [os.path.join(folder, sample.strip()) for sample in file_samples]
-        labels = [t for s, t in zip(filenames, labels) if s in file_samples]
+        labels = [t for s, t in zip(filenames, labels, strict=False) if s in file_samples]
         filenames = [s for s in filenames if s in file_samples]
         log.info("Selected %d images using test_split_file for the test", len(filenames))
         if len(filenames) != len(file_samples):
@@ -353,7 +351,7 @@ def get_split(
 
     cl, counts = np.unique(targets, return_counts=True)
 
-    for num, _cl in zip(counts, cl):
+    for num, _cl in zip(counts, cl, strict=False):
         if num == 1:
             to_remove = np.where(np.array(targets) == _cl)[0][0]
             samples = np.delete(np.array(samples), to_remove)
@@ -378,7 +376,7 @@ def get_split(
             file_samples.append(sample_path)
 
         train_split = [os.path.join(image_dir, sample.strip()) for sample in file_samples]
-        targets = np.array([t for s, t in zip(samples, targets) if s in file_samples])
+        targets = np.array([t for s, t in zip(samples, targets, strict=False) if s in file_samples])
         samples = np.array([s for s in samples if s in file_samples])
 
     if limit_training_data is not None:

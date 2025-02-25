@@ -98,9 +98,9 @@ def compute_patch_metrics(
     if (patch_h is not None and patch_w is not None) and (patch_num_h is not None and patch_num_w is not None):
         raise ValueError("Either number of patches or patch size is required for reconstruction")
 
-    assert (patch_h is not None and patch_w is not None) or (
-        patch_num_h is not None and patch_num_w is not None
-    ), "Either number of patches or patch size is required for reconstruction"
+    assert (patch_h is not None and patch_w is not None) or (patch_num_h is not None and patch_num_w is not None), (
+        "Either number of patches or patch size is required for reconstruction"
+    )
 
     if patch_h is not None and patch_w is not None and patch_num_h is not None and patch_num_w is not None:
         warnings.warn(
@@ -191,7 +191,7 @@ def compute_patch_metrics(
             if annotated_good is not None:
                 gt_img[np.isin(gt_img, annotated_good)] = 0
 
-            gt_img_binary = (gt_img > 0).astype(bool)  # type: ignore[operator]
+            gt_img_binary = (gt_img > 0).astype(bool)
             regions_pred = label(output_mask).astype(np.uint8)
 
             for k in range(1, regions_pred.max() + 1):

@@ -72,9 +72,7 @@ def check_all_arguments(callable_variable: str, configuration_arguments: list[st
     """
     for argument in configuration_arguments:
         if argument not in argument_names:
-            error_string = (
-                f"`{argument}` is not a valid argument passed " f"from configuration to `{callable_variable}`."
-            )
+            error_string = f"`{argument}` is not a valid argument passed from configuration to `{callable_variable}`."
             closest_match = difflib.get_close_matches(argument, argument_names, n=1, cutoff=0.5)
             if len(closest_match) > 0:
                 error_string += f" Did you mean `{closest_match[0]}`?"

@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import warnings
 from collections.abc import Callable
-from typing import Union, cast
+from typing import cast
 
 import numpy as np
 import timm
@@ -114,7 +114,7 @@ def get_feature(
             labels: input_labels
             grayscale_cams: Gradcam output maps, None if gradcam arg is False
     """
-    if isinstance(feature_extractor, (TorchEvaluationModel, TorchscriptEvaluationModel)):
+    if isinstance(feature_extractor, TorchEvaluationModel | TorchscriptEvaluationModel):
         # If we are working with torch based evaluation models we need to extract the model
         feature_extractor = feature_extractor.model
     elif isinstance(feature_extractor, ONNXEvaluationModel):
@@ -160,9 +160,7 @@ def get_feature(
                 x1 = x1.to(feature_extractor.device).to(feature_extractor.model_dtype)
 
             if gradcam:
-                y_hat = cast(
-                    Union[list[torch.Tensor], tuple[torch.Tensor], torch.Tensor], feature_extractor(x1).detach()
-                )
+                y_hat = cast(list[torch.Tensor] | tuple[torch.Tensor] | torch.Tensor, feature_extractor(x1).detach())
                 # mypy can't detect that gradcam is true only if we have a features_extractor
                 if is_vision_transformer(feature_extractor.features_extractor):  # type: ignore[union-attr]
                     grayscale_cam_low_res = grad_rollout(
@@ -177,10 +175,10 @@ def get_feature(
                 feature_extractor.zero_grad(set_to_none=True)  # type: ignore[union-attr]
             else:
                 with torch.no_grad():
-                    y_hat = cast(Union[list[torch.Tensor], tuple[torch.Tensor], torch.Tensor], feature_extractor(x1))
+                    y_hat = cast(list[torch.Tensor] | tuple[torch.Tensor] | torch.Tensor, feature_extractor(x1))
                 grayscale_cams = None
 
-            if isinstance(y_hat, (list, tuple)):
+            if isinstance(y_hat, list | tuple):
                 y_hat = y_hat[0].cpu()
             else:
                 y_hat = y_hat.cpu()

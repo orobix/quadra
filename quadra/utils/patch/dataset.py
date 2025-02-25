@@ -566,7 +566,7 @@ def generate_patch_dataset(
             num_workers=num_workers,
         )
 
-    for phase, split_dict in zip(["val", "test"], [val_data_dictionary, test_data_dictionary]):
+    for phase, split_dict in zip(["val", "test"], [val_data_dictionary, test_data_dictionary], strict=False):
         if len(split_dict) > 0:
             log.info("Generating %s set", phase)
             generate_patch_sliding_window_dataset(
@@ -908,9 +908,9 @@ def extract_patches(
             patches = np.concatenate([patches, extra_patches_h], axis=0)
 
     # If this is not true there's some strange case I didn't take into account
-    assert (
-        patches.shape[0] == patch_num_h and patches.shape[1] == patch_num_w
-    ), f"Patch shape {patches.shape} does not match the expected shape {patch_number}"
+    assert patches.shape[0] == patch_num_h and patches.shape[1] == patch_num_w, (
+        f"Patch shape {patches.shape} does not match the expected shape {patch_number}"
+    )
 
     return patches
 

@@ -50,9 +50,9 @@ class ImageClassificationListDataset(Dataset):
         allow_missing_label: bool | None = False,
     ):
         super().__init__()
-        assert len(samples) == len(
-            targets
-        ), f"Samples ({len(samples)}) and targets ({len(targets)}) must have the same length"
+        assert len(samples) == len(targets), (
+            f"Samples ({len(samples)}) and targets ({len(targets)}) must have the same length"
+        )
         # Setting the ROI
         self.roi = roi
 
@@ -201,9 +201,9 @@ class MultilabelClassificationDataset(torch.utils.data.Dataset):
         rgb: bool = True,
     ):
         super().__init__()
-        assert len(samples) == len(
-            targets
-        ), f"Samples ({len(samples)}) and targets ({len(targets)}) must have the same length"
+        assert len(samples) == len(targets), (
+            f"Samples ({len(samples)}) and targets ({len(targets)}) must have the same length"
+        )
 
         # Data
         self.x = samples
@@ -215,7 +215,7 @@ class MultilabelClassificationDataset(torch.utils.data.Dataset):
             class_to_idx = {c: i for i, c in enumerate(range(unique_targets))}
         self.class_to_idx = class_to_idx
         self.idx_to_class = {v: k for k, v in class_to_idx.items()}
-        self.samples = list(zip(self.x, self.y))
+        self.samples = list(zip(self.x, self.y, strict=False))
         self.rgb = rgb
         self.transform = transform
 

@@ -220,7 +220,7 @@ class AnomalyDataset(Dataset):
             if not os.path.exists(valid_area_mask):
                 raise RuntimeError(f"Valid area mask {valid_area_mask} does not exist.")
 
-            self.valid_area_mask = cv2.imread(valid_area_mask, 0) > 0  # type: ignore[operator]
+            self.valid_area_mask = cv2.imread(valid_area_mask, 0) > 0
 
     def __len__(self) -> int:
         """Get length of the dataset."""
@@ -265,7 +265,7 @@ class AnomalyDataset(Dataset):
                 if label_index == 0:
                     mask = np.zeros(shape=original_image_shape[:2])
                 elif os.path.isfile(mask_path):
-                    mask = cv2.imread(mask_path, flags=0) / 255.0  # type: ignore[operator]
+                    mask = cv2.imread(mask_path, flags=0) / 255.0
                 else:
                     # We need ones in the mask to compute correctly at least image level f1 score
                     mask = np.ones(shape=original_image_shape[:2])

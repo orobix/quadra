@@ -46,7 +46,7 @@ class UnNormalize:
             new_t = tensor.detach().clone()
         else:
             new_t = tensor
-        for t, m, s in zip(new_t, self.mean, self.std):
+        for t, m, s in zip(new_t, self.mean, self.std, strict=False):
             t.mul_(s).add_(m)
             # The normalize code -> t.sub_(m).div_(s)
         return new_t
@@ -82,7 +82,7 @@ def create_grid_figure(
             ax[i][j].get_xaxis().set_ticks([])
             ax[i][j].get_yaxis().set_ticks([])
     if row_names is not None:
-        for ax, name in zip(ax[:, 0], row_names):  # noqa: B020
+        for ax, name in zip(ax[:, 0], row_names, strict=False):  # noqa: B020
             ax.set_ylabel(name, rotation=90)
 
     plt.tight_layout()
@@ -98,12 +98,12 @@ def create_visualization_dataset(dataset: torch.utils.data.Dataset):
         """Handle different types of transforms."""
         if isinstance(transforms, albumentations.BaseCompose):
             transforms.transforms = convert_transforms(transforms.transforms)
-        if isinstance(transforms, (list, ListConfig, TransformsSeqType)):
+        if isinstance(transforms, list | ListConfig | TransformsSeqType):
             transforms = [convert_transforms(t) for t in transforms]
-        if isinstance(transforms, (dict, DictConfig)):
+        if isinstance(transforms, dict | DictConfig):
             for tname, t in transforms.items():
                 transforms[tname] = convert_transforms(t)
-        if isinstance(transforms, (Normalize, ToTensorV2)):
+        if isinstance(transforms, Normalize | ToTensorV2):
             return NoOp(p=1)
         return transforms
 

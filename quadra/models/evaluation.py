@@ -209,7 +209,7 @@ class ONNXEvaluationModel(BaseEvaluationModel):
 
         onnx_inputs: dict[str, np.ndarray | torch.Tensor] = {}
 
-        for onnx_input, current_input in zip(self.model.get_inputs(), inputs):
+        for onnx_input, current_input in zip(self.model.get_inputs(), inputs, strict=False):
             if isinstance(current_input, torch.Tensor):
                 onnx_inputs[onnx_input.name] = current_input
                 use_pytorch = True

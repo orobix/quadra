@@ -7,7 +7,7 @@ import pickle as pkl
 import typing
 from collections.abc import Callable, Iterable, Sequence
 from functools import wraps
-from typing import Any, Literal, Union, cast
+from typing import Any, Literal, cast
 
 import albumentations
 import numpy as np
@@ -20,8 +20,8 @@ from tqdm import tqdm
 from quadra.utils import utils
 
 log = utils.get_logger(__name__)
-TrainDataset = Union[torch.utils.data.Dataset, Sequence[torch.utils.data.Dataset]]
-ValDataset = Union[torch.utils.data.Dataset, Sequence[torch.utils.data.Dataset]]
+TrainDataset = torch.utils.data.Dataset | Sequence[torch.utils.data.Dataset]
+ValDataset = torch.utils.data.Dataset | Sequence[torch.utils.data.Dataset]
 TestDataset = torch.utils.data.Dataset
 
 
@@ -260,7 +260,7 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
             return
 
         # TODO: We need to find a way to annotate the columns of data.
-        paths_and_hash_length = zip(self.data["samples"], [self.hash_size] * len(self.data))
+        paths_and_hash_length = zip(self.data["samples"], [self.hash_size] * len(self.data), strict=False)
 
         with mp.Pool(min(8, mp.cpu_count() - 1)) as pool:
             self.data["hash"] = list(
@@ -355,7 +355,7 @@ class BaseDataModule(LightningDataModule, metaclass=DecorateParentMethod):
             raise ValueError("`n_aug_to_take` is not set. Cannot load augmented samples.")
         aug_samples = []
         aug_labels = []
-        for sample, label in zip(samples, targets):
+        for sample, label in zip(samples, targets, strict=False):
             aug_samples.append(sample)
             aug_labels.append(label)
             final_sample = sample

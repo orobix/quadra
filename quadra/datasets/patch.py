@@ -58,7 +58,7 @@ class PatchSklearnClassificationTrainDataset(Dataset):
 
             cls, counts = np.unique(targets_array, return_counts=True)
             max_count = np.max(counts)
-            for cl, count in zip(cls, counts):
+            for cl, count in zip(cls, counts, strict=False):
                 idx_to_pick = list(np.where(targets_array == cl)[0])
 
                 if count < max_count:

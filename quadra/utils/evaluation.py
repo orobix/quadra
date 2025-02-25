@@ -4,6 +4,7 @@ import os
 from ast import literal_eval
 from collections.abc import Callable
 from functools import wraps
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -123,7 +124,7 @@ def calculate_mask_based_metrics(
     th_thresh_preds = (th_preds > threshold).float().cpu()
     thresh_preds = th_thresh_preds.squeeze(0).numpy()
     dice_scores = metric(th_thresh_preds, th_masks, reduction=None).numpy()
-    result = {}
+    result: dict[str, Any] = {}
     if multilabel:
         if n_classes is None:
             raise ValueError("n_classes arg shouldn't be None when multilabel is True")
@@ -167,7 +168,7 @@ def calculate_mask_based_metrics(
         "Accuracy": [],
     }
     for idx, (image, pred, mask, thresh_pred, dice_score) in enumerate(
-        zip(images, preds, masks, thresh_preds, dice_scores)
+        zip(images, preds, masks, thresh_preds, dice_scores, strict=False)
     ):
         if np.sum(mask) == 0:
             good_dice.append(dice_score)
@@ -303,7 +304,7 @@ def create_mask_report(
     non_zero_score_idx = sorted_idx[~binary_labels]
     zero_score_idx = sorted_idx[binary_labels]
     file_paths = []
-    for name, current_score_idx in zip(["good", "bad"], [zero_score_idx, non_zero_score_idx]):
+    for name, current_score_idx in zip(["good", "bad"], [zero_score_idx, non_zero_score_idx], strict=False):
         if len(current_score_idx) == 0:
             continue
 

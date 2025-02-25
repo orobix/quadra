@@ -468,8 +468,7 @@ class EmbeddingVisualization(Task):
         self.report_folder = report_folder
         if self.model_path is None:
             raise ValueError(
-                "Model path cannot be found!, please specify it in the config or pass it as an argument for"
-                " evaluation"
+                "Model path cannot be found!, please specify it in the config or pass it as an argument for evaluation"
             )
         self.embeddings_path = os.path.join(self.model_path, self.report_folder)
         if not os.path.exists(self.embeddings_path):
@@ -547,7 +546,7 @@ class EmbeddingVisualization(Task):
                 im = interpolate(im, self.embedding_image_size)
 
             images.append(im.cpu())
-            metadata.extend(zip(targets, class_names, file_paths))
+            metadata.extend(zip(targets, class_names, file_paths, strict=False))
             counter += len(im)
         images = torch.cat(images, dim=0)
         embeddings = torch.cat(embeddings, dim=0)
