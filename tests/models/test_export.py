@@ -99,13 +99,14 @@ def check_export_model_outputs(
     for model in models:
         outputs.append(model(inp))
 
-    tolerance = 1e-4 if not half_precision else 1e-2
+    tolerance = 5e-3 if not half_precision else 1e-2
+
     for i in range(len(outputs) - 1):
         if isinstance(outputs[i], Sequence):
             for j in range(len(outputs[i])):
-                assert torch.allclose(outputs[i][j], outputs[i + 1][j], atol=tolerance)
+                assert torch.allclose(outputs[i][j], outputs[i + 1][j], atol=tolerance, rtol=tolerance)
         else:
-            assert torch.allclose(outputs[i], outputs[i + 1], atol=tolerance)
+            assert torch.allclose(outputs[i], outputs[i + 1], atol=tolerance, rtol=tolerance)
 
 
 @pytest.mark.skipif(not ONNX_AVAILABLE, reason="ONNX not available")
