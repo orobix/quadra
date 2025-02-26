@@ -186,6 +186,7 @@ disable=raw-checker-failed,
 		subprocess-popen-preexec-fn,
 		useless-with-lock,
 		nested-min-max,
+		too-many-positional-arguments,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

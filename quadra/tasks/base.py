@@ -382,15 +382,19 @@ class Evaluation(Generic[DataModuleT], Task[DataModuleT]):
             # We assume that each input size has the same height and width
             if input_size[1] != self.config.transforms.input_height:
                 log.warning(
-                    f"Input height of the model ({input_size[1]}) is different from the one specified "
-                    + f"in the config ({self.config.transforms.input_height}). Fixing the config."
+                    "Input height of the model (%s) is different from the one specified "
+                    + "in the config (%s). Fixing the config.",
+                    input_size[1],
+                    self.config.transforms.input_height,
                 )
                 self.config.transforms.input_height = input_size[1]
 
             if input_size[2] != self.config.transforms.input_width:
                 log.warning(
-                    f"Input width of the model ({input_size[2]}) is different from the one specified "
-                    + f"in the config ({self.config.transforms.input_width}). Fixing the config."
+                    "Input width of the model (%s) is different from the one specified "
+                    + "in the config (%s). Fixing the config.",
+                    input_size[2],
+                    self.config.transforms.input_width,
                 )
                 self.config.transforms.input_width = input_size[2]
 

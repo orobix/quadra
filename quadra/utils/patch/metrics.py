@@ -203,8 +203,8 @@ def compute_patch_metrics(
             output_mask = (output_mask > 0).astype(np.uint8)
             gt_img = label(gt_img)
 
-            for i in range(1, gt_img.max() + 1):  # type: ignore[union-attr]
-                region = (gt_img == i).astype(bool)  # type: ignore[union-attr]
+            for i in range(1, gt_img.max() + 1):
+                region = (gt_img == i).astype(bool)
                 if np.sum(np.bitwise_and(region, output_mask)) == 0:
                     false_region_good += 1
                 else:

@@ -75,7 +75,7 @@ def plot_patch_reconstruction(
                 -1,
                 class_to_idx[c_label],
                 thickness=cv2.FILLED,
-            )  # type: ignore[call-overload]
+            )
     else:
         out = reconstruction["prediction"]
 

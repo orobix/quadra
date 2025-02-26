@@ -92,8 +92,10 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
             len(self.datamodule.idx_to_class) + 1
         ):
             log.warning(
-                f"Number of classes in the model ({module_config.model.num_classes}) does not match the number of "
-                + f"classes in the datamodule ({len(self.datamodule.idx_to_class)}). Updating the model..."
+                "Number of classes in the model (%s) does not match the number of "
+                + "classes in the datamodule (%d). Updating the model...",
+                module_config.model.num_classes,
+                len(self.datamodule.idx_to_class),
             )
             module_config.model.num_classes = len(self.datamodule.idx_to_class) + 1
 

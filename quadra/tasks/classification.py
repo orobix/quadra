@@ -1204,6 +1204,8 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
         probabilities = [max(item) for sublist in probabilities for item in sublist]
         if self.datamodule.class_to_idx is not None:
             idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
+        else:
+            idx_to_class = None
 
         _, pd_cm, test_accuracy = get_results(
             test_labels=image_labels,

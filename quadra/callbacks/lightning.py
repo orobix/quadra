@@ -79,6 +79,8 @@ def _scale_batch_size(
         new_size = _run_power_scaling(trainer, init_val, batch_arg_name, max_trials, params)
     elif mode == "binsearch":
         new_size = _run_binary_scaling(trainer, init_val, batch_arg_name, max_trials, params)
+    else:
+        raise ValueError(f"Unknown mode {mode}")
 
     garbage_collection_cuda()
 

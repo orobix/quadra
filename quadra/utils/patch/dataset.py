@@ -1063,7 +1063,7 @@ def create_h5(
             mask = np.zeros([h, w])
         else:
             # this works even if item["mask"] is already an absolute path
-            mask = cv2.imread(os.path.join(output_folder, item["mask"]), 0)  # type: ignore[assignment]
+            mask = cv2.imread(os.path.join(output_folder, item["mask"]), 0)
 
         if patch_size is not None:
             patch_height = patch_size[1]

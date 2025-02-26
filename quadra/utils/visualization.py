@@ -362,6 +362,9 @@ def plot_classification_results(
                         test_label = idx_to_class[test_labels[i]]
                     except Exception:
                         test_label = test_labels[i]
+                else:
+                    pred_label = pred_labels[i]
+                    test_label = test_labels[i]
 
                 ax.axis("off")
                 ax.set_title(f"True: {str(test_label)}\nPred {str(pred_label)}")

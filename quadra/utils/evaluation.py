@@ -262,6 +262,7 @@ def create_mask_report(
     th_labels = output["label"]
     n_classes = th_preds.shape[1]
     # TODO: Apply sigmoid is a wrong name now
+    # TODO: Apply sigmoid false is untested
     if apply_sigmoid:
         if n_classes == 1:
             th_preds = torch.nn.Sigmoid()(th_preds)
@@ -272,6 +273,13 @@ def create_mask_report(
             # Compute labels from the given masks since by default they are all 0
             th_labels = th_masks.max(dim=2)[0].max(dim=2)[0].squeeze(dim=1)
             show_orj_predictions = False
+    elif n_classes == 1:
+        th_thresh_preds = (th_preds > threshold).float()
+    else:
+        th_thresh_preds = torch.argmax(th_preds, dim=1).float().unsqueeze(1)
+        # Compute labels from the given masks since by default they are all 0
+        th_labels = th_masks.max(dim=2)[0].max(dim=2)[0].squeeze(dim=1)
+        show_orj_predictions = False
 
     mean = np.asarray(mean)
     std = np.asarray(std)
