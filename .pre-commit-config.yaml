@@ -18,13 +18,13 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.9.7
     hooks:
+      - id: ruff-format
+        types_or: [python, pyi, jupyter]
+        args: ["--config", "pyproject.toml"]
       - id: ruff
         types_or: [python, pyi, jupyter]
         args: ["--config", "pyproject.toml", "--fix"]
         exclude: ^(tests|scripts|notebooks|quadra/utils/tests)/
-      - id: ruff-format
-        types_or: [python, pyi, jupyter]
-        args: ["--config", "pyproject.toml"]
   - repo: local
     hooks:
       - id: pylint
