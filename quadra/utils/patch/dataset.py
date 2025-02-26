@@ -1059,8 +1059,9 @@ def create_h5(
         h = img.shape[0]
         w = img.shape[1]
 
+        mask: np.ndarray
         if item["mask"] is None:
-            mask = np.zeros([h, w])
+            mask = np.zeros([h, w], dtype=np.uint8)
         else:
             # this works even if item["mask"] is already an absolute path
             mask = cv2.imread(os.path.join(output_folder, item["mask"]), 0)

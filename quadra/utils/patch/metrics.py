@@ -203,6 +203,9 @@ def compute_patch_metrics(
             output_mask = (output_mask > 0).astype(np.uint8)
             gt_img = label(gt_img)
 
+            if gt_img is None:
+                raise RuntimeError("Ground truth mask is None after label and it should not be")
+
             for i in range(1, gt_img.max() + 1):
                 region = (gt_img == i).astype(bool)
                 if np.sum(np.bitwise_and(region, output_mask)) == 0:

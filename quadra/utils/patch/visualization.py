@@ -69,7 +69,7 @@ def plot_patch_reconstruction(
             points = [[item["x"], item["y"]] for item in region["points"]]
             c_label = region["label"]
 
-            out = cv2.drawContours(
+            out = cv2.drawContours(  # type: ignore[call-overload]
                 out,
                 np.array([points], np.int32),
                 -1,
