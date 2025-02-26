@@ -9,10 +9,16 @@ All notable changes to this project will be documented in this file.
 - Upgrade torch from 2.1.2+cu121 to 2.4.1+cu121
 - Upgrade pytorch lightning to 2.4.0
 - Upgrade onnxruntime-gpu to 1.20.0
+- Upgrade anomalib to support the update lightning version
 - Upgrade problematic packages notified by dependabot
 - Deprecate python 3.9 support
 - Update mypy, ruff and pylint to the latest available versions
 - Apply pre-commits on all files based on the latest versions of the tools
+
+#### Fixed
+
+- Increase atol for mixed precision model export to avoid errors on efficientnet_b0 export
+- Increase atol and rtol for model export tests to avoid issues on gpu testing
 
 ### [2.2.7]
 
