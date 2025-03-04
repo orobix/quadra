@@ -46,7 +46,7 @@ def _scale_batch_size(
             however in practise a few are needed
         init_val: initial batch size to start the search with
         max_trials: max number of increases in batch size done before
-           algorithm is terminated
+            algorithm is terminated
         batch_arg_name: name of the attribute that stores the batch size.
             It is expected that the user has provided a model or datamodule that has a hyperparameter
             with that name. We will look for this attribute name in the following places

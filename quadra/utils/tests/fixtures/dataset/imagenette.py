@@ -43,7 +43,7 @@ def imagenette_dataset(tmp_path: Path) -> str:
 
     Args:
         tmp_path: Path to temporary directory
-        request: Pytest SubRequest object
+
     Yields:
         Path to imagenette dataset folder
     """
