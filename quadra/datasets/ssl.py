@@ -75,9 +75,9 @@ class TwoSetAugmentationDataset(Dataset):
             return the original image.
 
     Example:
-        >>> images[0] = global_transform[0](original_image)
-        >>> images[1] = global_transform[1](original_image)
-        >>> images[2:] = local_transform(s)(original_image)
+        >>> `images[0] = global_transform[0](original_image)`
+        >>> `images[1] = global_transform[1](original_image)`
+        >>> `images[2:] = local_transform(s)(original_image)`
     """
 
     def __init__(

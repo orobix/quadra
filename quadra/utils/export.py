@@ -324,7 +324,7 @@ def _safe_export_half_precision_onnx(
     onnx_config: DictConfig,
     input_shapes: list[Any],
     input_names: list[str],
-):
+) -> bool:
     """Check that the exported half precision ONNX model does not contain NaN values. If it does, attempt to export
     the model with a more stable export and overwrite the original model.
 
