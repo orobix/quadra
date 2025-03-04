@@ -301,7 +301,7 @@ class PatchSklearnTestClassification(Evaluation[PatchSklearnClassificationDataMo
             "test_results": None,
             "test_labels": None,
         }
-        self.class_to_skip: list[str] = []
+        self.class_to_skip: list[str] | None = []
         self.reconstruction_results: dict[str, Any]
         self.return_polygon: bool = True
 

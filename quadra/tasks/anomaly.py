@@ -161,7 +161,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         all_output_flatten: dict[str, torch.Tensor | list] = {}
 
         for key in all_output[0]:
-            if type(all_output[0][key]) == torch.Tensor:
+            if isinstance(all_output[0][key], torch.Tensor):
                 tensor_gatherer = torch.cat([x[key] for x in all_output])
                 all_output_flatten[key] = tensor_gatherer
             else:
@@ -205,13 +205,15 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             class_to_idx.pop("false_defect")
 
         anomaly_scores = all_output_flatten["pred_scores"]
+
+        exportable_anomaly_scores: list[Any] | np.ndarray
         if isinstance(anomaly_scores, torch.Tensor):
             exportable_anomaly_scores = anomaly_scores.cpu().numpy()
         else:
             exportable_anomaly_scores = anomaly_scores
 
         # Zip the lists together to create rows for the CSV file
-        rows = zip(image_paths, pred_labels, gt_labels, exportable_anomaly_scores)
+        rows = zip(image_paths, pred_labels, gt_labels, exportable_anomaly_scores, strict=False)
         # Specify the CSV file name
         csv_file = "test_predictions.csv"
         # Write the data to the CSV file
@@ -483,7 +485,7 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
 
         if hasattr(self.datamodule, "valid_area_mask") and self.datamodule.valid_area_mask is not None:
             mask_area = cv2.imread(self.datamodule.valid_area_mask, 0)
-            mask_area = (mask_area > 0).astype(np.uint8)  # type: ignore[operator]
+            mask_area = (mask_area > 0).astype(np.uint8)
 
         if hasattr(self.datamodule, "crop_area") and self.datamodule.crop_area is not None:
             crop_area = self.datamodule.crop_area
@@ -499,12 +501,13 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 self.metadata["image_labels"],
                 anomaly_scores,
                 anomaly_maps,
+                strict=False,
             ),
             total=len(self.metadata["image_paths"]),
         ):
             img = cv2.imread(img_path, 0)
             if mask_area is not None:
-                img = img * mask_area  # type: ignore[operator]
+                img = img * mask_area
 
             if crop_area is not None:
                 img = img[crop_area[1] : crop_area[3], crop_area[0] : crop_area[2]]

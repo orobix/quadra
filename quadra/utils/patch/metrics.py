@@ -98,9 +98,9 @@ def compute_patch_metrics(
     if (patch_h is not None and patch_w is not None) and (patch_num_h is not None and patch_num_w is not None):
         raise ValueError("Either number of patches or patch size is required for reconstruction")
 
-    assert (patch_h is not None and patch_w is not None) or (
-        patch_num_h is not None and patch_num_w is not None
-    ), "Either number of patches or patch size is required for reconstruction"
+    assert (patch_h is not None and patch_w is not None) or (patch_num_h is not None and patch_num_w is not None), (
+        "Either number of patches or patch size is required for reconstruction"
+    )
 
     if patch_h is not None and patch_w is not None and patch_num_h is not None and patch_num_w is not None:
         warnings.warn(
@@ -191,7 +191,7 @@ def compute_patch_metrics(
             if annotated_good is not None:
                 gt_img[np.isin(gt_img, annotated_good)] = 0
 
-            gt_img_binary = (gt_img > 0).astype(bool)  # type: ignore[operator]
+            gt_img_binary = (gt_img > 0).astype(bool)
             regions_pred = label(output_mask).astype(np.uint8)
 
             for k in range(1, regions_pred.max() + 1):
@@ -203,8 +203,11 @@ def compute_patch_metrics(
             output_mask = (output_mask > 0).astype(np.uint8)
             gt_img = label(gt_img)
 
-            for i in range(1, gt_img.max() + 1):  # type: ignore[union-attr]
-                region = (gt_img == i).astype(bool)  # type: ignore[union-attr]
+            if gt_img is None:
+                raise RuntimeError("Ground truth mask is None after label and it should not be")
+
+            for i in range(1, gt_img.max() + 1):
+                region = (gt_img == i).astype(bool)
                 if np.sum(np.bitwise_and(region, output_mask)) == 0:
                     false_region_good += 1
                 else:

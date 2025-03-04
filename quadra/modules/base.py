@@ -7,6 +7,7 @@ import pytorch_lightning as pl
 import sklearn
 import torch
 import torchmetrics
+from pytorch_lightning.utilities.types import OptimizerLRScheduler
 from sklearn.linear_model import LogisticRegression
 from torch import nn
 from torch.optim import Optimizer
@@ -48,7 +49,7 @@ class BaseLightningModule(pl.LightningModule):
         """
         return self.model(x)
 
-    def configure_optimizers(self) -> tuple[list[Any], list[dict[str, Any]]]:
+    def configure_optimizers(self) -> OptimizerLRScheduler:
         """Get default optimizer if not passed a value.
 
         Returns:
@@ -68,7 +69,7 @@ class BaseLightningModule(pl.LightningModule):
             "monitor": "val_loss",
             "strict": False,
         }
-        return [self.optimizer], [lr_scheduler_conf]
+        return [self.optimizer], [lr_scheduler_conf]  # type: ignore[return-value]
 
     # pylint: disable=unused-argument
     def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx: int = 0):

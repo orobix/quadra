@@ -566,7 +566,7 @@ def generate_patch_dataset(
             num_workers=num_workers,
         )
 
-    for phase, split_dict in zip(["val", "test"], [val_data_dictionary, test_data_dictionary]):
+    for phase, split_dict in zip(["val", "test"], [val_data_dictionary, test_data_dictionary], strict=False):
         if len(split_dict) > 0:
             log.info("Generating %s set", phase)
             generate_patch_sliding_window_dataset(
@@ -908,9 +908,9 @@ def extract_patches(
             patches = np.concatenate([patches, extra_patches_h], axis=0)
 
     # If this is not true there's some strange case I didn't take into account
-    assert (
-        patches.shape[0] == patch_num_h and patches.shape[1] == patch_num_w
-    ), f"Patch shape {patches.shape} does not match the expected shape {patch_number}"
+    assert patches.shape[0] == patch_num_h and patches.shape[1] == patch_num_w, (
+        f"Patch shape {patches.shape} does not match the expected shape {patch_number}"
+    )
 
     return patches
 
@@ -1059,11 +1059,12 @@ def create_h5(
         h = img.shape[0]
         w = img.shape[1]
 
+        mask: np.ndarray
         if item["mask"] is None:
-            mask = np.zeros([h, w])
+            mask = np.zeros([h, w], dtype=np.uint8)
         else:
             # this works even if item["mask"] is already an absolute path
-            mask = cv2.imread(os.path.join(output_folder, item["mask"]), 0)  # type: ignore[assignment]
+            mask = cv2.imread(os.path.join(output_folder, item["mask"]), 0)
 
         if patch_size is not None:
             patch_height = patch_size[1]

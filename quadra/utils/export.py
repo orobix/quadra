@@ -45,11 +45,11 @@ def generate_torch_inputs(
     """
     inp = None
 
-    if isinstance(input_shapes, (ListConfig, DictConfig)):
+    if isinstance(input_shapes, ListConfig | DictConfig):
         input_shapes = OmegaConf.to_container(input_shapes)
 
     if isinstance(input_shapes, list):
-        if any(isinstance(inp, (Sequence, dict)) for inp in input_shapes):
+        if any(isinstance(inp, Sequence | dict) for inp in input_shapes):
             return [generate_torch_inputs(inp, device, half_precision, dtype) for inp in input_shapes]
 
         # Base case
@@ -59,7 +59,7 @@ def generate_torch_inputs(
         return {k: generate_torch_inputs(v, device, half_precision, dtype) for k, v in input_shapes.items()}
 
     if isinstance(input_shapes, tuple):
-        if any(isinstance(inp, (Sequence, dict)) for inp in input_shapes):
+        if any(isinstance(inp, Sequence | dict) for inp in input_shapes):
             # The tuple contains a list, tuple or dict
             return tuple(generate_torch_inputs(inp, device, half_precision, dtype) for inp in input_shapes)
 
@@ -381,7 +381,7 @@ def _safe_export_half_precision_onnx(
             with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
                 # This function prints a lot of information that is not useful for the user
                 model_fp16 = auto_convert_mixed_precision(
-                    model_fp32, test_data, rtol=0.01, atol=0.001, keep_io_types=False
+                    model_fp32, test_data, rtol=0.01, atol=5e-3, keep_io_types=False
                 )
             onnx.save(model_fp16, export_model_path)
 

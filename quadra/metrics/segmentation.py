@@ -171,7 +171,7 @@ def segmentation_props(
         # Add dummy Dices so LSA is unique and i can compute FP and FN
         dice_mat = _pad_to_shape(dice_mat, (max_dim, max_dim), 1)
         lsa = linear_sum_assignment(dice_mat, maximize=False)
-        for row, col in zip(lsa[0], lsa[1]):
+        for row, col in zip(lsa[0], lsa[1], strict=False):
             # More preds than GTs --> False Positive
             if row < n_labels_pred and col >= n_labels_mask:
                 min_row = pred_bbox[row][0]

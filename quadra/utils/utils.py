@@ -438,7 +438,7 @@ def flatten_list(input_list: Iterable[Any]) -> Iterator[Any]:
         The iterator over the flattend list
     """
     for v in input_list:
-        if isinstance(v, Iterable) and not isinstance(v, (str, bytes)):
+        if isinstance(v, Iterable) and not isinstance(v, str | bytes):
             yield from flatten_list(v)
         else:
             yield v

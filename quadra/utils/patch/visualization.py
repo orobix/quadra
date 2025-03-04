@@ -69,13 +69,13 @@ def plot_patch_reconstruction(
             points = [[item["x"], item["y"]] for item in region["points"]]
             c_label = region["label"]
 
-            out = cv2.drawContours(
+            out = cv2.drawContours(  # type: ignore[call-overload]
                 out,
                 np.array([points], np.int32),
                 -1,
                 class_to_idx[c_label],
                 thickness=cv2.FILLED,
-            )  # type: ignore[call-overload]
+            )
     else:
         out = reconstruction["prediction"]
 

@@ -76,7 +76,7 @@ class ModelSignatureWrapper(nn.Module):
 
         if isinstance(self.instance.forward, torch.ScriptMethod):
             # Handle torchscript backbones
-            for i, argument in enumerate(self.instance.forward.schema.arguments):
+            for i, argument in enumerate(self.instance.forward.schema.arguments):  # type: ignore[attr-defined]
                 if i < (len(args) + 1):  # +1 for self
                     continue
 

@@ -92,8 +92,10 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
             len(self.datamodule.idx_to_class) + 1
         ):
             log.warning(
-                f"Number of classes in the model ({module_config.model.num_classes}) does not match the number of "
-                + f"classes in the datamodule ({len(self.datamodule.idx_to_class)}). Updating the model..."
+                "Number of classes in the model (%s) does not match the number of "
+                + "classes in the datamodule (%d). Updating the model...",
+                module_config.model.num_classes,
+                len(self.datamodule.idx_to_class),
             )
             module_config.model.num_classes = len(self.datamodule.idx_to_class) + 1
 
@@ -341,7 +343,7 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
         if self.datamodule.test_dataset_available:
             stages.append("test")
             dataloaders.append(self.datamodule.test_dataloader())
-        for stage, dataloader in zip(stages, dataloaders):
+        for stage, dataloader in zip(stages, dataloaders, strict=False):
             log.info("Running inference on %s set with batch size: %d", stage, dataloader.batch_size)
             image_list, mask_list, mask_pred_list, label_list = [], [], [], []
             for batch in dataloader:
@@ -369,10 +371,10 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
 
         for stage, output in self.test_output.items():
             image_mean = OmegaConf.to_container(self.config.transforms.mean)
-            if not isinstance(image_mean, list) or any(not isinstance(x, (int, float)) for x in image_mean):
+            if not isinstance(image_mean, list) or any(not isinstance(x, int | float) for x in image_mean):
                 raise ValueError("Image mean is not a list of float or integer values, please check your config")
             image_std = OmegaConf.to_container(self.config.transforms.std)
-            if not isinstance(image_std, list) or any(not isinstance(x, (int, float)) for x in image_std):
+            if not isinstance(image_std, list) or any(not isinstance(x, int | float) for x in image_std):
                 raise ValueError("Image std is not a list of float or integer values, please check your config")
             reports = create_mask_report(
                 stage=stage,

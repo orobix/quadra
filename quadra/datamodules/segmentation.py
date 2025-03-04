@@ -187,7 +187,7 @@ class SegmentationDataModule(BaseDataModule):
             samples_test, targets_test, masks_test = self._read_split(self.test_split_file)
             if not self.train_split_file:
                 samples_train, targets_train, masks_train = [], [], []
-                for sample, target, mask in zip(all_samples, all_targets, all_masks):
+                for sample, target, mask in zip(all_samples, all_targets, all_masks, strict=False):
                     if sample not in samples_test:
                         samples_train.append(sample)
                         targets_train.append(target)
@@ -197,7 +197,7 @@ class SegmentationDataModule(BaseDataModule):
             samples_train, targets_train, masks_train = self._read_split(self.train_split_file)
             if not self.test_split_file:
                 samples_test, targets_test, masks_test = [], [], []
-                for sample, target, mask in zip(all_samples, all_targets, all_masks):
+                for sample, target, mask in zip(all_samples, all_targets, all_masks, strict=False):
                     if sample not in samples_train:
                         samples_test.append(sample)
                         targets_test.append(target)
@@ -549,7 +549,7 @@ class SegmentationMulticlassDataModule(BaseDataModule):
                 samples_and_masks_test,
                 targets_test,
             ) = iterative_train_test_split(
-                np.expand_dims(np.array(list(zip(all_samples, all_masks))), 1),
+                np.expand_dims(np.array(list(zip(all_samples, all_masks, strict=False))), 1),
                 np.array(all_targets),
                 test_size=self.test_size,
             )
@@ -561,7 +561,7 @@ class SegmentationMulticlassDataModule(BaseDataModule):
             samples_test, targets_test, masks_test = self._read_split(self.test_split_file)
             if not self.train_split_file:
                 samples_train, targets_train, masks_train = [], [], []
-                for sample, target, mask in zip(all_samples, all_targets, all_masks):
+                for sample, target, mask in zip(all_samples, all_targets, all_masks, strict=False):
                     if sample not in samples_test:
                         samples_train.append(sample)
                         targets_train.append(target)
@@ -571,7 +571,7 @@ class SegmentationMulticlassDataModule(BaseDataModule):
             samples_train, targets_train, masks_train = self._read_split(self.train_split_file)
             if not self.test_split_file:
                 samples_test, targets_test, masks_test = [], [], []
-                for sample, target, mask in zip(all_samples, all_targets, all_masks):
+                for sample, target, mask in zip(all_samples, all_targets, all_masks, strict=False):
                     if sample not in samples_train:
                         samples_test.append(sample)
                         targets_test.append(target)
@@ -583,7 +583,7 @@ class SegmentationMulticlassDataModule(BaseDataModule):
                 raise ValueError("Validation split file is specified but no train or test split file is specified.")
         else:
             samples_and_masks_train, targets_train, samples_and_masks_val, targets_val = iterative_train_test_split(
-                np.expand_dims(np.array(list(zip(samples_train, masks_train))), 1),
+                np.expand_dims(np.array(list(zip(samples_train, masks_train, strict=False))), 1),
                 np.array(targets_train),
                 test_size=self.val_size,
             )
