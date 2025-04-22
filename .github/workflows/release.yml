@@ -2,7 +2,7 @@ name: PyPI release
 
 on:
   push:
-    branches: [main]
+    branches: [main, pre-release]
 
 defaults:
   run:
@@ -31,7 +31,8 @@ jobs:
           python-version: "3.10"
       - name: Build distribution 📦
         run: |
-          curl -sSL https://install.python-poetry.org | python3 - --version 1.8.4
+          curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="$HOME/.local/bin:$PATH"
           poetry build
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
