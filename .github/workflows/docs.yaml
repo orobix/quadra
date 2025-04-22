@@ -34,6 +34,8 @@ jobs:
             VERSION="v$(python -c "import quadra; print(quadra.__version__)")"
           elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
             VERSION="dev"
+          elif [[ "${{ github.ref }}" == "refs/heads/pre-release" ]]; then
+            VERSION="pre-release"
           fi
           echo "::set-output name=version::$VERSION"
 
