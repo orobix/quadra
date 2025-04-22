@@ -132,8 +132,11 @@ mkdocs_gen_files = "0.5.0"
 mkdocs_material = "9.2.8"
 mkdocstrings_python = "~1.16"
 mkdocs_material_extensions = "1.1.1"
-mike = "1.1.2"
 cairosvg = "2.7.0"
+mike = "1.1.2"
+# Required to run mike
+setuptools = ">=75.0.0"
+
 
 [tool.poetry.extras]
 onnx = ["onnx", "onnxsim", "onnxruntime_gpu", "onnxconverter-common"]
