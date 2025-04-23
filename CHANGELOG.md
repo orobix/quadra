@@ -2,6 +2,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.3.2]
+
+#### Added
+
+- Add pre-release pipeline for testing purposes
+
+#### Updated
+
+- Install only docs dependencies in documentation release pipeline
+- Run all pipelines using poetry 2
+
 ### [2.3.1]
 
 #### Fixed
