@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 #### Updated
 
-- Relax pydantic constraint
+- Relax pydantic constraint, now it can be installed with >=1.10.10 instead of 1.10.10
 
 ### [2.3.2]
 
