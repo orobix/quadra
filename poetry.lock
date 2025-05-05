@@ -7316,4 +7316,4 @@ onnx = ["onnx", "onnxconverter-common", "onnxruntime_gpu", "onnxsim"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.11"
-content-hash = "4662e4f83f930863ea4b49f18ae1f65ad95d3641ac0ac3b71b45fe7d56dca68d"
+content-hash = "9daace415fb266e382e991fcf78a0256ba1a570a796e5b69f1209cd7abf50120"
