@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.3.3]
+
+#### Updated
+
+- Relax pydantic constraint
+
 ### [2.3.2]
 
 #### Added
