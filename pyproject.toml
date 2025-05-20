@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quadra"
-version = "2.3.3"
+version = "2.4.0"
 description = "Deep Learning experiment orchestration library"
 authors = [
 	"Federico Belotti <federico.belotti@orobix.com>",
@@ -40,8 +40,8 @@ quadra = "quadra.main:main"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
 
-torch = { version = "2.4.1", source = "torch_cu121" }
-torchvision = { version = "~0.19", source = "torch_cu121" }
+torch = { version = "2.6.0", source = "torch_cu126" }
+torchvision = { version = "~0.21", source = "torch_cu126" }
 
 pytorch_lightning = "~2.4"
 numpy = "<2"
@@ -85,8 +85,8 @@ onnxruntime_gpu = { version = "1.20.0", optional = true }
 onnxconverter-common = { version = "^1.14.0", optional = true }
 
 [[tool.poetry.source]]
-name = "torch_cu121"
-url = "https://download.pytorch.org/whl/cu121"
+name = "torch_cu126"
+url = "https://download.pytorch.org/whl/cu126"
 priority = "explicit"
 
 

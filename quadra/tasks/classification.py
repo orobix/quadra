@@ -307,6 +307,14 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         # TODO: What happens if we have 64 precision?
         half_precision = "16" in self.trainer.precision
 
+        example_input: torch.Tensor | None = None
+
+        if hasattr(self.trainer, "datamodule") and hasattr(self.trainer.datamodule, "val_dataset"):
+            # Retrieve a better input to evaluate fp16 performance or efficientnetb0 does not sometimes export properly
+            example_input = self.trainer.datamodule.val_dataset[0][0]
+
+        # Selected rtol and atol are quite high, this is mostly done for efficientnetb0 that seems to be
+        # quite unstable in fp16
         self.model_json, export_paths = export_model(
             config=self.config,
             model=module.model,
@@ -314,6 +322,9 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             half_precision=half_precision,
             input_shapes=input_shapes,
             idx_to_class=idx_to_class,
+            example_inputs=example_input,
+            rtol=0.05,
+            atol=0.01,
         )
 
         if len(export_paths) == 0:
@@ -1136,7 +1147,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
             return
 
         if isinstance(self.deployment_model.model.features_extractor, timm.models.resnet.ResNet):
-            target_layers = [cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[-1]]
+            target_layers = [cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor.layer4[-1]]  # type: ignore[index]
             self.cam = GradCAM(
                 model=self.deployment_model.model,
                 target_layers=target_layers,

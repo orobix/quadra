@@ -2,6 +2,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.4.0]
+
+#### Added
+
+- Add a way to use validation data to evaluate ONNX fp16 mixed precision export
+
+#### Updated
+
+- Update torch to 2.6.0+cu126 and torchvision to 0.21.0+cu126
+- Increase minimum rtol and atol for finetuning model export to avoid errors on efficientnet_b0 export
+
 ### [2.3.3]
 
 #### Updated

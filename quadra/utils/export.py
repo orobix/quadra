@@ -119,6 +119,7 @@ def export_torchscript_model(
     input_shapes: list[Any] | None = None,
     half_precision: bool = False,
     model_name: str = "model.pt",
+    example_inputs: list[torch.Tensor] | tuple[torch.Tensor, ...] | torch.Tensor | None = None,
 ) -> tuple[str, Any] | None:
     """Export a PyTorch model with TorchScript.
 
@@ -128,6 +129,8 @@ def export_torchscript_model(
         output_path: Path to save the model
         half_precision: If True, the model will be exported with half precision
         model_name: Name of the exported model
+        example_inputs: If provided use this to evaluate the model instead of generating random inputs, it's expected to
+            be a list of tensors or a single tensor without batch dimension
 
     Returns:
         If the model is exported successfully, the path to the model and the input shape are returned.
@@ -144,7 +147,32 @@ def export_torchscript_model(
     else:
         model.cpu()
 
-    model_inputs = extract_torch_model_inputs(model, input_shapes, half_precision)
+    batch_size = 1
+    model_inputs: tuple[list[Any] | tuple[Any, ...] | torch.Tensor, list[Any]] | None
+    if example_inputs is not None:
+        if isinstance(example_inputs, Sequence):
+            model_input_tensors = []
+            model_input_shapes = []
+
+            for example_input in example_inputs:
+                new_inp = example_input.to(
+                    device="cuda:0" if half_precision else "cpu",
+                    dtype=torch.float16 if half_precision else torch.float32,
+                )
+                new_inp = new_inp.unsqueeze(0).repeat(batch_size, *(1 for x in new_inp.shape))
+                model_input_tensors.append(new_inp)
+                model_input_shapes.append(new_inp[0].shape)
+
+            model_inputs = (model_input_tensors, [model_input_shapes])
+        else:
+            new_inp = example_inputs.to(
+                device="cuda:0" if half_precision else "cpu",
+                dtype=torch.float16 if half_precision else torch.float32,
+            )
+            new_inp = new_inp.unsqueeze(0).repeat(batch_size, *(1 for x in new_inp.shape))
+            model_inputs = (new_inp, [new_inp[0].shape])
+    else:
+        model_inputs = extract_torch_model_inputs(model, input_shapes, half_precision)
 
     if model_inputs is None:
         return None
@@ -182,6 +210,9 @@ def export_onnx_model(
     input_shapes: list[Any] | None = None,
     half_precision: bool = False,
     model_name: str = "model.onnx",
+    example_inputs: list[torch.Tensor] | tuple[torch.Tensor, ...] | torch.Tensor | None = None,
+    rtol: float = 0.01,
+    atol: float = 5e-3,
 ) -> tuple[str, Any] | None:
     """Export a PyTorch model with ONNX.
 
@@ -192,6 +223,10 @@ def export_onnx_model(
         onnx_config: ONNX export configuration
         half_precision: If True, the model will be exported with half precision
         model_name: Name of the exported model
+        example_inputs: If provided use this to evaluate the model instead of generating random inputs, it's expected to
+            be a list of tensors or a single tensor without batch dimension
+        rtol: Relative tolerance for the ONNX safe export in fp16
+        atol: Absolute tolerance for the ONNX safe export in fp16
     """
     if not ONNX_AVAILABLE:
         log.warning("ONNX is not installed, can not export model in this format.")
@@ -210,9 +245,32 @@ def export_onnx_model(
     else:
         batch_size = 1
 
-    model_inputs = extract_torch_model_inputs(
-        model=model, input_shapes=input_shapes, half_precision=half_precision, batch_size=batch_size
-    )
+    model_inputs: tuple[list[Any] | tuple[Any, ...] | torch.Tensor, list[Any]] | None
+    if example_inputs is not None:
+        if isinstance(example_inputs, Sequence):
+            model_input_tensors = []
+            model_input_shapes = []
+
+            for example_input in example_inputs:
+                new_inp = example_input.to(
+                    device="cuda:0" if half_precision else "cpu",
+                    dtype=torch.float16 if half_precision else torch.float32,
+                )
+                new_inp = new_inp.unsqueeze(0).repeat(batch_size, *(1 for x in new_inp.shape))
+                model_input_tensors.append(new_inp)
+                model_input_shapes.append(new_inp[0].shape)
+
+            model_inputs = (model_input_tensors, [model_input_shapes])
+        else:
+            new_inp = example_inputs.to(
+                device="cuda:0" if half_precision else "cpu",
+                dtype=torch.float16 if half_precision else torch.float32,
+            )
+            new_inp = new_inp.unsqueeze(0).repeat(batch_size, *(1 for x in new_inp.shape))
+            model_inputs = ([new_inp], [new_inp[0].shape])
+    else:
+        model_inputs = extract_torch_model_inputs(model, input_shapes, half_precision)
+
     if model_inputs is None:
         return None
 
@@ -266,6 +324,8 @@ def export_onnx_model(
 
     if isinstance(inp, list):
         inp = tuple(inp)  # onnx doesn't like lists representing tuples of inputs
+    elif isinstance(inp, torch.Tensor):
+        inp = (inp,)
 
     if isinstance(inp, dict):
         raise ValueError("ONNX export does not support model with dict inputs")
@@ -290,6 +350,8 @@ def export_onnx_model(
             onnx_config=onnx_config,
             input_shapes=input_shapes,
             input_names=input_names,
+            rtol=rtol,
+            atol=atol,
         )
 
         if not is_export_ok:
@@ -324,6 +386,8 @@ def _safe_export_half_precision_onnx(
     onnx_config: DictConfig,
     input_shapes: list[Any],
     input_names: list[str],
+    rtol: float = 0.01,
+    atol: float = 5e-3,
 ) -> bool:
     """Check that the exported half precision ONNX model does not contain NaN values. If it does, attempt to export
     the model with a more stable export and overwrite the original model.
@@ -335,6 +399,8 @@ def _safe_export_half_precision_onnx(
         onnx_config: ONNX export configuration
         input_shapes: Input shapes for the model
         input_names: Input names for the model
+        rtol: Relative tolerance to evaluate the model
+        atol: Absolute tolerance to evaluate the model
 
     Returns:
         True if the model is stable or it was possible to export a more stable model, False otherwise.
@@ -381,7 +447,7 @@ def _safe_export_half_precision_onnx(
             with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
                 # This function prints a lot of information that is not useful for the user
                 model_fp16 = auto_convert_mixed_precision(
-                    model_fp32, test_data, rtol=0.01, atol=5e-3, keep_io_types=False
+                    model_fp32, test_data, rtol=rtol, atol=atol, keep_io_types=False
                 )
             onnx.save(model_fp16, export_model_path)
 
@@ -431,6 +497,9 @@ def export_model(
     input_shapes: list[Any] | None = None,
     idx_to_class: dict[int, str] | None = None,
     pytorch_model_type: Literal["backbone", "model"] = "model",
+    example_inputs: list[Any] | tuple[Any, ...] | torch.Tensor | None = None,
+    rtol: float = 0.01,
+    atol: float = 5e-3,
 ) -> tuple[dict[str, Any], dict[str, str]]:
     """Generate deployment models for the task.
 
@@ -443,6 +512,9 @@ def export_model(
         idx_to_class: Mapping from class index to class name
         pytorch_model_type: Type of the pytorch model config to be exported, if it's backbone on disk we will save the
             config.backbone config, otherwise we will save the config.model
+        example_inputs: If provided use this to evaluate the model instead of generating random inputs
+        rtol: Relative tolerance for the ONNX safe export in fp16
+        atol: Absolute tolerance for the ONNX safe export in fp16
 
     Returns:
         If the model is exported successfully, return a dictionary containing information about the exported model and
@@ -468,6 +540,7 @@ def export_model(
                 input_shapes=input_shapes,
                 output_path=export_folder,
                 half_precision=half_precision,
+                example_inputs=example_inputs,
             )
 
             if out is None:
@@ -495,6 +568,9 @@ def export_model(
                 onnx_config=config.export.onnx,
                 input_shapes=input_shapes,
                 half_precision=half_precision,
+                example_inputs=example_inputs,
+                rtol=rtol,
+                atol=atol,
             )
 
             if out is None:
