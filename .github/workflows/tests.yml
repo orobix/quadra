@@ -16,36 +16,34 @@ defaults:
 
 jobs:
   tests:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.10"]
+    container:
+      image: nvidia/cuda:12.6.3-cudnn-devel-ubuntu20.04
     timeout-minutes: 60
     steps:
-      - uses: nvidia/cuda:12.6.3-cudnn-devel-ubuntu20.04
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up machine
+      - name: Set up system dependencies
         run: |
           export DEBIAN_FRONTEND=noninteractive
-          apt-get update && apt-get install ffmpeg libsm6 libxext6 curl ssh wget git -y
-          apt install software-properties-common -y
+          apt-get update && apt-get install -y \
+            ffmpeg libsm6 libxext6 curl ssh wget git \
+            software-properties-common
+
           add-apt-repository ppa:deadsnakes/ppa -y
           apt-get update
-          apt-get install python3.10 python3.10-dev python3.10-venv -y
-          export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-          curl -sSL https://install.python-poetry.org | python3.10 - --version 2.1.2
-          export PATH="/root/.local/bin:$PATH"
-          # Setup cusparselt or torch will not work properly
+          apt-get install -y python3.10 python3.10-dev python3.10-venv
+
+          # Setup cusparselt
           wget https://developer.download.nvidia.com/compute/cusparselt/0.7.1/local_installers/cusparselt-local-repo-ubuntu2004-0.7.1_1.0-1_amd64.deb
           dpkg -i cusparselt-local-repo-ubuntu2004-0.7.1_1.0-1_amd64.deb
           cp /var/cusparselt-local-repo-ubuntu2004-0.7.1/cusparselt-*-keyring.gpg /usr/share/keyrings/
           apt-get update
           apt-get install -y libcusparselt0
-      - name: Install Package
+
+      - name: Install Poetry and dependencies
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
+          curl -sSL https://install.python-poetry.org | python3.10 - --version 2.1.2
           export PATH="$HOME/.local/bin:$PATH"
           poetry install --no-cache --with test -E onnx
 
