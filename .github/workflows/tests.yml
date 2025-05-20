@@ -16,6 +16,7 @@ defaults:
 
 jobs:
   tests:
+    runs-on: ubuntu-latest
     container:
       image: nvidia/cuda:12.6.3-cudnn-devel-ubuntu20.04
     timeout-minutes: 60
