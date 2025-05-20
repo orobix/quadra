@@ -163,14 +163,14 @@ def export_torchscript_model(
                 model_input_tensors.append(new_inp)
                 model_input_shapes.append(new_inp[0].shape)
 
-            model_inputs = (model_input_tensors, model_input_shapes)
+            model_inputs = (model_input_tensors, [model_input_shapes])
         else:
             new_inp = example_inputs.to(
                 device="cuda:0" if half_precision else "cpu",
                 dtype=torch.float16 if half_precision else torch.float32,
             )
             new_inp = new_inp.unsqueeze(0).repeat(batch_size, *(1 for x in new_inp.shape))
-            model_inputs = (new_inp, new_inp.shape)  # type: ignore[assignment]
+            model_inputs = (new_inp, [new_inp[0].shape])
     else:
         model_inputs = extract_torch_model_inputs(model, input_shapes, half_precision)
 
@@ -260,14 +260,14 @@ def export_onnx_model(
                 model_input_tensors.append(new_inp)
                 model_input_shapes.append(new_inp[0].shape)
 
-            model_inputs = (model_input_tensors, model_input_shapes)
+            model_inputs = (model_input_tensors, [model_input_shapes])
         else:
             new_inp = example_inputs.to(
                 device="cuda:0" if half_precision else "cpu",
                 dtype=torch.float16 if half_precision else torch.float32,
             )
             new_inp = new_inp.unsqueeze(0).repeat(batch_size, *(1 for x in new_inp.shape))
-            model_inputs = ([new_inp], new_inp.shape)  # type: ignore[assignment]
+            model_inputs = ([new_inp], [new_inp[0].shape])
     else:
         model_inputs = extract_torch_model_inputs(model, input_shapes, half_precision)
 
