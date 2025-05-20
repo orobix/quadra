@@ -50,4 +50,5 @@ jobs:
 
       - name: Run Tests
         run: |
+          export PATH="$HOME/.local/bin:$PATH"
           poetry run pytest -v --disable-pytest-warnings --strict-markers --mock-training --color=yes -m "not slow"
