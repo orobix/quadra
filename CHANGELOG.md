@@ -2,6 +2,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.5.0]
+
+#### Added
+
+- Models can be uploaded on MLFlow compressed in a zip file, configurable with the `core.compress_models` parameter
+
+#### Fixed
+
+- Onnx fp16 export when output contains some NaN values
+
 ### [2.4.0]
 
 #### Added

@@ -430,16 +430,15 @@ def _safe_export_half_precision_onnx(
             export_output = export_onnx_model(
                 model=model,
                 output_path=os.path.dirname(export_model_path),
-                onnx_config=onnx_config,
+                # Force to not simplify fp32 model
+                onnx_config=DictConfig({**onnx_config, "simplify": False}),
                 input_shapes=input_shapes,
                 half_precision=False,
                 model_name=os.path.basename(export_model_path),
             )
-            if export_output is not None:
-                export_model_path, _ = export_output
-            else:
-                log.warning("Failed to export model")
-                return False
+            if export_output is None:
+                # This should not happen
+                raise RuntimeError("Failed to export model")
 
             model_fp32 = onnx.load(export_model_path)
             test_data = {input_names[i]: inp[i].float().cpu().numpy() for i in range(len(inp))}
