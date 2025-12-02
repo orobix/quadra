@@ -327,13 +327,13 @@ def finish(
                         if model_type in ["torchscript", "pytorch"]:
                             with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
                                 if model is None:
-                                    with TemporaryDirectory() as tmpdir:
+                                    with TemporaryDirectory() as temp_dir:
                                         if model_type == "pytorch" and os.path.isfile(
                                             os.path.join(export_folder, "model_config.yaml")
                                         ):
-                                            shutil.copy(model_path, tmpdir)
-                                            shutil.copy(os.path.join(export_folder, "model_config.yaml"), tmpdir)
-                                            shutil.make_archive(zip_name, "zip", root_dir=tmpdir)
+                                            shutil.copy(model_path, temp_dir)
+                                            shutil.copy(os.path.join(export_folder, "model_config.yaml"), temp_dir)
+                                            shutil.make_archive(zip_name, "zip", root_dir=temp_dir)
                                         else:
                                             shutil.make_archive(
                                                 zip_name,
@@ -341,9 +341,9 @@ def finish(
                                                 root_dir=os.path.dirname(model_path),
                                                 base_dir=model_name,
                                             )
-                                        shutil.move(f"{zip_name}.zip", tmpdir)
+                                        shutil.move(f"{zip_name}.zip", temp_dir)
                                         mlflow.log_artifact(
-                                            os.path.join(tmpdir, f"{zip_name}.zip"),
+                                            os.path.join(temp_dir, f"{zip_name}.zip"),
                                             artifact_path=f"{export_folder}/{model_name}",
                                         )
                                 else:
@@ -357,16 +357,16 @@ def finish(
                         elif model_type in ["onnx", "simplified_onnx"] and ONNX_AVAILABLE:
                             with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
                                 if model is None:
-                                    with TemporaryDirectory() as tmpdir:
+                                    with TemporaryDirectory() as temp_dir:
                                         shutil.make_archive(
                                             zip_name,
                                             "zip",
                                             root_dir=os.path.dirname(model_path),
                                             base_dir=model_name,
                                         )
-                                        shutil.move(f"{zip_name}.zip", tmpdir)
+                                        shutil.move(f"{zip_name}.zip", temp_dir)
                                         mlflow.log_artifact(
-                                            os.path.join(tmpdir, f"{zip_name}.zip"),
+                                            os.path.join(temp_dir, f"{zip_name}.zip"),
                                             artifact_path=f"{export_folder}/{model_name}",
                                         )
                                         model_uploaded = True
