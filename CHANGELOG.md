@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 #### Added
 
-- Models can be uploaded on MLFlow compressed in a zip file, configurable with the `core.compress_models` parameter
+- Models can be uploaded on MLFlow compressed in a zip file, configurable with the `core.mlflow_zip_models` parameter
 
 #### Fixed
 

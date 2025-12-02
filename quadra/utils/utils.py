@@ -301,7 +301,7 @@ def finish(
                     quadra_export.generate_torch_inputs(input_size, device=device, half_precision=half_precision),
                 )
                 types_to_upload = config.core.get("upload_models")
-                compress_models = config.core.get("compress_models")
+                mlflow_zip_models = config.core.get("mlflow_zip_models")
                 model_uploaded = False
                 for model_path in deployed_models:
                     model_type = model_type_from_path(model_path)
@@ -312,12 +312,12 @@ def finish(
                         logging.warning("%s model type not supported", model_path)
                         continue
                     if model_type is not None and model_type in types_to_upload:
-                        if model_type == "pytorch" and not compress_models:
+                        if model_type == "pytorch" and not mlflow_zip_models:
                             logging.warning("Pytorch format still not supported for mlflow upload")
                             continue
 
                         model = None
-                        if not compress_models:
+                        if not mlflow_zip_models:
                             model = quadra_export.import_deployment_model(
                                 model_path,
                                 device=device,
