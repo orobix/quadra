@@ -38,5 +38,8 @@ logs/.../experiment_name/
 
 !!! note
         If the user specifies `core.upload_artifacts=True` in the config file, the artifacts will be uploaded to the logger artifact storage if possible.
+        
+!!! note
+        If the user specifies `core.mlflow_zip_models=True` in the config file, the exported models will be zipped before being uploaded to mlflow, if possible.
 
 Since all final configurations are written into `config_resolved.yaml` file, it is the single file enough to compare or replicate the experiment. However, we need to sync the codebase as the same it has been used to train the model. To do so, the quadra library also saves the git commit hash of the codebase as hyperparameter under `git/commit` tag. Using this hash, user can `git checkout <commit-hash>` the codebase and have the identical repository setup to run the same experiment.
