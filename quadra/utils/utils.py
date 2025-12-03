@@ -306,7 +306,6 @@ def finish(
                 for model_path in deployed_models:
                     model_type = model_type_from_path(model_path)
                     model_name = os.path.basename(model_path)
-                    zip_name = model_name.replace(".", "_")
 
                     if model_type is None:
                         logging.warning("%s model type not supported", model_path)
@@ -316,74 +315,63 @@ def finish(
                             logging.warning("Pytorch format still not supported for mlflow upload")
                             continue
 
-                        model = None
-                        if not mlflow_zip_models:
+                        if mlflow_zip_models:
+                            with TemporaryDirectory() as temp_dir:
+                                if model_type == "pytorch" and os.path.isfile(
+                                    os.path.join(export_folder, "model_config.yaml")
+                                ):
+                                    shutil.copy(model_path, temp_dir)
+                                    shutil.copy(os.path.join(export_folder, "model_config.yaml"), temp_dir)
+                                    shutil.make_archive("assets", "zip", root_dir=temp_dir)
+                                else:
+                                    shutil.make_archive(
+                                        "assets",
+                                        "zip",
+                                        root_dir=os.path.dirname(model_path),
+                                        base_dir=model_name,
+                                    )
+                                shutil.move("assets.zip", temp_dir)
+                                with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
+                                    mlflow.pyfunc.log_model(
+                                        artifact_path=model_path,
+                                        loader_module="not.used",
+                                        data_path=os.path.join(temp_dir, "assets.zip"),
+                                        pip_requirements=[""],
+                                    )
+                                    model_uploaded = True
+                        else:
                             model = quadra_export.import_deployment_model(
                                 model_path,
                                 device=device,
                                 inference_config=config.inference,
                             )
 
-                        if model_type in ["torchscript", "pytorch"]:
-                            with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
-                                if model is None:
-                                    with TemporaryDirectory() as temp_dir:
-                                        if model_type == "pytorch" and os.path.isfile(
-                                            os.path.join(export_folder, "model_config.yaml")
-                                        ):
-                                            shutil.copy(model_path, temp_dir)
-                                            shutil.copy(os.path.join(export_folder, "model_config.yaml"), temp_dir)
-                                            shutil.make_archive(zip_name, "zip", root_dir=temp_dir)
-                                        else:
-                                            shutil.make_archive(
-                                                zip_name,
-                                                "zip",
-                                                root_dir=os.path.dirname(model_path),
-                                                base_dir=model_name,
-                                            )
-                                        shutil.move(f"{zip_name}.zip", temp_dir)
-                                        mlflow.log_artifact(
-                                            os.path.join(temp_dir, f"{zip_name}.zip"),
-                                            artifact_path=f"{export_folder}/{model_name}",
-                                        )
-                                else:
+                            if model_type in ["torchscript", "pytorch"]:
+                                with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
                                     signature = infer_signature_model(model.model, inputs)
                                     mlflow.pytorch.log_model(
                                         model.model,
                                         artifact_path=model_path,
                                         signature=signature,
                                     )
-                                model_uploaded = True
-                        elif model_type in ["onnx", "simplified_onnx"] and ONNX_AVAILABLE:
-                            with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
-                                if model is None:
-                                    with TemporaryDirectory() as temp_dir:
-                                        shutil.make_archive(
-                                            zip_name,
-                                            "zip",
-                                            root_dir=os.path.dirname(model_path),
-                                            base_dir=model_name,
+                                    model_uploaded = True
+
+                            elif model_type in ["onnx", "simplified_onnx"] and ONNX_AVAILABLE:
+                                with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
+                                    if model.model_path is None:
+                                        logging.warning(
+                                            "Cannot log onnx model on mlflow, \
+                                            BaseEvaluationModel 'model_path' attribute is None"
                                         )
-                                        shutil.move(f"{zip_name}.zip", temp_dir)
-                                        mlflow.log_artifact(
-                                            os.path.join(temp_dir, f"{zip_name}.zip"),
-                                            artifact_path=f"{export_folder}/{model_name}",
+                                    else:
+                                        signature = infer_signature_model(model, inputs)
+                                        model_proto = onnx.load(model.model_path)
+                                        mlflow.onnx.log_model(
+                                            model_proto,
+                                            artifact_path=model_path,
+                                            signature=signature,
                                         )
                                         model_uploaded = True
-                                elif model.model_path is None:
-                                    logging.warning(
-                                        "Cannot log onnx model on mlflow, \
-                                        BaseEvaluationModel 'model_path' attribute is None"
-                                    )
-                                else:
-                                    signature = infer_signature_model(model, inputs)
-                                    model_proto = onnx.load(model.model_path)
-                                    mlflow.onnx.log_model(
-                                        model_proto,
-                                        artifact_path=model_path,
-                                        signature=signature,
-                                    )
-                                    model_uploaded = True
 
                 if model_uploaded:
                     with mlflow.start_run(run_id=mlflow_logger.run_id) as _:
