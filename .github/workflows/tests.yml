@@ -18,7 +18,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     container:
-      image: nvidia/cuda:12.6.3-cudnn-devel-ubuntu20.04
+      image: nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
     timeout-minutes: 60
     steps:
       - name: Checkout code
@@ -36,9 +36,9 @@ jobs:
           apt-get install -y python3.10 python3.10-dev python3.10-venv
 
           # Setup cusparselt
-          wget https://developer.download.nvidia.com/compute/cusparselt/0.7.1/local_installers/cusparselt-local-repo-ubuntu2004-0.7.1_1.0-1_amd64.deb
-          dpkg -i cusparselt-local-repo-ubuntu2004-0.7.1_1.0-1_amd64.deb
-          cp /var/cusparselt-local-repo-ubuntu2004-0.7.1/cusparselt-*-keyring.gpg /usr/share/keyrings/
+          wget https://developer.download.nvidia.com/compute/cusparselt/0.7.1/local_installers/cusparselt-local-repo-ubuntu2404-0.7.1_1.0-1_amd64.deb
+          dpkg -i cusparselt-local-repo-ubuntu2404-0.7.1_1.0-1_amd64.deb
+          cp /var/cusparselt-local-repo-ubuntu2404-0.7.1/cusparselt-*-keyring.gpg /usr/share/keyrings/
           apt-get update
           apt-get install -y libcusparselt0
 
