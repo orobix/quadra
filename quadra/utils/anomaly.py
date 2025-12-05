@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 try:
     from typing import Any, TypeAlias
 except ImportError:
@@ -42,6 +44,39 @@ def normalize_anomaly_score(raw_score: MapOrValue, threshold: float) -> MapOrVal
         normalized_score = (raw_score + 1) * 100.0
     else:
         normalized_score = 200.0 - ((raw_score / threshold) * 100.0)
+
+    # Ensures that the normalized scores are consistent with the raw scores
+    # For all the items whose prediction changes after normalization, force the normalized score to be
+    # consistent with the prediction made on the raw score by clipping the score:
+    #   - to 100.0 if the prediction was "anomaly" on the raw score and "good" on the normalized score
+    #   - to 99.0 if the prediction was "good" on the raw score and "anomaly" on the normalized score
+    score = raw_score
+    if isinstance(score, torch.Tensor):
+        score = score.cpu().numpy()
+    # Anomalib classify as anomaly if anomaly_score gte threshold
+    is_anomaly_mask = score >= threshold
+    is_not_anomaly_mask = np.bitwise_not(is_anomaly_mask)
+    if isinstance(normalized_score, torch.Tensor):
+        if normalized_score.dim() == 0:
+            normalized_score = (
+                normalized_score.clamp(min=100.0) if is_anomaly_mask else normalized_score.clamp(max=99.0)
+            )
+        else:
+            normalized_score[is_anomaly_mask] = normalized_score[is_anomaly_mask].clamp(min=100.0)
+            normalized_score[is_not_anomaly_mask] = normalized_score[is_not_anomaly_mask].clamp(max=99.0)
+    elif isinstance(normalized_score, np.ndarray) or np.isscalar(normalized_score):
+        if np.isscalar(normalized_score) or normalized_score.ndim == 0:  # type: ignore[union-attr]
+            normalized_score = (
+                np.clip(normalized_score, a_min=100.0, a_max=None)
+                if is_anomaly_mask
+                else np.clip(normalized_score, a_min=None, a_max=99.0)
+            )
+        else:
+            normalized_score = cast(np.ndarray, normalized_score)
+            normalized_score[is_anomaly_mask] = np.clip(normalized_score[is_anomaly_mask], a_min=100.0, a_max=None)
+            normalized_score[is_not_anomaly_mask] = np.clip(
+                normalized_score[is_not_anomaly_mask], a_min=None, a_max=99.0
+            )
 
     if isinstance(normalized_score, torch.Tensor):
         return torch.clamp(normalized_score, 0.0, 1000.0)
