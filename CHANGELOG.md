@@ -2,6 +2,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.5.1]
+
+#### Update
+
+- Run export before test, in order to have results and reports aligned with the production/inference model (onnx, torchscript, ...)
+
+#### Fixed
+
+- Anomaly scores are forced to be consistent with the raw ones after normalization (the prediction is the same).
+
 ### [2.5.0]
 
 #### Added
