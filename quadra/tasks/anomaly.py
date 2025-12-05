@@ -469,7 +469,7 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         # The reason I have to expand dims and cast the optimal threshold to anomaly_scores dtype is because
         # of internal roundings performed differently by numpy and python
         # Particularly the normalized_optimal_threshold computed directly using float values might be higher than the
-        # actual value obtained by the anomaly_scores, as such the computed f1 score might be wrong in the UI!!
+        # actual value obtained by the anomaly_scores
         normalized_optimal_threshold = cast(
             np.ndarray,
             normalize_anomaly_score(
