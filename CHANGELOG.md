@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 #### Update
 
-- Run export before test, in order to have results and reports aligned with the production/inference model (onnx, torchscript, ...)
+- Run export before test in the anomaly detection task, in order to have results and reports aligned with the production/inference model (onnx, torchscript, ...)
 
 #### Fixed
 

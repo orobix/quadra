@@ -303,14 +303,10 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
         """Execute the experiment and all the steps."""
         self.prepare()
         self.train()
-        # When training in fp16 mixed precision, export function casts model weights from fp32 to fp16,
-        # for this reason, predictions logits could slightly change and predictions could be inconsistent between
-        # test and generated report.
-        # Performing export before test allows to have consistent results in test metrics and generated report.
-        if self.config.export is not None and len(self.config.export.types) > 0:
-            self.export()
         if self.run_test:
             self.test()
+        if self.config.export is not None and len(self.config.export.types) > 0:
+            self.export()
         if self.report:
             self.generate_report()
         self.finalize()
