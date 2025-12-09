@@ -99,6 +99,7 @@ def test_padim(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
+        "export.input_shapes=[[3,224,224]]",
     ]
     trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES
@@ -270,6 +271,7 @@ def test_fastflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, ta
         "model.model.backbone=resnet18",
         f"model.dataset.task={task}",
         f"export.types=[{','.join(export_types)}]",
+        "export.input_shapes=[[3,224,224]]",
     ]
     trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES

@@ -244,7 +244,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         ):
             threshold = torch.tensor(100.0)
         else:
-            threshold = self.module.image_metrics.F1Score.threshold
+            threshold = self.module.image_metrics.F1Score.threshold  # type: ignore[union-attr,assignment]
 
         # The output of the prediction is a normalized score so the cumulative histogram is displayed with the
         # normalized scores
@@ -327,6 +327,22 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
                     tensorboard_logger.experiment.add_image(output_path, img, 0, dataformats="HWC")
                 else:
                     utils.upload_file_tensorboard(a, tensorboard_logger)
+
+    def execute(self):
+        """Execute the experiment and all the steps."""
+        self.prepare()
+        self.train()
+        # When training in fp16 mixed precision, export function casts model weights from fp32 to fp16,
+        # for this reason, predictions logits could slightly change and predictions could be inconsistent between
+        # test and generated report.
+        # Performing export before test allows to have consistent results in test metrics and generated report.
+        if self.config.export is not None and len(self.config.export.types) > 0:
+            self.export()
+        if self.run_test:
+            self.test()
+        if self.report:
+            self.generate_report()
+        self.finalize()
 
 
 class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
@@ -445,12 +461,22 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         training_threshold = self.model_data[f"{self.training_threshold_type}_threshold"]
         optimal_threshold = self.metadata["threshold"]
 
-        normalized_optimal_threshold = cast(float, normalize_anomaly_score(optimal_threshold, training_threshold))
-
         os.makedirs(os.path.join(self.report_path, "predictions"), exist_ok=True)
         os.makedirs(os.path.join(self.report_path, "heatmaps"), exist_ok=True)
 
         anomaly_scores = self.metadata["anomaly_scores"].cpu().numpy()
+
+        # The reason I have to expand dims and cast the optimal threshold to anomaly_scores dtype is because
+        # of internal roundings performed differently by numpy and python
+        # Particularly the normalized_optimal_threshold computed directly using float values might be higher than the
+        # actual value obtained by the anomaly_scores
+        normalized_optimal_threshold = cast(
+            np.ndarray,
+            normalize_anomaly_score(
+                np.expand_dims(np.array(optimal_threshold, dtype=anomaly_scores.dtype), -1), training_threshold
+            ),
+        ).item()
+
         anomaly_scores = normalize_anomaly_score(anomaly_scores, training_threshold)
 
         if not isinstance(anomaly_scores, np.ndarray):
