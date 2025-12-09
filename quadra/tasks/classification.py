@@ -880,7 +880,6 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                 self.log_artifact(local_path=confusion_matrix_path, artifact_path="classification_output")
             
             # Upload results from each split
-            import glob
             for count in range(len(self.metadata["test_accuracy"])):
                 current_output_folder = f"{self.output.folder}_{count}"
                 artifacts = glob.glob(os.path.join(current_output_folder, "**/*"), recursive=True)

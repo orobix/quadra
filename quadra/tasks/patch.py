@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import glob
 import json
 import os
 from pathlib import Path
@@ -245,7 +246,6 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
                 self.log_artifact(local_path="reconstruction_results.json", artifact_path="patch_output")
             
             # Upload all results from the output folder
-            import glob
             artifacts = glob.glob(os.path.join(self.output.folder, "**/*"), recursive=True)
             for artifact_path in artifacts:
                 if os.path.isfile(artifact_path):
