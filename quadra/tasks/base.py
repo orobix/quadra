@@ -2,18 +2,22 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any, Generic, TypeVar
 
 import hydra
 import torch
 from hydra.core.hydra_config import HydraConfig
+from hydra.utils import get_original_cwd
 from lightning_fabric.utilities.device_parser import _parse_gpu_ids
 from omegaconf import DictConfig, OmegaConf, open_dict
 from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.loggers import Logger, MLFlowLogger
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 
+import quadra
 from quadra import get_version
 from quadra.callbacks.mlflow import validate_artifact_storage
 from quadra.datamodules.base import BaseDataModule
@@ -37,13 +41,127 @@ class Task(Generic[DataModuleT]):
         self.export_folder: str = "deployment_model"
         self._datamodule: DataModuleT
         self.metadata: dict[str, Any]
+        self._mlflow_logger: MLFlowLogger | None = None
         self.save_config()
+        self._initialize_mlflow_logger()
 
     def save_config(self) -> None:
         """Save the experiment configuration when running an Hydra experiment."""
         if HydraConfig.initialized():
             with open("config_resolved.yaml", "w") as fp:
                 OmegaConf.save(config=OmegaConf.to_container(self.config, resolve=True), f=fp.name)
+
+    def _initialize_mlflow_logger(self) -> None:
+        """Initialize MLflow logger for non-Lightning tasks if configured."""
+        if "logger" not in self.config:
+            return
+
+        logger_config = self.config.logger
+        if not isinstance(logger_config, DictConfig):
+            return
+
+        # Check if MLflow logger is configured
+        for logger_name, lg_conf in logger_config.items():
+            if "_target_" in lg_conf and "MLFlowLogger" in lg_conf["_target_"]:
+                log.info("Instantiating MLflow logger <%s>", lg_conf["_target_"])
+                self._mlflow_logger = hydra.utils.instantiate(lg_conf)
+                validate_artifact_storage(self._mlflow_logger)
+                break
+
+    def log_hyperparameters(self, params: dict[str, Any] | None = None) -> None:
+        """Log hyperparameters to MLflow.
+
+        Args:
+            params: Additional parameters to log. If None, only config and default params are logged.
+        """
+        if self._mlflow_logger is None:
+            return
+
+        if not HydraConfig.initialized():
+            return
+
+        log.info("Logging hyperparameters to MLflow!")
+        hydra_cfg = HydraConfig.get()
+        hydra_choices = OmegaConf.to_container(hydra_cfg.runtime.choices)
+
+        hparams = {}
+        if isinstance(hydra_choices, dict):
+            # For multirun override the choices that are not automatically updated
+            for item in hydra_cfg.overrides.task:
+                if "." in item:
+                    continue
+
+                if "=" not in item:
+                    continue
+
+                override, value = item.split("=", 1)
+                hydra_choices[override] = value
+
+            hydra_choices_final = {}
+            for k, v in hydra_choices.items():
+                if isinstance(k, str):
+                    k_replaced = k.replace("@", "_at_")
+                    hydra_choices_final[k_replaced] = v
+                    if v is not None and isinstance(v, str) and "@" in v:
+                        hydra_choices_final[k_replaced] = v.replace("@", "_at_")
+
+            hparams.update(hydra_choices_final)
+
+        hparams["experiment_path"] = self.config.core.experiment_path
+        hparams["command"] = self.config.core.command
+        hparams["library/version"] = str(quadra.__version__)
+
+        # Add git information if available
+        with open(os.devnull, "w") as fnull:
+            if (
+                subprocess.call(["git", "-C", get_original_cwd(), "status"], stderr=subprocess.STDOUT, stdout=fnull)
+                == 0
+            ):
+                try:
+                    hparams["git/commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
+                    hparams["git/branch"] = (
+                        subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("ascii").strip()
+                    )
+                    hparams["git/remote"] = (
+                        subprocess.check_output(["git", "remote", "get-url", "origin"]).decode("ascii").strip()
+                    )
+                except subprocess.CalledProcessError:
+                    log.warning(
+                        "Could not get git commit, branch or remote information, the repository might not have any "
+                        "commits yet or it might have been initialized wrongly."
+                    )
+
+        # Add any additional parameters
+        if params is not None:
+            hparams.update(params)
+
+        self._mlflow_logger.log_hyperparams(hparams)
+
+    def log_metrics(self, metrics: dict[str, float], step: int | None = None) -> None:
+        """Log metrics to MLflow.
+
+        Args:
+            metrics: Dictionary of metric names and values.
+            step: Optional step number for the metrics.
+        """
+        if self._mlflow_logger is None:
+            return
+
+        self._mlflow_logger.log_metrics(metrics, step=step)
+
+    def log_artifact(self, local_path: str, artifact_path: str | None = None) -> None:
+        """Log an artifact to MLflow.
+
+        Args:
+            local_path: Path to the artifact file.
+            artifact_path: Path within the artifact store to save the artifact.
+        """
+        if self._mlflow_logger is None:
+            return
+
+        self._mlflow_logger.experiment.log_artifact(
+            run_id=self._mlflow_logger.run_id, local_path=local_path, artifact_path=artifact_path
+        )
 
     def prepare(self) -> None:
         """Prepare the experiment."""
@@ -80,6 +198,16 @@ class Task(Generic[DataModuleT]):
     def finalize(self) -> None:
         """Finalize the experiment."""
         log.info("Results are saved in %s", os.getcwd())
+
+        # Upload config files to MLflow if configured and upload_artifacts is enabled
+        if self._mlflow_logger is not None and self.config.core.get("upload_artifacts"):
+            log.info("Uploading artifacts to MLflow")
+            file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt"]
+
+            for f in file_names:
+                file_path = os.path.join(os.getcwd(), f)
+                if os.path.isfile(file_path):
+                    self.log_artifact(local_path=file_path, artifact_path="metadata")
 
     def execute(self) -> None:
         """Execute the experiment and all the steps."""

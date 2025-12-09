@@ -606,6 +606,21 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
     def train(self) -> None:
         """Train the model."""
         log.info("Starting training...!")
+        
+        # Log hyperparameters to MLflow
+        num_backbone_params = sum(p.numel() for p in self.backbone.parameters())
+        num_trainable_params = sum(p.numel() for p in self.backbone.parameters() if p.requires_grad)
+        self.log_hyperparameters(
+            {
+                "model/backbone_params_total": num_backbone_params,
+                "model/backbone_params_trainable": num_trainable_params,
+                "model/backbone_params_not_trainable": num_backbone_params - num_trainable_params,
+                "model/classifier_type": self.config.model["_target_"],
+                "task/device": self.device,
+                "task/half_precision": self.half_precision,
+            }
+        )
+        
         all_features = None
         all_labels = None
 
@@ -634,8 +649,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             all_labels = all_labels[sorted_indices]
 
         # cycle over all train/test split
-        for train_dataloader, test_dataloader in zip(
-            self.train_dataloader_list, self.test_dataloader_list, strict=False
+        for split_idx, (train_dataloader, test_dataloader) in enumerate(
+            zip(self.train_dataloader_list, self.test_dataloader_list, strict=False)
         ):
             # Reinit classifier
             self.model = self.config.model
@@ -687,6 +702,14 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                 ]
             )
             self.metadata["cams"].append(cams)
+            
+            # Log metrics to MLflow
+            self.log_metrics(
+                {
+                    f"split_{split_idx}/val_accuracy": accuracy,
+                },
+                step=split_idx,
+            )
 
     def extract_model_summary(
         self, feature_extractor: torch.nn.Module | BaseEvaluationModel, dl: torch.utils.data.DataLoader
@@ -847,6 +870,27 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         plt.title(f"Confusion Matrix (Accuracy: {(self.metadata['test_accuracy'][count] * 100):.2f}%)")
         plt.savefig(os.path.join(final_folder, "test_confusion_matrix.png"), bbox_inches="tight", pad_inches=0, dpi=300)
         plt.close()
+        
+        # Upload artifacts to MLflow
+        if self._mlflow_logger is not None and self.config.core.get("upload_artifacts"):
+            log.info("Uploading classification results to MLflow")
+            # Upload confusion matrix
+            confusion_matrix_path = os.path.join(final_folder, "test_confusion_matrix.png")
+            if os.path.exists(confusion_matrix_path):
+                self.log_artifact(local_path=confusion_matrix_path, artifact_path="classification_output")
+            
+            # Upload results from each split
+            import glob
+            for count in range(len(self.metadata["test_accuracy"])):
+                current_output_folder = f"{self.output.folder}_{count}"
+                artifacts = glob.glob(os.path.join(current_output_folder, "**/*"), recursive=True)
+                for artifact_path in artifacts:
+                    if os.path.isfile(artifact_path):
+                        relative_path = os.path.relpath(artifact_path, current_output_folder)
+                        self.log_artifact(
+                            local_path=artifact_path, 
+                            artifact_path=f"classification_output/split_{count}/{os.path.dirname(relative_path)}"
+                        )
 
     def execute(self) -> None:
         """Execute the experiment and all the steps."""

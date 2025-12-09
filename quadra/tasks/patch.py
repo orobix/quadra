@@ -128,6 +128,21 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
     def train(self) -> None:
         """Train the model."""
         log.info("Starting training...!")
+        
+        # Log hyperparameters to MLflow
+        num_backbone_params = sum(p.numel() for p in self.backbone.parameters())
+        num_trainable_params = sum(p.numel() for p in self.backbone.parameters() if p.requires_grad)
+        self.log_hyperparameters(
+            {
+                "model/backbone_params_total": num_backbone_params,
+                "model/backbone_params_trainable": num_trainable_params,
+                "model/backbone_params_not_trainable": num_backbone_params - num_trainable_params,
+                "model/classifier_type": self.config.model["_target_"],
+                "task/device": self.device,
+                "task/half_precision": self.half_precision,
+            }
+        )
+        
         # prepare_data() must be explicitly called if the task does not include a lightining training
         self.datamodule.prepare_data()
         self.datamodule.setup(stage="fit")
@@ -155,6 +170,9 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         self.metadata["test_labels"] = [
             train_dataset.idx_to_class[i] if i != -1 else "N/A" for i in res["real_label"].unique().tolist()
         ]
+        
+        # Log metrics to MLflow
+        self.log_metrics({"val_accuracy": accuracy})
 
     def generate_report(self) -> None:
         """Generate the report for the task."""
@@ -218,6 +236,24 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
             reconstructions=reconstructions,
             ignore_classes=ignore_classes,
         )
+        
+        # Upload artifacts to MLflow
+        if self._mlflow_logger is not None and self.config.core.get("upload_artifacts"):
+            log.info("Uploading patch classification results to MLflow")
+            # Upload reconstruction results
+            if os.path.exists("reconstruction_results.json"):
+                self.log_artifact(local_path="reconstruction_results.json", artifact_path="patch_output")
+            
+            # Upload all results from the output folder
+            import glob
+            artifacts = glob.glob(os.path.join(self.output.folder, "**/*"), recursive=True)
+            for artifact_path in artifacts:
+                if os.path.isfile(artifact_path):
+                    relative_path = os.path.relpath(artifact_path, self.output.folder)
+                    self.log_artifact(
+                        local_path=artifact_path, 
+                        artifact_path=f"patch_output/{os.path.dirname(relative_path)}"
+                    )
 
     def export(self) -> None:
         """Generate deployment model for the task."""
