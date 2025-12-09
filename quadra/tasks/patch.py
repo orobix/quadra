@@ -250,10 +250,12 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
             for artifact_path in artifacts:
                 if os.path.isfile(artifact_path):
                     relative_path = os.path.relpath(artifact_path, self.output.folder)
-                    self.log_artifact(
-                        local_path=artifact_path, 
-                        artifact_path=f"patch_output/{os.path.dirname(relative_path)}"
-                    )
+                    dir_name = os.path.dirname(relative_path)
+                    # Build artifact path, avoiding trailing slashes for root-level files
+                    artifact_subpath = "patch_output"
+                    if dir_name:
+                        artifact_subpath = f"{artifact_subpath}/{dir_name}"
+                    self.log_artifact(local_path=artifact_path, artifact_path=artifact_subpath)
 
     def export(self) -> None:
         """Generate deployment model for the task."""

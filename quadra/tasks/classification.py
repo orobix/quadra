@@ -886,10 +886,12 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
                 for artifact_path in artifacts:
                     if os.path.isfile(artifact_path):
                         relative_path = os.path.relpath(artifact_path, current_output_folder)
-                        self.log_artifact(
-                            local_path=artifact_path, 
-                            artifact_path=f"classification_output/split_{count}/{os.path.dirname(relative_path)}"
-                        )
+                        dir_name = os.path.dirname(relative_path)
+                        # Build artifact path, avoiding trailing slashes for root-level files
+                        artifact_subpath = f"classification_output/split_{count}"
+                        if dir_name:
+                            artifact_subpath = f"{artifact_subpath}/{dir_name}"
+                        self.log_artifact(local_path=artifact_path, artifact_path=artifact_subpath)
 
     def execute(self) -> None:
         """Execute the experiment and all the steps."""
