@@ -83,8 +83,6 @@ onnx = { version = "1.15.0", optional = true }
 onnxsim = { version = "0.4.28", optional = true }
 onnxruntime_gpu = { version = "1.23.2", optional = true }
 onnxconverter-common = { version = "^1.14.0", optional = true }
-# # Needed with torch 2.9.1, it requires onnx >= 1.16
-# onnxscript = {version = "^0.5.7", optional = true}
 
 [[tool.poetry.source]]
 name = "torch_cu128"
@@ -141,7 +139,7 @@ setuptools = ">=75.0.0"
 
 
 [tool.poetry.extras]
-onnx = ["onnx", "onnxsim", "onnxruntime_gpu", "onnxconverter-common", "onnxscript"]
+onnx = ["onnx", "onnxsim", "onnxruntime_gpu", "onnxconverter-common"]
 
 [tool.poetry_bumpversion.file."quadra/__init__.py"]
 search = '__version__ = "{current_version}"'
