@@ -18,7 +18,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     container:
-      image: nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
+      image: nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04
     timeout-minutes: 60
     steps:
       - name: Checkout code
@@ -46,6 +46,9 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python3.10 - --version 2.1.2
           export PATH="$HOME/.local/bin:$PATH"
+          # Force cpu-only torch installation
+          sed -i 's/cu128/cpu/g' pyproject.toml
+          poetry lock
           poetry install --no-cache --with test -E onnx
 
       - name: Run Tests

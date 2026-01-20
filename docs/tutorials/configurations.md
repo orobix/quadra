@@ -214,7 +214,6 @@ trainer:
 scheduler:
   patience: 20
   factor: 0.9
-  verbose: False
   threshold: 0.01
 
 callbacks:
