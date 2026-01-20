@@ -46,6 +46,7 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python3.10 - --version 2.1.2
           export PATH="$HOME/.local/bin:$PATH"
+          # Force cpu-only torch installation
           sed -i 's/cu128/cpu/g' pyproject.toml
           poetry lock
           poetry install --no-cache --with test -E onnx

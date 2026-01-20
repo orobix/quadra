@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Onnxruntime-gpu to v1.23.2
 - Scikit-learn to v1.6.1
 - Configs to fit the new torch version
+- Force cpu-only torch installation for tests
 
 ### [2.5.1]
 
