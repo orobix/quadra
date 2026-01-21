@@ -2,6 +2,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+### [2.6.1]
+
+#### Fixed
+
+- Probabilities in sklearn classification are available during test even if GT is not present
+
 ### [2.6.0]
 
 #### Updated
