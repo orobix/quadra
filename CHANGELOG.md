@@ -14,6 +14,13 @@ Starting from version 2.6.1, releases are automatically created when changes are
 
 **Note**: If a tag for the current version already exists, the workflow will skip tag and release creation to avoid duplicates.
 
+### [2.6.2]
+
+#### Added
+
+- Automated tag and release creation workflow on merge to main branch
+- Auto-generated release notes based on commits
+
 ### [2.6.1]
 
 #### Fixed
