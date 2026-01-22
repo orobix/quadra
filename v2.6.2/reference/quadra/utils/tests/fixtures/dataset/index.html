@@ -1,0 +1,5854 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quadra">
+      
+      
+      
+        <link rel="canonical" href="https://orobix.github.io/quadra/v2.6.2/reference/quadra/utils/tests/fixtures/dataset/index.html">
+      
+      
+        <link rel="prev" href="../index.html">
+      
+      
+        <link rel="next" href="anomaly.html">
+      
+      
+      <link rel="icon" href="../../../../../../images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.2.8">
+    
+    
+      
+        <title>dataset - Quadra</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../../assets/stylesheets/main.046329b4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../../css/colors.css">
+    
+      <link rel="stylesheet" href="../../../../../../css/mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../../css/landing.css">
+    
+    <script>__md_scope=new URL("../../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="light-blue">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#quadra.utils.tests.fixtures.dataset" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  You're not viewing the latest version.
+  <a href="../../../../../../.."> 
+    <strong>Click here to go to latest.</strong>
+  </a>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),outdated=__md_get("__outdated",sessionStorage);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../../../index.html" title="Quadra" class="md-header__button md-logo" aria-label="Quadra" data-md-component="logo">
+      
+  <img src="../../../../../../images/quadra_logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Quadra
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              dataset
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="light-blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="light-blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/orobix/quadra" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Orobix/quadra
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../../../../index.html" class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../../../../getting_started.html" class="md-tabs__link">
+        
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../../../index.html" class="md-tabs__link">
+          
+  
+  Code Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../../../tutorials/datamodules.html" class="md-tabs__link">
+          
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../../../SUMMARY.html" class="md-tabs__link">
+        
+  
+    
+  
+  SUMMARY
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../../../CHANGELOG.html" class="md-tabs__link">
+        
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../../../index.html" title="Quadra" class="md-nav__button md-logo" aria-label="Quadra" data-md-component="logo">
+      
+  <img src="../../../../../../images/quadra_logo.svg" alt="logo">
+
+    </a>
+    Quadra
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/orobix/quadra" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Orobix/quadra
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../index.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../getting_started.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Code Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Code Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    quadra
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            quadra
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_1" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../callbacks/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    callbacks
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_1">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_1">
+            <span class="md-nav__icon md-icon"></span>
+            callbacks
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../callbacks/anomalib.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    anomalib
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../callbacks/lightning.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    lightning
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../callbacks/mlflow.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    mlflow
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../callbacks/scheduler.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    scheduler
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_2" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../datamodules/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    datamodules
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_2">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_2">
+            <span class="md-nav__icon md-icon"></span>
+            datamodules
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datamodules/anomaly.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    anomaly
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datamodules/base.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    base
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datamodules/classification.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_2_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../datamodules/generic/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    generic
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_2_4">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_1_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            generic
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datamodules/generic/imagenette.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    imagenette
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datamodules/generic/mnist.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    mnist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datamodules/generic/mvtec.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    mvtec
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datamodules/generic/oxford_pet.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    oxford_pet
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datamodules/patch.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    patch
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datamodules/segmentation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    segmentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datamodules/ssl.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ssl
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_3" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../datasets/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    datasets
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_3">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_3">
+            <span class="md-nav__icon md-icon"></span>
+            datasets
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datasets/anomaly.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    anomaly
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datasets/classification.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datasets/patch.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    patch
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datasets/segmentation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    segmentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../datasets/ssl.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ssl
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../losses/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    losses
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_4">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_4">
+            <span class="md-nav__icon md-icon"></span>
+            losses
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_4_1" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../losses/classification/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    classification
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_4_1">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_1_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            classification
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../losses/classification/asl.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    asl
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../losses/classification/focal.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    focal
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../losses/classification/prototypical.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    prototypical
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_4_2" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../losses/ssl/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    ssl
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_4_2">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_1_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            ssl
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../losses/ssl/barlowtwins.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    barlowtwins
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../losses/ssl/byol.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    byol
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../losses/ssl/dino.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    dino
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../losses/ssl/hyperspherical.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    hyperspherical
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../losses/ssl/idmm.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    idmm
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../losses/ssl/simclr.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    simclr
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../losses/ssl/simsiam.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    simsiam
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../losses/ssl/vicreg.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    vicreg
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../main.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    main
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../metrics/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    metrics
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_6">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_6">
+            <span class="md-nav__icon md-icon"></span>
+            metrics
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../metrics/segmentation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    segmentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../models/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    models
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_7">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_7">
+            <span class="md-nav__icon md-icon"></span>
+            models
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../models/base.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    base
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_7_2" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../models/classification/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    classification
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_7_2">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_1_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            classification
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../models/classification/backbones.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    backbones
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../models/classification/base.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    base
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../models/evaluation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    evaluation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../modules/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    modules
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_8">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_8">
+            <span class="md-nav__icon md-icon"></span>
+            modules
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../modules/backbone.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    backbone
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../modules/base.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    base
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_8_3" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../modules/classification/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    classification
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_8_3">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_1_8_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_8_3">
+            <span class="md-nav__icon md-icon"></span>
+            classification
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../modules/classification/base.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    base
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_8_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../modules/ssl/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    ssl
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_8_4">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_1_8_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_8_4">
+            <span class="md-nav__icon md-icon"></span>
+            ssl
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../modules/ssl/barlowtwins.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    barlowtwins
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../modules/ssl/byol.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    byol
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../modules/ssl/common.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    common
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../modules/ssl/dino.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    dino
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../modules/ssl/hyperspherical.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    hyperspherical
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../modules/ssl/idmm.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    idmm
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../modules/ssl/simclr.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    simclr
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../modules/ssl/simsiam.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    simsiam
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../modules/ssl/vicreg.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    vicreg
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../optimizers/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    optimizers
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_9">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_9">
+            <span class="md-nav__icon md-icon"></span>
+            optimizers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../optimizers/lars.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    lars
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../optimizers/sam.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    sam
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../schedulers/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    schedulers
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_10">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_10">
+            <span class="md-nav__icon md-icon"></span>
+            schedulers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../schedulers/base.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    base
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../schedulers/warmup.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    warmup
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../tasks/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    tasks
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_11">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_11">
+            <span class="md-nav__icon md-icon"></span>
+            tasks
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tasks/anomaly.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    anomaly
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tasks/base.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    base
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tasks/classification.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tasks/patch.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    patch
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tasks/segmentation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    segmentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tasks/ssl.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ssl
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../trainers/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    trainers
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_12">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_12">
+            <span class="md-nav__icon md-icon"></span>
+            trainers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../trainers/classification.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_13" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    utils
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_13">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_13_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_1_13">
+            <span class="md-nav__icon md-icon"></span>
+            utils
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../anomaly.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    anomaly
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../classification.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deprecation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    deprecation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../evaluation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    evaluation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../export.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    export
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../imaging.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    imaging
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../logger.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    logger
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mlflow.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    mlflow
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_manager.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    model_manager
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../models.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_13_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../patch/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    patch
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_13_11">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_1_13_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_13_11">
+            <span class="md-nav__icon md-icon"></span>
+            patch
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../patch/dataset.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    dataset
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../patch/metrics.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    metrics
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../patch/model.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    model
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../patch/visualization.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    visualization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../resolver.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    resolver
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../segmentation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    segmentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_13_14" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    tests
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_13_14">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_1_13_14_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_1_13_14">
+            <span class="md-nav__icon md-icon"></span>
+            tests
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_13_14_1" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    fixtures
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_13_14_1">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="5" aria-labelledby="__nav_3_1_13_14_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_1_13_14_1">
+            <span class="md-nav__icon md-icon"></span>
+            fixtures
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_13_14_1_1" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="index.html" class="md-nav__link md-nav__link--active">
+              
+  
+  <span class="md-ellipsis">
+    dataset
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link md-nav__link--active" for="__nav_3_1_13_14_1_1">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="6" aria-labelledby="__nav_3_1_13_14_1_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_1_13_14_1_1">
+            <span class="md-nav__icon md-icon"></span>
+            dataset
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="anomaly.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    anomaly
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="classification.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="imagenette.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    imagenette
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="segmentation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    segmentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_13_14_1_2" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../models/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    models
+  </span>
+  
+
+            </a>
+            
+              <label class="md-nav__link " for="__nav_3_1_13_14_1_2">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="6" aria-labelledby="__nav_3_1_13_14_1_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1_13_14_1_2">
+            <span class="md-nav__icon md-icon"></span>
+            models
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/anomaly.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    anomaly
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/classification.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/segmentation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    segmentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../helpers.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    helpers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../models.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../utils.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    utils
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../validator.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    validator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../visualization.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    visualization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../vit_explainability.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    vit_explainability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Tutorials
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Tutorials
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/datamodules.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Datamodules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/tasks.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tasks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/configurations.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configurations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/devices_setup.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setting up devices
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/reproducibility.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Reproducibility
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/model_management.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Model Management
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/export.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Export models for inference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/integration.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    External projects integration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/contribution.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/documentation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Building documentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_11" >
+        
+          <label class="md-nav__link" for="__nav_4_11" id="__nav_4_11_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_11">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/examples/segmentation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Segmentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/examples/ssl.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Self-Supervised Learning
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/examples/classification.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pytorch classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/examples/multilabel_classification.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pytorch multilabel classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/examples/sklearn_classification.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sklearn classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/examples/sklearn_patch_classification.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sklearn patch classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../../tutorials/examples/anomaly_detection.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Anomaly Detection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../SUMMARY.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SUMMARY
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../CHANGELOG.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset" class="md-nav__link">
+    dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.AnomalyDatasetArguments" class="md-nav__link">
+    AnomalyDatasetArguments
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.ClassificationDatasetArguments" class="md-nav__link">
+    ClassificationDatasetArguments
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.ClassificationMultilabelDatasetArguments" class="md-nav__link">
+    ClassificationMultilabelDatasetArguments
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.ClassificationPatchDatasetArguments" class="md-nav__link">
+    ClassificationPatchDatasetArguments
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.SegmentationDatasetArguments" class="md-nav__link">
+    SegmentationDatasetArguments
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.anomaly_dataset" class="md-nav__link">
+    anomaly_dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.base_anomaly_dataset" class="md-nav__link">
+    base_anomaly_dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.base_binary_segmentation_dataset" class="md-nav__link">
+    base_binary_segmentation_dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.base_classification_dataset" class="md-nav__link">
+    base_classification_dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.base_multiclass_segmentation_dataset" class="md-nav__link">
+    base_multiclass_segmentation_dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.base_multilabel_classification_dataset" class="md-nav__link">
+    base_multilabel_classification_dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.base_patch_classification_dataset" class="md-nav__link">
+    base_patch_classification_dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.classification_dataset" class="md-nav__link">
+    classification_dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.classification_patch_dataset" class="md-nav__link">
+    classification_patch_dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.imagenette_dataset" class="md-nav__link">
+    imagenette_dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.multilabel_classification_dataset" class="md-nav__link">
+    multilabel_classification_dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadra.utils.tests.fixtures.dataset.segmentation_dataset" class="md-nav__link">
+    segmentation_dataset
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>dataset</h1>
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="quadra.utils.tests.fixtures.dataset"></a>
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.AnomalyDatasetArguments" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">AnomalyDatasetArguments</span><span class="p">(</span><span class="n">train_samples</span><span class="p">,</span> <span class="n">val_samples</span><span class="p">,</span> <span class="n">test_samples</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#quadra.utils.tests.fixtures.dataset.AnomalyDatasetArguments" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+        <p>Anomaly dataset arguments.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>train_samples</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>number of train samples</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>val_samples</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>number of validation samples (good, bad)</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>test_samples</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>number of test samples (good, bad)</p>
+          </div>
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.ClassificationDatasetArguments" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">ClassificationDatasetArguments</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">val_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#quadra.utils.tests.fixtures.dataset.ClassificationDatasetArguments" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+        <p>Classification dataset arguments.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>samples</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>number of samples per class</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>classes</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>class names, if set it must be the same length as samples</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>val_size</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>validation set size</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>test_size</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>test set size</p>
+          </div>
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.ClassificationMultilabelDatasetArguments" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">ClassificationMultilabelDatasetArguments</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">val_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">percentage_other_classes</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#quadra.utils.tests.fixtures.dataset.ClassificationMultilabelDatasetArguments" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+        <p>Classification dataset arguments.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>samples</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>number of samples per class</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>classes</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>class names, if set it must be the same length as samples</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>val_size</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>validation set size</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>test_size</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>test set size</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>percentage_other_classes</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
+                  <code>0.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>probability of adding other classes to the labels of each sample</p>
+          </div>
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.ClassificationPatchDatasetArguments" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">ClassificationPatchDatasetArguments</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">overlap</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">patch_number</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">val_size</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">annotated_good</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#quadra.utils.tests.fixtures.dataset.ClassificationPatchDatasetArguments" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+        <p>Classification patch dataset arguments.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>samples</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>number of samples per class</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>overlap</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>overlap between patches</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>patch_size</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>patch size</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>patch_number</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>number of patches</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>classes</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>class names, if set it must be the same length as samples</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>val_size</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
+                  <code>0.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>validation set size</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>test_size</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
+                  <code>0.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>test set size</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>annotated_good</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>list of class names that are considered as good annotations (E.g. ["good"])</p>
+          </div>
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.SegmentationDatasetArguments" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">SegmentationDatasetArguments</span><span class="p">(</span><span class="n">train_samples</span><span class="p">,</span> <span class="n">val_samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">test_samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#quadra.utils.tests.fixtures.dataset.SegmentationDatasetArguments" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+        <p>Segmentation dataset arguments.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>train_samples</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>List of samples per class in train set, element at index 0 are good samples</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>val_samples</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>List of samples per class in validation set, same as above.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>test_samples</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>List of samples per class in test set, same as above.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>classes</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Optional list of class names, must be equal to len(train_samples) - 1</p>
+          </div>
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.anomaly_dataset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">anomaly_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">)</span></code>
+
+<a href="#quadra.utils.tests.fixtures.dataset.anomaly_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Fixture used to dinamically generate anomaly dataset. By default images are random grayscales with size 10x10.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmp_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>path to temporary directory</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>dataset_arguments</code></b>
+              (<code><a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.anomaly.AnomalyDatasetArguments" href="anomaly.html#quadra.utils.tests.fixtures.dataset.anomaly.AnomalyDatasetArguments">AnomalyDatasetArguments</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>dataset arguments</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.anomaly.AnomalyDatasetArguments" href="anomaly.html#quadra.utils.tests.fixtures.dataset.anomaly.AnomalyDatasetArguments">AnomalyDatasetArguments</a>]</code>
+          –
+          <div class="doc-md-description">
+            <p>path to anomaly dataset</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>quadra/utils/tests/fixtures/dataset/anomaly.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">anomaly_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">:</span> <span class="n">AnomalyDatasetArguments</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AnomalyDatasetArguments</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fixture used to dinamically generate anomaly dataset. By default images are random grayscales with size 10x10.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmp_path: path to temporary directory</span>
+<span class="sd">        dataset_arguments: dataset arguments</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        path to anomaly dataset</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield</span> <span class="n">_build_anomaly_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.base_anomaly_dataset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">base_anomaly_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span></code>
+
+<a href="#quadra.utils.tests.fixtures.dataset.base_anomaly_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+<details class="generate-base-anomaly-dataset-with-the-following-parameters" open>
+  <summary>Generate base anomaly dataset with the following parameters</summary>
+  <ul>
+<li>train_samples: 10</li>
+<li>val_samples: (10, 10)</li>
+<li>test_samples: (10, 10).</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmp_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Path to temporary directory</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>request</code></b>
+              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Pytest SubRequest object</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Yields:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.anomaly.AnomalyDatasetArguments" href="anomaly.html#quadra.utils.tests.fixtures.dataset.anomaly.AnomalyDatasetArguments">AnomalyDatasetArguments</a>]</code>
+          –
+          <div class="doc-md-description">
+            <p>Path to anomaly dataset and dataset arguments</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>quadra/utils/tests/fixtures/dataset/anomaly.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="n">AnomalyDatasetArguments</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s2">&quot;train_samples&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;val_samples&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;test_samples&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)})]</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">base_anomaly_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AnomalyDatasetArguments</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate base anomaly dataset with the following parameters:</span>
+<span class="sd">        - train_samples: 10</span>
+<span class="sd">        - val_samples: (10, 10)</span>
+<span class="sd">        - test_samples: (10, 10).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmp_path: Path to temporary directory</span>
+<span class="sd">        request: Pytest SubRequest object</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Path to anomaly dataset and dataset arguments</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield</span> <span class="n">_build_anomaly_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.base_binary_segmentation_dataset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">base_binary_segmentation_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span></code>
+
+<a href="#quadra.utils.tests.fixtures.dataset.base_binary_segmentation_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+<details class="generate-a-base-binary-segmentation-dataset-with-the-following-structure" open>
+  <summary>Generate a base binary segmentation dataset with the following structure</summary>
+  <ul>
+<li>3 good and 2 bad samples in train set</li>
+<li>2 good and 2 bad samples in validation set</li>
+<li>11 good and 1 bad sample in test set</li>
+<li>2 classes: good and bad.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmp_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>path to temporary directory</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>request</code></b>
+              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>pytest request</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Yields:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.segmentation.SegmentationDatasetArguments" href="segmentation.html#quadra.utils.tests.fixtures.dataset.segmentation.SegmentationDatasetArguments">SegmentationDatasetArguments</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>
+          –
+          <div class="doc-md-description">
+            <p>Tuple containing path to dataset, dataset arguments and class to index mapping</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>quadra/utils/tests/fixtures/dataset/segmentation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">SegmentationDatasetArguments</span><span class="p">(</span>
+            <span class="o">**</span><span class="p">{</span><span class="s2">&quot;train_samples&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;val_samples&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;test_samples&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;classes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;bad&quot;</span><span class="p">]}</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">base_binary_segmentation_dataset</span><span class="p">(</span>
+    <span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SegmentationDatasetArguments</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a base binary segmentation dataset with the following structure:</span>
+<span class="sd">        - 3 good and 2 bad samples in train set</span>
+<span class="sd">        - 2 good and 2 bad samples in validation set</span>
+<span class="sd">        - 11 good and 1 bad sample in test set</span>
+<span class="sd">        - 2 classes: good and bad.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmp_path: path to temporary directory</span>
+<span class="sd">        request: pytest request</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Tuple containing path to dataset, dataset arguments and class to index mapping</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield</span> <span class="n">_build_segmentation_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.base_classification_dataset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">base_classification_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span></code>
+
+<a href="#quadra.utils.tests.fixtures.dataset.base_classification_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+<details class="generate-base-classification-dataset-with-the-following-parameters" open>
+  <summary>Generate base classification dataset with the following parameters</summary>
+  <ul>
+<li>10 samples per class</li>
+<li>2 classes (class_1 and class_2)
+By default generated images are grayscale and 10x10 pixels.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmp_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>path to temporary directory</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>request</code></b>
+              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>pytest request</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Yields:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.classification.ClassificationDatasetArguments" href="classification.html#quadra.utils.tests.fixtures.dataset.classification.ClassificationDatasetArguments">ClassificationDatasetArguments</a>]</code>
+          –
+          <div class="doc-md-description">
+            <p>Tuple containing path to created dataset and dataset arguments</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>quadra/utils/tests/fixtures/dataset/classification.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">ClassificationDatasetArguments</span><span class="p">(</span>
+            <span class="o">**</span><span class="p">{</span><span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="s2">&quot;classes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;class_1&quot;</span><span class="p">,</span> <span class="s2">&quot;class_2&quot;</span><span class="p">],</span> <span class="s2">&quot;val_size&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;test_size&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">}</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">base_classification_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ClassificationDatasetArguments</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate base classification dataset with the following parameters:</span>
+<span class="sd">        - 10 samples per class</span>
+<span class="sd">        - 2 classes (class_1 and class_2)</span>
+<span class="sd">        By default generated images are grayscale and 10x10 pixels.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmp_path: path to temporary directory</span>
+<span class="sd">        request: pytest request</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Tuple containing path to created dataset and dataset arguments</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield</span> <span class="n">_build_classification_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.base_multiclass_segmentation_dataset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">base_multiclass_segmentation_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span></code>
+
+<a href="#quadra.utils.tests.fixtures.dataset.base_multiclass_segmentation_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+<details class="generate-a-base-binary-segmentation-dataset-with-the-following-structure" open>
+  <summary>Generate a base binary segmentation dataset with the following structure</summary>
+  <ul>
+<li>2 good, 2 defect_1 and 2 defect_2 samples in train set</li>
+<li>2 good, 2 defect_1 and 2 defect_2 samples in validation set</li>
+<li>1 good, 1 defect_1 and 1 defect_2 sample in test set</li>
+<li>3 classes: good, defect_1 and defect_2.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmp_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>path to temporary directory</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>request</code></b>
+              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>pytest request</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Yields:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.segmentation.SegmentationDatasetArguments" href="segmentation.html#quadra.utils.tests.fixtures.dataset.segmentation.SegmentationDatasetArguments">SegmentationDatasetArguments</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>
+          –
+          <div class="doc-md-description">
+            <p>Tuple containing path to dataset, dataset arguments and class to index mapping</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>quadra/utils/tests/fixtures/dataset/segmentation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">SegmentationDatasetArguments</span><span class="p">(</span>
+            <span class="o">**</span><span class="p">{</span>
+                <span class="s2">&quot;train_samples&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                <span class="s2">&quot;val_samples&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                <span class="s2">&quot;test_samples&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="s2">&quot;classes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;defect_1&quot;</span><span class="p">,</span> <span class="s2">&quot;defect_2&quot;</span><span class="p">],</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">base_multiclass_segmentation_dataset</span><span class="p">(</span>
+    <span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SegmentationDatasetArguments</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a base binary segmentation dataset with the following structure:</span>
+<span class="sd">        - 2 good, 2 defect_1 and 2 defect_2 samples in train set</span>
+<span class="sd">        - 2 good, 2 defect_1 and 2 defect_2 samples in validation set</span>
+<span class="sd">        - 1 good, 1 defect_1 and 1 defect_2 sample in test set</span>
+<span class="sd">        - 3 classes: good, defect_1 and defect_2.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmp_path: path to temporary directory</span>
+<span class="sd">        request: pytest request</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Tuple containing path to dataset, dataset arguments and class to index mapping</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield</span> <span class="n">_build_segmentation_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.base_multilabel_classification_dataset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">base_multilabel_classification_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span></code>
+
+<a href="#quadra.utils.tests.fixtures.dataset.base_multilabel_classification_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+<details class="fixture-to-generate-base-multilabel-classification-dataset-with-the-following-parameters" open>
+  <summary>Fixture to generate base multilabel classification dataset with the following parameters</summary>
+  <ul>
+<li>10 samples per class</li>
+<li>3 classes (class_1, class_2 and class_3)</li>
+<li>10% of samples in validation set</li>
+<li>10% of samples in test set</li>
+<li>30% of possibility to add each other class to the sample
+By default generated images are grayscale and 10x10 pixels.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmp_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>path to temporary directory</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>request</code></b>
+              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>pytest request</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Yields:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.classification.ClassificationMultilabelDatasetArguments" href="classification.html#quadra.utils.tests.fixtures.dataset.classification.ClassificationMultilabelDatasetArguments">ClassificationMultilabelDatasetArguments</a>]</code>
+          –
+          <div class="doc-md-description">
+            <p>Tuple containing path to created dataset and dataset arguments</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>quadra/utils/tests/fixtures/dataset/classification.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">ClassificationMultilabelDatasetArguments</span><span class="p">(</span>
+            <span class="o">**</span><span class="p">{</span>
+                <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+                <span class="s2">&quot;classes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;class_1&quot;</span><span class="p">,</span> <span class="s2">&quot;class_2&quot;</span><span class="p">,</span> <span class="s2">&quot;class_3&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;val_size&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+                <span class="s2">&quot;test_size&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+                <span class="s2">&quot;percentage_other_classes&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">base_multilabel_classification_dataset</span><span class="p">(</span>
+    <span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ClassificationMultilabelDatasetArguments</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fixture to generate base multilabel classification dataset with the following parameters:</span>
+<span class="sd">        - 10 samples per class</span>
+<span class="sd">        - 3 classes (class_1, class_2 and class_3)</span>
+<span class="sd">        - 10% of samples in validation set</span>
+<span class="sd">        - 10% of samples in test set</span>
+<span class="sd">        - 30% of possibility to add each other class to the sample</span>
+<span class="sd">        By default generated images are grayscale and 10x10 pixels.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmp_path: path to temporary directory</span>
+<span class="sd">        request: pytest request</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Tuple containing path to created dataset and dataset arguments</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield</span> <span class="n">_build_multilabel_classification_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.base_patch_classification_dataset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">base_patch_classification_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span></code>
+
+<a href="#quadra.utils.tests.fixtures.dataset.base_patch_classification_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+<details class="generate-a-classification-patch-dataset-with-the-following-parameters" open>
+  <summary>Generate a classification patch dataset with the following parameters</summary>
+  <ul>
+<li>3 classes named bg, a and b</li>
+<li>5, 5 and 5 samples for each class</li>
+<li>2 horizontal patches and 2 vertical patches</li>
+<li>0% overlap</li>
+<li>10% validation set</li>
+<li>10% test set.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmp_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>path to temporary directory</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>request</code></b>
+              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>pytest SubRequest object</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>quadra/utils/tests/fixtures/dataset/classification.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">ClassificationPatchDatasetArguments</span><span class="p">(</span>
+            <span class="o">**</span><span class="p">{</span>
+                <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+                <span class="s2">&quot;classes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;bg&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;patch_number&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                <span class="s2">&quot;overlap&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">&quot;val_size&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+                <span class="s2">&quot;test_size&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">base_patch_classification_dataset</span><span class="p">(</span>
+    <span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ClassificationDatasetArguments</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a classification patch dataset with the following parameters:</span>
+<span class="sd">        - 3 classes named bg, a and b</span>
+<span class="sd">        - 5, 5 and 5 samples for each class</span>
+<span class="sd">        - 2 horizontal patches and 2 vertical patches</span>
+<span class="sd">        - 0% overlap</span>
+<span class="sd">        - 10% validation set</span>
+<span class="sd">        - 10% test set.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmp_path: path to temporary directory</span>
+<span class="sd">        request: pytest SubRequest object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield</span> <span class="n">_build_classification_patch_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.classification_dataset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">classification_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">)</span></code>
+
+<a href="#quadra.utils.tests.fixtures.dataset.classification_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generate classification dataset. If val_size or test_size are set, it will generate a train.txt, val.txt and
+    test.txt file in the dataset directory. By default generated images are 10x10 pixels.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmp_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>path to temporary directory</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>dataset_arguments</code></b>
+              (<code><a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.classification.ClassificationDatasetArguments" href="classification.html#quadra.utils.tests.fixtures.dataset.classification.ClassificationDatasetArguments">ClassificationDatasetArguments</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>dataset arguments</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Yields:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.classification.ClassificationDatasetArguments" href="classification.html#quadra.utils.tests.fixtures.dataset.classification.ClassificationDatasetArguments">ClassificationDatasetArguments</a>]</code>
+          –
+          <div class="doc-md-description">
+            <p>Tuple containing path to created dataset and dataset arguments</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>quadra/utils/tests/fixtures/dataset/classification.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">classification_dataset</span><span class="p">(</span>
+    <span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">:</span> <span class="n">ClassificationDatasetArguments</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ClassificationDatasetArguments</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate classification dataset. If val_size or test_size are set, it will generate a train.txt, val.txt and</span>
+<span class="sd">        test.txt file in the dataset directory. By default generated images are 10x10 pixels.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmp_path: path to temporary directory</span>
+<span class="sd">        dataset_arguments: dataset arguments</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Tuple containing path to created dataset and dataset arguments</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield</span> <span class="n">_build_classification_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.classification_patch_dataset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">classification_patch_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">)</span></code>
+
+<a href="#quadra.utils.tests.fixtures.dataset.classification_patch_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Fixture to dinamically generate a classification patch dataset.</p>
+<div class="highlight"><pre><span></span><code>By default generated images are 224x224 pixels
+and associated masks contains a 50x50 pixels square with the corresponding image class, so at the current stage
+is not possible to have images with multiple annotations. The patch dataset will be generated using the standard
+parameters of generate_patch_dataset function.
+</code></pre></div>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmp_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>path to temporary directory</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>dataset_arguments</code></b>
+              (<code><a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.classification.ClassificationDatasetArguments" href="classification.html#quadra.utils.tests.fixtures.dataset.classification.ClassificationDatasetArguments">ClassificationDatasetArguments</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>dataset arguments</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Yields:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.classification.ClassificationDatasetArguments" href="classification.html#quadra.utils.tests.fixtures.dataset.classification.ClassificationDatasetArguments">ClassificationDatasetArguments</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>
+          –
+          <div class="doc-md-description">
+            <p>Tuple containing path to created dataset, dataset arguments and class to index mapping</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>quadra/utils/tests/fixtures/dataset/classification.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">classification_patch_dataset</span><span class="p">(</span>
+    <span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">:</span> <span class="n">ClassificationDatasetArguments</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ClassificationDatasetArguments</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fixture to dinamically generate a classification patch dataset.</span>
+
+<span class="sd">        By default generated images are 224x224 pixels</span>
+<span class="sd">        and associated masks contains a 50x50 pixels square with the corresponding image class, so at the current stage</span>
+<span class="sd">        is not possible to have images with multiple annotations. The patch dataset will be generated using the standard</span>
+<span class="sd">        parameters of generate_patch_dataset function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmp_path: path to temporary directory</span>
+<span class="sd">        dataset_arguments: dataset arguments</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Tuple containing path to created dataset, dataset arguments and class to index mapping</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield</span> <span class="n">_build_classification_patch_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.imagenette_dataset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">imagenette_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span></code>
+
+<a href="#quadra.utils.tests.fixtures.dataset.imagenette_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generate a mock imagenette dataset to test efficient_ad model.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmp_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Path to temporary directory</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Yields:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+          –
+          <div class="doc-md-description">
+            <p>Path to imagenette dataset folder</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>quadra/utils/tests/fixtures/dataset/imagenette.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">imagenette_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a mock imagenette dataset to test efficient_ad model.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmp_path: Path to temporary directory</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Path to imagenette dataset folder</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield</span> <span class="n">_build_imagenette_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">class_samples</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.multilabel_classification_dataset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">multilabel_classification_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">)</span></code>
+
+<a href="#quadra.utils.tests.fixtures.dataset.multilabel_classification_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Fixture to dinamically generate a multilabel classification dataset.
+    Generates a samples.txt file in the dataset directory containing the path to the image and the corresponding
+    classes. If val_size or test_size are set, it will generate a train.txt, val.txt and test.txt file in the
+    dataset directory. By default generated images are 10x10 pixels.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmp_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>path to temporary directory</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>dataset_arguments</code></b>
+              (<code><a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.classification.ClassificationMultilabelDatasetArguments" href="classification.html#quadra.utils.tests.fixtures.dataset.classification.ClassificationMultilabelDatasetArguments">ClassificationMultilabelDatasetArguments</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>dataset arguments</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.classification.ClassificationMultilabelDatasetArguments" href="classification.html#quadra.utils.tests.fixtures.dataset.classification.ClassificationMultilabelDatasetArguments">ClassificationMultilabelDatasetArguments</a>]</code>
+          –
+          <div class="doc-md-description">
+            <p>Tuple containing path to created dataset and dataset arguments</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>quadra/utils/tests/fixtures/dataset/classification.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">multilabel_classification_dataset</span><span class="p">(</span>
+    <span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">:</span> <span class="n">ClassificationMultilabelDatasetArguments</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ClassificationMultilabelDatasetArguments</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fixture to dinamically generate a multilabel classification dataset.</span>
+<span class="sd">        Generates a samples.txt file in the dataset directory containing the path to the image and the corresponding</span>
+<span class="sd">        classes. If val_size or test_size are set, it will generate a train.txt, val.txt and test.txt file in the</span>
+<span class="sd">        dataset directory. By default generated images are 10x10 pixels.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmp_path: path to temporary directory</span>
+<span class="sd">        dataset_arguments: dataset arguments</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple containing path to created dataset and dataset arguments</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield</span> <span class="n">_build_multilabel_classification_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="quadra.utils.tests.fixtures.dataset.segmentation_dataset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">segmentation_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">)</span></code>
+
+<a href="#quadra.utils.tests.fixtures.dataset.segmentation_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Fixture to dinamically generate a segmentation dataset. By default generated images are 224x224 pixels
+    and associated masks contains a 50x50 pixels square with the corresponding image class, so at the current stage
+    is not possible to have images with multiple annotations. Split files are saved as train.txt,
+    val.txt and test.txt.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmp_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>path to temporary directory</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>dataset_arguments</code></b>
+              (<code><a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.segmentation.SegmentationDatasetArguments" href="segmentation.html#quadra.utils.tests.fixtures.dataset.segmentation.SegmentationDatasetArguments">SegmentationDatasetArguments</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>dataset arguments</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Yields:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-internal" title="quadra.utils.tests.fixtures.dataset.segmentation.SegmentationDatasetArguments" href="segmentation.html#quadra.utils.tests.fixtures.dataset.segmentation.SegmentationDatasetArguments">SegmentationDatasetArguments</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>
+          –
+          <div class="doc-md-description">
+            <p>Tuple containing path to dataset, dataset arguments and class to index mapping</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>quadra/utils/tests/fixtures/dataset/segmentation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">segmentation_dataset</span><span class="p">(</span>
+    <span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">:</span> <span class="n">SegmentationDatasetArguments</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SegmentationDatasetArguments</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fixture to dinamically generate a segmentation dataset. By default generated images are 224x224 pixels</span>
+<span class="sd">        and associated masks contains a 50x50 pixels square with the corresponding image class, so at the current stage</span>
+<span class="sd">        is not possible to have images with multiple annotations. Split files are saved as train.txt,</span>
+<span class="sd">        val.txt and test.txt.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmp_path: path to temporary directory</span>
+<span class="sd">        dataset_arguments: dataset arguments</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Tuple containing path to dataset, dataset arguments and class to index mapping</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield</span> <span class="n">_build_segmentation_dataset</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dataset_arguments</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2023 Orobix
+    </div>
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../../../..", "features": ["content.code.annotate", "content.code.copy", "navigation.tabs", "navigation.tabs.sticky", "navigation.top"], "search": "../../../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": ["latest"], "provider": "mike"}}</script>
+    
+    
+      <script src="../../../../../../assets/javascripts/bundle.dff1b7c8.min.js"></script>
+      
+        <script src="../../../../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
