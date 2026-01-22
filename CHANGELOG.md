@@ -2,6 +2,25 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## Automated Releases
+
+Starting from version 2.6.1, releases are automatically created when changes are merged to the `main` branch. The release process works as follows:
+
+1. **Version Update**: Update the version in `pyproject.toml` (the version in `quadra/__init__.py` should also be updated to match)
+2. **Merge to Main**: When the PR is merged to main, the automated release workflow is triggered
+3. **Automatic Tagging**: The workflow automatically creates a git tag (e.g., `v2.6.2`) based on the version in `pyproject.toml`
+4. **GitHub Release**: A GitHub release is created with auto-generated release notes based on the commits since the last release
+5. **PyPI Publication**: The existing PyPI workflow publishes the new version to PyPI
+
+**Note**: If a tag for the current version already exists, the workflow will skip tag and release creation to avoid duplicates.
+
+### [2.6.2]
+
+#### Added
+
+- Automated tag and release creation workflow on merge to main branch
+- Auto-generated release notes based on commits
+
 ### [2.6.1]
 
 #### Fixed
