@@ -20,7 +20,7 @@ jobs:
       - name: Extract version from pyproject.toml
         id: get_version
         run: |
-          VERSION=$(grep -m 1 'version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          VERSION=$(grep -m 1 'version = ' pyproject.toml | sed 's/version = [\"'\'']\(.*\)[\"\'']/\1/')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
@@ -28,7 +28,7 @@ jobs:
       - name: Check if tag exists
         id: check_tag
         run: |
-          if git rev-parse "${{ steps.get_version.outputs.tag }}" >/dev/null 2>&1; then
+          if git tag -l "${{ steps.get_version.outputs.tag }}" | grep -q .; then
             echo "exists=true" >> $GITHUB_OUTPUT
             echo "Tag ${{ steps.get_version.outputs.tag }} already exists"
           else
@@ -69,8 +69,3 @@ jobs:
             } catch (error) {
               core.setFailed(`Failed to create release: ${error.message}`);
             }
-
-      - name: Skip release creation
-        if: steps.check_tag.outputs.exists == 'true'
-        run: |
-          echo "Tag ${{ steps.get_version.outputs.tag }} already exists. Skipping release creation."
