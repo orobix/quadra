@@ -163,6 +163,9 @@ class SklearnClassificationTrainer:
             }
         )
 
+        if predict_proba:
+            res["probability"] = test_probability
+
         if not all(t == -1 for t in filtered_test_labels):
             test_real_label_cm = np.array(filtered_test_labels)
             if cams is not None:
@@ -170,9 +173,6 @@ class SklearnClassificationTrainer:
             pred_labels_cm = np.array(test_prediction_label)[test_real_label_cm != -1]
             test_real_label_cm = test_real_label_cm[test_real_label_cm != -1].astype(pred_labels_cm.dtype)
             cl_rep, pd_cm, accuracy = get_results(test_real_label_cm, pred_labels_cm, idx_to_class)
-
-            if predict_proba:
-                res["probability"] = test_probability
 
             return cl_rep, pd_cm, accuracy, res, cams
 
