@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 Starting from version 2.6.1, releases are automatically created when changes are merged to the `main` branch. The release process works as follows:
 
-1. **Version Update**: Update the version in `pyproject.toml` and `quadra/__init__.py` as part of your PR
+1. **Version Update**: Update the version in `pyproject.toml` (the version in `quadra/__init__.py` should also be updated to match)
 2. **Merge to Main**: When the PR is merged to main, the automated release workflow is triggered
 3. **Automatic Tagging**: The workflow automatically creates a git tag (e.g., `v2.6.2`) based on the version in `pyproject.toml`
 4. **GitHub Release**: A GitHub release is created with auto-generated release notes based on the commits since the last release
