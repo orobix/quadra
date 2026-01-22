@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 #### Fixed
 
-- Probabilities in sklearn classification are available during test even if GT is not present
+- Probabilities in sklearn classification are available during test even if GT is not available
 
 ### [2.6.0]
 
