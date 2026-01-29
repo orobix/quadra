@@ -14,6 +14,14 @@ Starting from version 2.6.1, releases are automatically created when changes are
 
 **Note**: If a tag for the current version already exists, the workflow will skip tag and release creation to avoid duplicates.
 
+### [2.7.0]
+
+#### Updated
+
+- Segmentation Models Pytorch from v0.3.3 (custom fork) to v0.5.0 (official)
+- Tensorboard from ~2.11 to ~2.20
+
+
 ### [2.6.2]
 
 #### Added
