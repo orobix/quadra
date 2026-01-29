@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quadra"
-version = "2.6.2"
+version = "2.7.0"
 description = "Deep Learning experiment orchestration library"
 authors = [
 	"Federico Belotti <federico.belotti@orobix.com>",
@@ -53,7 +53,7 @@ hydra_optuna_sweeper = "~1.2"
 mlflow-skinny = "^2.3.1"
 boto3 = "~1.26"
 minio = "~7.1"
-tensorboard = "~2.11"
+tensorboard = "~2.20"
 pillow = "^10"
 pandas = "<2.0"
 opencv_python_headless = "~4.7.0"
@@ -71,8 +71,8 @@ scikit_multilearn = "~0.2"
 tripy = "~1.0"
 h5py = "~3.8"
 timm = "0.9.12"
+segmentation_models_pytorch = "0.5.0"
 
-segmentation_models_pytorch-orobix = "0.3.3.dev1"
 anomalib-orobix = "0.7.0.dev150"
 xxhash = "~3.2"
 torchinfo = "~1.8"
