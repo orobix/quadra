@@ -386,7 +386,7 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
 
         self.training_threshold_type = training_threshold_type
         self.custom_normalized_threshold = custom_normalized_threshold
-        
+
         if custom_normalized_threshold is not None and custom_normalized_threshold <= 0:
             raise ValueError("Custom normalized threshold must be greater than 0")
 
@@ -436,6 +436,7 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         anomaly_maps = torch.cat(anomaly_maps)
 
         if any(x != -1 for x in image_labels):
+            threshold = None
             if self.custom_normalized_threshold is not None:
                 # Convert normalized threshold back to unnormalized using training threshold
                 training_threshold = float(self.model_data[f"{self.training_threshold_type}_threshold"])
@@ -443,12 +444,8 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 threshold = torch.tensor((self.custom_normalized_threshold * training_threshold) / 100.0)
             elif self.use_training_threshold:
                 threshold = torch.tensor(float(self.model_data[f"{self.training_threshold_type}_threshold"]))
-            else:
-                optimal_f1_score = optimal_f1.compute()
-                threshold = optimal_f1.threshold
-                
-            # Compute F1 score with the determined threshold (if not using optimal_f1 metric)
-            if self.custom_normalized_threshold is not None or self.use_training_threshold:
+
+            if threshold is not None:
                 _image_labels = torch.tensor(image_labels)
                 known_labels = torch.where(_image_labels != -1)[0]
 
@@ -458,6 +455,9 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 pred_labels = (_anomaly_scores >= threshold).long()
 
                 optimal_f1_score = torch.tensor(f1_score(_image_labels, pred_labels))
+            else:
+                optimal_f1_score = optimal_f1.compute()
+                threshold = optimal_f1.threshold
         else:
             log.warning("No ground truth available during evaluation, use training image threshold for reporting")
             optimal_f1_score = torch.tensor(0)

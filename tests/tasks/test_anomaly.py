@@ -233,61 +233,53 @@ def test_custom_normalized_threshold(tmp_path: Path, base_anomaly_dataset: tuple
     # Create a mock model with known threshold
     model_path = tmp_path / "model"
     model_path.mkdir()
-    
+
     # Create a mock model.json with known threshold
     model_data = {
         "image_threshold": 20.0,  # Training threshold is 20
         "pixel_threshold": 20.0,
-        "anomaly_method": "test"
+        "anomaly_method": "test",
     }
-    
+
     with open(model_path / "model.json", "w") as f:
         json.dump(model_data, f)
-    
+
     # Create a minimal config
-    config = OmegaConf.create({
-        "datamodule": {
-            "_target_": "quadra.datamodules.AnomalyDataModule",
+    config = OmegaConf.create(
+        {
+            "datamodule": {
+                "_target_": "quadra.datamodules.AnomalyDataModule",
+            }
         }
-    })
-    
+    )
+
     # Test 1: Custom normalized threshold of 110 should convert to unnormalized 22
     # normalized = (raw / training) * 100
     # 110 = (raw / 20) * 100 => raw = 22
     task = AnomalibEvaluation(
-        config=config,
-        model_path=str(model_path),
-        custom_normalized_threshold=110.0,
-        training_threshold_type="image"
+        config=config, model_path=str(model_path), custom_normalized_threshold=110.0, training_threshold_type="image"
     )
-    
+
     assert task.custom_normalized_threshold == 110.0
-    
+
     # Test 2: Verify that invalid threshold raises error
     with pytest.raises(ValueError, match="Custom normalized threshold must be greater than 0"):
         AnomalibEvaluation(
             config=config,
             model_path=str(model_path),
             custom_normalized_threshold=-10.0,
-            training_threshold_type="image"
+            training_threshold_type="image",
         )
-    
+
     # Test 3: Verify that zero threshold raises error
     with pytest.raises(ValueError, match="Custom normalized threshold must be greater than 0"):
         AnomalibEvaluation(
-            config=config,
-            model_path=str(model_path),
-            custom_normalized_threshold=0.0,
-            training_threshold_type="image"
+            config=config, model_path=str(model_path), custom_normalized_threshold=0.0, training_threshold_type="image"
         )
-    
+
     # Test 4: Verify that threshold type defaults to image when custom threshold is provided without type
-    task2 = AnomalibEvaluation(
-        config=config,
-        model_path=str(model_path),
-        custom_normalized_threshold=110.0
-    )
-    
+    task2 = AnomalibEvaluation(config=config, model_path=str(model_path), custom_normalized_threshold=110.0)
+
     assert task2.training_threshold_type == "image"
 
 

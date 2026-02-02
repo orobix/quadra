@@ -19,4 +19,4 @@ task:
   model_path: ???
   use_training_threshold: false
   training_threshold_type: image
-  custom_normalized_threshold: null  # Optional: Custom normalized threshold (e.g., 110 for 10% above training threshold)
+  custom_normalized_threshold: null # Optional: Custom normalized threshold (e.g., 110 for 10% above training threshold)
