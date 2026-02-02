@@ -354,6 +354,9 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         use_training_threshold: Whether to use the training threshold for the evaluation or use the one that
             maximizes the F1 score on the test set.
         device: Device to use for evaluation. If None, the device is automatically determined.
+        custom_normalized_threshold: Custom normalized threshold to use for evaluation. If provided, this threshold
+            will be used instead of the training threshold or the optimal F1 threshold. The threshold should be
+            in the normalized scale (e.g., 100 means the training threshold, 110 means 10% higher than training).
     """
 
     def __init__(
@@ -363,6 +366,7 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         use_training_threshold: bool = False,
         device: str | None = None,
         training_threshold_type: Literal["image", "pixel"] | None = None,
+        custom_normalized_threshold: float | None = None,
     ):
         super().__init__(config=config, model_path=model_path, device=device)
 
@@ -376,6 +380,10 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
             training_threshold_type = "image"
 
         self.training_threshold_type = training_threshold_type
+        self.custom_normalized_threshold = custom_normalized_threshold
+        
+        if custom_normalized_threshold is not None and custom_normalized_threshold <= 0:
+            raise ValueError("Custom normalized threshold must be greater than 0")
 
     def prepare(self) -> None:
         """Prepare the evaluation."""
@@ -423,7 +431,22 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         anomaly_maps = torch.cat(anomaly_maps)
 
         if any(x != -1 for x in image_labels):
-            if self.use_training_threshold:
+            if self.custom_normalized_threshold is not None:
+                # Convert normalized threshold back to unnormalized using training threshold
+                training_threshold = float(self.model_data[f"{self.training_threshold_type}_threshold"])
+                # normalized = (raw / training) * 100, so raw = (normalized * training) / 100
+                threshold = torch.tensor((self.custom_normalized_threshold * training_threshold) / 100.0)
+                
+                _image_labels = torch.tensor(image_labels)
+                known_labels = torch.where(_image_labels != -1)[0]
+
+                _image_labels = _image_labels[known_labels]
+                _anomaly_scores = anomaly_scores[known_labels]
+
+                pred_labels = (_anomaly_scores >= threshold).long()
+
+                optimal_f1_score = torch.tensor(f1_score(_image_labels, pred_labels))
+            elif self.use_training_threshold:
                 _image_labels = torch.tensor(image_labels)
                 threshold = torch.tensor(float(self.model_data[f"{self.training_threshold_type}_threshold"]))
                 known_labels = torch.where(_image_labels != -1)[0]
