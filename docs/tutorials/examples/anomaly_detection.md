@@ -311,6 +311,28 @@ task:
 By default, the inference will recompute the threshold based on test data to maximize the F1-score, if you want to use the threshold from the training phase you can set the `use_training_threshold` parameter to true.
 The `training_threshold_type` can be used to specify which training threshold to use, it can be either `image` or `pixel`, if not specified the `image` threshold will be used.
 
+#### Using a Custom Normalized Threshold
+
+Sometimes you may want to use a custom threshold that is different from both the training threshold and the optimal F1 threshold. The `custom_normalized_threshold` parameter allows you to specify a threshold in normalized scale (where 100 represents the training threshold).
+
+For example, if you want to use a threshold that is 10% higher than the training threshold, you can set `custom_normalized_threshold: 110`:
+
+```yaml
+task:
+  model_path: /path/to/model
+  custom_normalized_threshold: 110  # 10% above training threshold
+  training_threshold_type: image
+```
+
+The normalized threshold works as follows:
+- 100 = training threshold (no change)
+- 110 = 10% higher than training threshold (less sensitive to anomalies)
+- 90 = 10% lower than training threshold (more sensitive to anomalies)
+
+This is particularly useful when you need to adjust the trade-off between false positives and false negatives without manually calculating and editing the unnormalized threshold values in the model.json file.
+
+Note: When using `custom_normalized_threshold`, both `use_training_threshold` and the optimal F1 threshold computation are bypassed in favor of your custom threshold.
+
 The model path is the path to an exported model, at the moment `torchscript` and `onnx` models are supported (exported automatically after a training experiment). Right now only the `CFLOW` model is not supported for inference as it's not compatible with botyh torchscript and onnx.
 
 An inference configuration using the mnist dataset is found under `configs/experiment/generic/mnist/anomaly/inference.yaml`.
@@ -327,4 +349,10 @@ Generally for inference is enough to use the base experiment providing both mode
 
 ```bash
 quadra experiment=base/anomaly/inference task.model_path={path to the exported trained model} datamodule.data_path={path to the dataset}
+```
+
+To use a custom normalized threshold (e.g., 110 for 10% above training threshold):
+
+```bash
+quadra experiment=base/anomaly/inference task.model_path={path to the exported trained model} datamodule.data_path={path to the dataset} task.custom_normalized_threshold=110
 ```
