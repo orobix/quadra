@@ -224,7 +224,7 @@ def test_cflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task:
     shutil.rmtree(tmp_path)
 
 
-def test_custom_normalized_threshold(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset):
+def test_custom_normalized_threshold(tmp_path: Path, base_anomaly_dataset: tuple[str, Any]):
     """Test that custom_normalized_threshold parameter works correctly."""
     from omegaconf import OmegaConf
     from quadra.tasks.anomaly import AnomalibEvaluation
