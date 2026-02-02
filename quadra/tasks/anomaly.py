@@ -387,6 +387,10 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         self.training_threshold_type = training_threshold_type
         self.custom_normalized_threshold = custom_normalized_threshold
 
+        if self.use_training_threshold and self.custom_normalized_threshold is not None:
+            self.use_training_threshold = False
+            log.warning("Ignoring use_training_threshold since custom_normalized_threshold is provided")
+
         if custom_normalized_threshold is not None and custom_normalized_threshold <= 0:
             raise ValueError("Custom normalized threshold must be greater than 0")
 
@@ -434,16 +438,15 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
 
         anomaly_scores = torch.cat(anomaly_scores)
         anomaly_maps = torch.cat(anomaly_maps)
+        training_threshold = float(self.model_data[f"{self.training_threshold_type}_threshold"])
 
         if any(x != -1 for x in image_labels):
             threshold = None
             if self.custom_normalized_threshold is not None:
-                # Convert normalized threshold back to unnormalized using training threshold
-                training_threshold = float(self.model_data[f"{self.training_threshold_type}_threshold"])
                 # normalized = (raw / training) * 100, so raw = (normalized * training) / 100
                 threshold = torch.tensor((self.custom_normalized_threshold * training_threshold) / 100.0)
             elif self.use_training_threshold:
-                threshold = torch.tensor(float(self.model_data[f"{self.training_threshold_type}_threshold"]))
+                threshold = torch.tensor(training_threshold)
 
             if threshold is not None:
                 _image_labels = torch.tensor(image_labels)
@@ -459,9 +462,12 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
                 optimal_f1_score = optimal_f1.compute()
                 threshold = optimal_f1.threshold
         else:
-            log.warning("No ground truth available during evaluation, use training image threshold for reporting")
             optimal_f1_score = torch.tensor(0)
-            threshold = torch.tensor(float(self.model_data["image_threshold"]))
+            if self.custom_normalized_threshold is None:
+                log.warning("No ground truth available during evaluation, use training image threshold for reporting")
+                threshold = torch.tensor(training_threshold)
+            else:
+                threshold = torch.tensor((self.custom_normalized_threshold * training_threshold) / 100.0)
 
         log.info("Computed F1 score: %s", optimal_f1_score.item())
         self.metadata["anomaly_scores"] = anomaly_scores
