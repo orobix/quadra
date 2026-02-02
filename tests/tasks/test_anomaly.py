@@ -280,6 +280,15 @@ def test_custom_normalized_threshold(tmp_path: Path, base_anomaly_dataset: tuple
             custom_normalized_threshold=0.0,
             training_threshold_type="image"
         )
+    
+    # Test 4: Verify that threshold type defaults to image when custom threshold is provided without type
+    task2 = AnomalibEvaluation(
+        config=config,
+        model_path=str(model_path),
+        custom_normalized_threshold=110.0
+    )
+    
+    assert task2.training_threshold_type == "image"
 
 
 # TODO: This test seems to crash on not so powerful machines

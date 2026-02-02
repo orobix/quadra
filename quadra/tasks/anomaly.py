@@ -379,6 +379,11 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
             log.warning("Using training threshold but no training threshold type is provided, defaulting to image")
             training_threshold_type = "image"
 
+        # Default to image threshold type if custom threshold is provided but type is not specified
+        if training_threshold_type is None and custom_normalized_threshold is not None:
+            log.warning("Using custom threshold but no training threshold type is provided, defaulting to image")
+            training_threshold_type = "image"
+
         self.training_threshold_type = training_threshold_type
         self.custom_normalized_threshold = custom_normalized_threshold
         
