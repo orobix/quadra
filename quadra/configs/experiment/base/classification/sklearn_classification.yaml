@@ -20,6 +20,7 @@ core:
   tag: "run"
   name: "sklearn-classification"
   upload_artifacts: true
+  mlflow_zip_models: false
 
 datamodule:
   num_workers: 8
