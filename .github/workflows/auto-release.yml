@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for proper tag checking
+          fetch-depth: 0 # Fetch all history for proper tag checking
 
       - name: Extract version from pyproject.toml
         id: get_version
@@ -52,7 +52,7 @@ jobs:
           script: |
             const tag = '${{ steps.get_version.outputs.tag }}';
             const version = '${{ steps.get_version.outputs.version }}';
-            
+
             try {
               // Generate release notes
               const { data: release } = await github.rest.repos.createRelease({
