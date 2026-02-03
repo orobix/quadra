@@ -20,6 +20,7 @@ from quadra.datamodules.base import BaseDataModule
 from quadra.models.evaluation import BaseEvaluationModel
 from quadra.utils import utils
 from quadra.utils.export import import_deployment_model
+from quadra.utils.mlflow import upload_lightning_artifacts
 
 log = utils.get_logger(__name__)
 DataModuleT = TypeVar("DataModuleT", bound=BaseDataModule)
@@ -273,12 +274,9 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
     def finalize(self) -> None:
         """Finalize the experiment."""
         super().finalize()
-        utils.finish(
+        upload_lightning_artifacts(
             config=self.config,
-            module=self.module,
-            datamodule=self.datamodule,
             trainer=self.trainer,
-            callbacks=self.callbacks,
             logger=self.logger,
             export_folder=self.export_folder,
         )

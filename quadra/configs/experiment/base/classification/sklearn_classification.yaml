@@ -19,9 +19,15 @@ backbone:
 core:
   tag: "run"
   name: "sklearn-classification"
+  upload_artifacts: true
 
 datamodule:
   num_workers: 8
   batch_size: 32
   phase: train
   n_splits: 1
+
+logger:
+  mlflow:
+    experiment_name: sklearn_classification
+    run_name: ${core.name}
