@@ -46,7 +46,7 @@ from quadra.utils.classification import (
 )
 from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model, import_deployment_model
-from quadra.utils.mlflow import SklearnMLflowMixin
+from quadra.utils.mlflow import SklearnClassificationMLflowMixin
 from quadra.utils.models import get_feature, is_vision_transformer
 from quadra.utils.vit_explainability import VitAttentionGradRollout
 
@@ -489,7 +489,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
 
 
 class SklearnClassification(
-    SklearnMLflowMixin, Generic[SklearnClassificationDataModuleT], Task[SklearnClassificationDataModuleT]
+    SklearnClassificationMLflowMixin, Generic[SklearnClassificationDataModuleT], Task[SklearnClassificationDataModuleT]
 ):
     """Sklearn classification task.
 
@@ -693,7 +693,7 @@ class SklearnClassification(
             )
             self.metadata["cams"].append(cams)
 
-        self._log_cv_metrics()
+        self._log_train_metrics()
 
     def extract_model_summary(
         self, feature_extractor: torch.nn.Module | BaseEvaluationModel, dl: torch.utils.data.DataLoader

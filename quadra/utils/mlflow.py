@@ -16,8 +16,8 @@ import torch
 from hydra.core.hydra_config import HydraConfig
 from hydra.utils import get_original_cwd
 from lightning_fabric.utilities.device_parser import _parse_gpu_ids
-from mlflow.models import infer_signature  # noqa
-from mlflow.models.signature import ModelSignature  # noqa
+from mlflow.models import infer_signature
+from mlflow.models.signature import ModelSignature
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import MLFlowLogger
@@ -636,10 +636,10 @@ def _build_sklearn_hyperparameters(config: DictConfig, backbone: torch.nn.Module
 
 
 class SklearnMLflowMixin:
-    """Mixin that adds MLflow tracking to sklearn-based tasks.
+    """Base mixin that adds MLflow tracking to sklearn-based tasks.
 
     Provides protected methods to be called from task lifecycle methods
-    (``prepare``, ``train``, ``generate_report``, ``test_full_data``, ``finalize``).
+    (``prepare``, ``train``, ``generate_report``, ``finalize``).
 
     The mixin stores a :class:`SklearnMLflowClient` instance on ``self._mlflow_client``.
     All methods are safe no-ops when MLflow is not configured.
@@ -668,73 +668,19 @@ class SklearnMLflowMixin:
             hparams = _build_sklearn_hyperparameters(self.config, self.backbone)
             self._mlflow_client.log_params(hparams)
 
-    def _log_cv_metrics(self) -> None:
-        """Log cross-validation metrics from ``self.metadata``.
+    def _log_train_metrics(self) -> None:
+        """Log train metrics from ``self.metadata``.
 
-        Should be called at the end of ``train()`` after all folds are complete.
+        Should be overridden by subclasses to implement task-specific metric logging.
         """
-        if self._mlflow_client is None or not self._mlflow_client.enabled:
-            return
-
-        try:
-            accuracies = self.metadata.get("test_accuracy", [])
-            for fold_idx, accuracy in enumerate(accuracies):
-                self._mlflow_client.log_metrics({"cv_fold_accuracy": accuracy}, step=fold_idx)
-
-            if len(accuracies) > 0:
-                self._mlflow_client.log_metrics(
-                    {
-                        "cv_mean_accuracy": float(np.mean(accuracies)),
-                        "cv_std_accuracy": float(np.std(accuracies)),
-                        "cv_num_folds": len(accuracies),
-                    }
-                )
-        except Exception as e:
-            log.warning("Failed to log CV metrics to MLflow: %s", e)
+        raise NotImplementedError("Subclasses must implement _log_train_metrics")
 
     def _upload_report_artifacts(self) -> None:
-        """Upload report artifacts (confusion matrices, CSVs, example images) to MLflow.
+        """Upload report artifacts to MLflow.
 
-        Should be called at the end of ``generate_report()``.
+        Should be overridden by subclasses to implement task-specific artifact uploading.
         """
-        if self._mlflow_client is None or not self._mlflow_client.enabled:
-            return
-
-        if not self.config.core.get("upload_artifacts"):
-            return
-
-        try:
-            # Upload per-fold report folders
-            for count in range(len(self.metadata.get("test_accuracy", []))):
-                folder = f"{self.output.folder}_{count}"
-                _log_folder_artifacts(folder, self._mlflow_client, "classification_output", recursive=True)
-
-            # Upload final combined confusion matrix
-            final_folder = f"{self.output.folder}"
-            final_cm_path = os.path.join(final_folder, "test_confusion_matrix.png")
-            if os.path.isfile(final_cm_path):
-                self._mlflow_client.log_artifact(final_cm_path, artifact_path="classification_output")
-        except Exception as e:
-            log.warning("Failed to log report artifacts to MLflow: %s", e)
-
-    def _upload_test_artifacts(self, output_folder: str) -> None:
-        """Upload test output artifacts to MLflow.
-
-        Should be called at the end of ``test_full_data()``.
-
-        Args:
-            output_folder: Local folder containing test results to upload.
-        """
-        if self._mlflow_client is None or not self._mlflow_client.enabled:
-            return
-
-        if not self.config.core.get("upload_artifacts"):
-            return
-
-        try:
-            _log_folder_artifacts(output_folder, self._mlflow_client, "test_output", recursive=True)
-        except Exception as e:
-            log.warning("Failed to log test artifacts to MLflow: %s", e)
+        raise NotImplementedError("Subclasses must implement _upload_report_artifacts")
 
     def _finalize_mlflow(self) -> None:
         """Upload config metadata, models, and end the MLflow run.
@@ -764,3 +710,115 @@ class SklearnMLflowMixin:
             log.warning("Failed to log models/metadata to MLflow: %s", e)
         finally:
             self._mlflow_client.end_run()
+
+
+class SklearnClassificationMLflowMixin(SklearnMLflowMixin):
+    """Mixin for sklearn classification tasks with cross-validation support.
+
+    Extends the base SklearnMLflowMixin to log cross-validation metrics and
+    per-fold report artifacts.
+    """
+
+    def _log_train_metrics(self) -> None:
+        """Log cross-validation metrics from ``self.metadata``."""
+        if self._mlflow_client is None or not self._mlflow_client.enabled:
+            return
+
+        try:
+            accuracies = self.metadata.get("test_accuracy", [])
+            for fold_idx, accuracy in enumerate(accuracies):
+                self._mlflow_client.log_metrics({"cv_fold_accuracy": accuracy}, step=fold_idx)
+
+            if len(accuracies) > 0:
+                self._mlflow_client.log_metrics(
+                    {
+                        "cv_mean_accuracy": float(np.mean(accuracies)),
+                        "cv_std_accuracy": float(np.std(accuracies)),
+                        "cv_num_folds": len(accuracies),
+                    }
+                )
+        except Exception as e:
+            log.warning("Failed to log CV metrics to MLflow: %s", e)
+
+    def _upload_report_artifacts(self) -> None:
+        """Upload per-fold report folders and final confusion matrix."""
+        if self._mlflow_client is None or not self._mlflow_client.enabled:
+            return
+
+        if not self.config.core.get("upload_artifacts"):
+            return
+
+        try:
+            # Upload per-fold report folders
+            for count in range(len(self.metadata.get("test_accuracy", []))):
+                folder = f"{self.output.folder}_{count}"
+                _log_folder_artifacts(folder, self._mlflow_client, "classification_output", recursive=True)
+
+            # Upload final combined confusion matrix
+            final_folder = f"{self.output.folder}"
+            final_cm_path = os.path.join(final_folder, "test_confusion_matrix.png")
+            if os.path.isfile(final_cm_path):
+                self._mlflow_client.log_artifact(final_cm_path, artifact_path="classification_output")
+        except Exception as e:
+            log.warning("Failed to log report artifacts to MLflow: %s", e)
+
+    def _upload_test_artifacts(self, output_folder: str) -> None:
+        """Upload test output artifacts to MLflow.
+
+        Args:
+            output_folder: Local folder containing test results to upload.
+        """
+        if self._mlflow_client is None or not self._mlflow_client.enabled:
+            return
+
+        if not self.config.core.get("upload_artifacts"):
+            return
+
+        try:
+            _log_folder_artifacts(output_folder, self._mlflow_client, "test_output", recursive=True)
+        except Exception as e:
+            log.warning("Failed to log test artifacts to MLflow: %s", e)
+
+
+class SklearnPatchMLflowMixin(SklearnMLflowMixin):
+    """Mixin for sklearn patch classification tasks.
+
+    Extends the base SklearnMLflowMixin to log patch-specific artifacts like
+    reconstruction results.
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.reconstruction_results: dict[str, Any]
+
+    def _log_train_metrics(self) -> None:
+        """Log validation accuracy from ``self.metadata``."""
+        if self._mlflow_client is None or not self._mlflow_client.enabled:
+            return
+
+        try:
+            accuracy = self.metadata.get("test_accuracy")
+            if accuracy is not None:
+                self._mlflow_client.log_metrics({"val_accuracy": accuracy})
+        except Exception as e:
+            log.warning("Failed to log validation metrics to MLflow: %s", e)
+
+    def _upload_report_artifacts(self) -> None:
+        """Upload reconstruction results and patch report folder."""
+        if self._mlflow_client is None or not self._mlflow_client.enabled:
+            return
+
+        if not self.config.core.get("upload_artifacts"):
+            return
+
+        try:
+            # Upload reconstruction results JSON
+            reconstruction_json_path = "reconstruction_results.json"
+            if os.path.isfile(reconstruction_json_path):
+                self._mlflow_client.log_artifact(reconstruction_json_path, artifact_path="patch_output")
+
+            # Upload report folder with patch visualizations
+            if os.path.isdir(self.output.folder):
+                _log_folder_artifacts(self.output.folder, self._mlflow_client, "patch_output", recursive=True)
+        except Exception as e:
+            log.warning("Failed to log report artifacts to MLflow: %s", e)
