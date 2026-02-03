@@ -352,10 +352,10 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
                 if len(masks.shape) == 3:  # BxHxW -> Bx1xHxW
                     masks = masks.unsqueeze(1)
                 with torch.no_grad():
-                    image_list.append(images)
-                    mask_list.append(masks)
-                    mask_pred_list.append(self.deployment_model(images.to(self.device)))
-                    label_list.append(labels)
+                    image_list.append(images.cpu())
+                    mask_list.append(masks.cpu())
+                    mask_pred_list.append(self.deployment_model(images.to(self.device)).cpu())
+                    label_list.append(labels.cpu())
 
             output = {
                 "image": torch.cat(image_list, dim=0),
@@ -363,6 +363,7 @@ class SegmentationAnalysisEvaluation(SegmentationEvaluation):
                 "label": torch.cat(label_list, dim=0),
                 "mask_pred": torch.cat(mask_pred_list, dim=0),
             }
+
             self.test_output[stage] = output
 
     def generate_report(self) -> None:

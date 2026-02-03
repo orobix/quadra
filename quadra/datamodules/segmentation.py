@@ -13,9 +13,13 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from skmultilearn.model_selection import iterative_train_test_split
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from quadra.datamodules.base import BaseDataModule
-from quadra.datasets.segmentation import SegmentationDataset, SegmentationDatasetMulticlass
+from quadra.datasets.segmentation import (
+    SegmentationDataset,
+    SegmentationDatasetMulticlass,
+)
 from quadra.utils import utils
 
 log = utils.get_logger(__name__)
@@ -394,7 +398,7 @@ class SegmentationMulticlassDataModule(BaseDataModule):
         num_data_train: number of samples to use in the train split (shuffle the samples and pick the
             first num_data_train)
         one_hot_encoding: if True, the labels are one-hot encoded to N channels, where N is the number of classes.
-            If False, masks are single channel that contains values as class indexes. Defaults to True.
+            If False, masks are single channel that contains values as class indexes. Defaults to False.
     """
 
     def __init__(
@@ -518,7 +522,10 @@ class SegmentationMulticlassDataModule(BaseDataModule):
         samples, targets, masks = [], [], []
         with open(split_file) as f:
             split = f.read().splitlines()
-        for sample in split:
+        for sample in tqdm(
+            split,
+            desc=f"Reading split file {os.path.basename(split_file)} and resolving labels",
+        ):
             sample_path = os.path.join(self.data_path, sample)
             mask_path = glob.glob(os.path.splitext(sample_path.replace("images", "masks"))[0] + ".*")
 
