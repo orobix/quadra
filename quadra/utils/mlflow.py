@@ -395,7 +395,6 @@ class SklearnMLflowClient:
         self._run_id: str
         self._experiment_name: str = "default"
         self._tracking_uri: str
-        self._run_id_from_config: str | None = None
         self._enabled: bool = False
         self._setup()
 
@@ -405,9 +404,24 @@ class SklearnMLflowClient:
         return self._enabled
 
     @property
-    def run_id(self) -> str | None:
+    def run_id(self) -> str:
         """The active run ID, or None."""
         return self._run_id
+
+    @property
+    def experiment_id(self) -> str:
+        """The active experiment ID, or None."""
+        return self._experiment_id
+
+    @property
+    def experiment_name(self) -> str:
+        """The active experiment name, or None."""
+        return self._experiment_name
+
+    @property
+    def tracking_uri(self) -> str:
+        """The MLflow tracking URI."""
+        return self._tracking_uri
 
     def _setup(self) -> None:
         """Determine whether MLflow integration should be active."""
@@ -428,7 +442,6 @@ class SklearnMLflowClient:
 
         self._experiment_name = mlflow_config.get("experiment_name", self._config.core.get("name", "default"))
         self._tracking_uri = tracking_uri
-        self._run_id_from_config = mlflow_config.get("run_id")
         self._enabled = True
 
     def start_run(self) -> None:
@@ -440,9 +453,15 @@ class SklearnMLflowClient:
             mlflow.set_tracking_uri(self._tracking_uri)
             mlflow.set_experiment(self._experiment_name)
 
-            run = mlflow.start_run(run_id=self._run_id_from_config)
+            run = mlflow.start_run()
             self._run_id = run.info.run_id
-            log.info("MLflow run started: run_id=%s, experiment=%s", self._run_id, self._experiment_name)
+            self._experiment_id = run.info.experiment_id
+            log.info(
+                "MLflow run started at %s/#/experiments/%s/runs/%s",
+                self._tracking_uri,
+                self._experiment_id,
+                self._run_id,
+            )
         except Exception as e:
             log.warning("Failed to start MLflow run: %s. MLflow integration will be disabled.", e)
             self._enabled = False
@@ -551,21 +570,6 @@ class SklearnMLflowClient:
         except Exception as e:
             log.warning("Failed to log backbone models to MLflow: %s", e)
 
-    def log_config_metadata(self) -> None:
-        """Upload config files to MLflow as metadata artifacts.
-
-        Mirrors the config upload logic from ``finish()`` in utils.py.
-        """
-        if not self._enabled or self._run_id is None:
-            return
-
-        file_names = ["config.yaml", "config_resolved.yaml", "config_tree.txt", "data/dataset.csv"]
-
-        for f in file_names:
-            full_path = os.path.join(os.getcwd(), f)
-            if os.path.isfile(full_path):
-                self.log_artifact(full_path, artifact_path="metadata")
-
 
 def _build_sklearn_hyperparameters(config: DictConfig, backbone: torch.nn.Module) -> dict[str, Any]:
     """Build hyperparameters dict for sklearn tasks.
@@ -645,7 +649,7 @@ class SklearnMLflowMixin:
     All methods are safe no-ops when MLflow is not configured.
     """
 
-    _mlflow_client: SklearnMLflowClient | None = None
+    mlflow_client: SklearnMLflowClient | None = None
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
@@ -661,12 +665,27 @@ class SklearnMLflowMixin:
 
         Should be called at the end of ``prepare()`` after backbone and config are ready.
         """
-        self._mlflow_client = SklearnMLflowClient(self.config)
-        self._mlflow_client.start_run()
+        self.mlflow_client = SklearnMLflowClient(self.config)
+        self.mlflow_client.start_run()
 
-        if self._mlflow_client.enabled:
+        if self.mlflow_client.enabled:
             hparams = _build_sklearn_hyperparameters(self.config, self.backbone)
-            self._mlflow_client.log_params(hparams)
+            self.mlflow_client.log_params(hparams)
+
+        # Upload config metadata
+        self._log_config_metadata()
+
+    def _log_config_metadata(self) -> None:
+        """Upload config files to MLflow as metadata artifacts."""
+        if self.mlflow_client is None or not self.mlflow_client.enabled:
+            return
+
+        file_names = ["config_resolved.yaml", "config_tree.txt", "data/dataset.csv"]
+
+        for f in file_names:
+            full_path = os.path.join(os.getcwd(), f)
+            if os.path.isfile(full_path):
+                self.mlflow_client.log_artifact(full_path, artifact_path="metadata")
 
     def _log_train_metrics(self) -> None:
         """Log train metrics from ``self.metadata``.
@@ -687,29 +706,24 @@ class SklearnMLflowMixin:
 
         Should be called at the start of ``finalize()`` before ``super().finalize()``.
         """
-        if self._mlflow_client is None or not self._mlflow_client.enabled:
+        if self.mlflow_client is None or not self.mlflow_client.enabled:
             return
 
         try:
-            # Upload config metadata
-            self._mlflow_client.log_config_metadata()
-
             if self.config.core.get("upload_artifacts"):
                 # Upload sklearn classifier
-                self._mlflow_client.log_sklearn_model(
+                self.mlflow_client.log_sklearn_model(
                     self.model, artifact_path=os.path.join(self.export_folder, "sklearn_classifier")
                 )
 
                 # Upload backbone models (torchscript, pytorch, onnx)
                 half_precision = getattr(self, "half_precision", False)
                 device = getattr(self, "device", "cpu")
-                self._mlflow_client.log_backbone_models(
-                    self.export_folder, half_precision=half_precision, device=device
-                )
+                self.mlflow_client.log_backbone_models(self.export_folder, half_precision=half_precision, device=device)
         except Exception as e:
             log.warning("Failed to log models/metadata to MLflow: %s", e)
         finally:
-            self._mlflow_client.end_run()
+            self.mlflow_client.end_run()
 
 
 class SklearnClassificationMLflowMixin(SklearnMLflowMixin):
@@ -721,16 +735,16 @@ class SklearnClassificationMLflowMixin(SklearnMLflowMixin):
 
     def _log_train_metrics(self) -> None:
         """Log cross-validation metrics from ``self.metadata``."""
-        if self._mlflow_client is None or not self._mlflow_client.enabled:
+        if self.mlflow_client is None or not self.mlflow_client.enabled:
             return
 
         try:
             accuracies = self.metadata.get("test_accuracy", [])
             for fold_idx, accuracy in enumerate(accuracies):
-                self._mlflow_client.log_metrics({"cv_fold_accuracy": accuracy}, step=fold_idx)
+                self.mlflow_client.log_metrics({"cv_fold_accuracy": accuracy}, step=fold_idx)
 
             if len(accuracies) > 0:
-                self._mlflow_client.log_metrics(
+                self.mlflow_client.log_metrics(
                     {
                         "cv_mean_accuracy": float(np.mean(accuracies)),
                         "cv_std_accuracy": float(np.std(accuracies)),
@@ -742,7 +756,7 @@ class SklearnClassificationMLflowMixin(SklearnMLflowMixin):
 
     def _upload_report_artifacts(self) -> None:
         """Upload per-fold report folders and final confusion matrix."""
-        if self._mlflow_client is None or not self._mlflow_client.enabled:
+        if self.mlflow_client is None or not self.mlflow_client.enabled:
             return
 
         if not self.config.core.get("upload_artifacts"):
@@ -752,13 +766,13 @@ class SklearnClassificationMLflowMixin(SklearnMLflowMixin):
             # Upload per-fold report folders
             for count in range(len(self.metadata.get("test_accuracy", []))):
                 folder = f"{self.output.folder}_{count}"
-                _log_folder_artifacts(folder, self._mlflow_client, "classification_output", recursive=True)
+                _log_folder_artifacts(folder, self.mlflow_client, "classification_output", recursive=True)
 
             # Upload final combined confusion matrix
             final_folder = f"{self.output.folder}"
             final_cm_path = os.path.join(final_folder, "test_confusion_matrix.png")
             if os.path.isfile(final_cm_path):
-                self._mlflow_client.log_artifact(final_cm_path, artifact_path="classification_output")
+                self.mlflow_client.log_artifact(final_cm_path, artifact_path="classification_output")
         except Exception as e:
             log.warning("Failed to log report artifacts to MLflow: %s", e)
 
@@ -768,14 +782,14 @@ class SklearnClassificationMLflowMixin(SklearnMLflowMixin):
         Args:
             output_folder: Local folder containing test results to upload.
         """
-        if self._mlflow_client is None or not self._mlflow_client.enabled:
+        if self.mlflow_client is None or not self.mlflow_client.enabled:
             return
 
         if not self.config.core.get("upload_artifacts"):
             return
 
         try:
-            _log_folder_artifacts(output_folder, self._mlflow_client, "test_output", recursive=True)
+            _log_folder_artifacts(output_folder, self.mlflow_client, "test_output", recursive=True)
         except Exception as e:
             log.warning("Failed to log test artifacts to MLflow: %s", e)
 
@@ -793,19 +807,19 @@ class SklearnPatchMLflowMixin(SklearnMLflowMixin):
 
     def _log_train_metrics(self) -> None:
         """Log validation accuracy from ``self.metadata``."""
-        if self._mlflow_client is None or not self._mlflow_client.enabled:
+        if self.mlflow_client is None or not self.mlflow_client.enabled:
             return
 
         try:
             accuracy = self.metadata.get("test_accuracy")
             if accuracy is not None:
-                self._mlflow_client.log_metrics({"val_accuracy": accuracy})
+                self.mlflow_client.log_metrics({"val_accuracy": accuracy})
         except Exception as e:
             log.warning("Failed to log validation metrics to MLflow: %s", e)
 
     def _upload_report_artifacts(self) -> None:
         """Upload reconstruction results and patch report folder."""
-        if self._mlflow_client is None or not self._mlflow_client.enabled:
+        if self.mlflow_client is None or not self.mlflow_client.enabled:
             return
 
         if not self.config.core.get("upload_artifacts"):
@@ -815,10 +829,10 @@ class SklearnPatchMLflowMixin(SklearnMLflowMixin):
             # Upload reconstruction results JSON
             reconstruction_json_path = "reconstruction_results.json"
             if os.path.isfile(reconstruction_json_path):
-                self._mlflow_client.log_artifact(reconstruction_json_path, artifact_path="patch_output")
+                self.mlflow_client.log_artifact(reconstruction_json_path, artifact_path="patch_output")
 
             # Upload report folder with patch visualizations
             if os.path.isdir(self.output.folder):
-                _log_folder_artifacts(self.output.folder, self._mlflow_client, "patch_output", recursive=True)
+                _log_folder_artifacts(self.output.folder, self.mlflow_client, "patch_output", recursive=True)
         except Exception as e:
             log.warning("Failed to log report artifacts to MLflow: %s", e)
