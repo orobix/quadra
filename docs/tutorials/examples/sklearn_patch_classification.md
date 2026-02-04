@@ -185,6 +185,8 @@ backbone:
 core:
   tag: "run"
   name: "sklearn-classification-patch"
+  upload_artifacts: true
+  mlflow_zip_models: false
 
 trainer:
   iteration_over_training: 20 # Regulate how many patches are extracted
@@ -192,9 +194,27 @@ trainer:
 datamodule:
   num_workers: 8
   batch_size: 32
+
+logger:
+  mlflow:
+    experiment_name: sklearn_patch_classification
+    run_name: ${core.name}
 ```
 
 By default the experiment will use dino_vitb8 as backbone, resizing the images to 224x224 and training a logistic regression classifier. Patches are extracted iterating 20 times over the training dataset (since sampling is random) to get more information.
+
+#### MLflow tracking
+
+Sklearn patch tasks can log to MLflow when `logger.mlflow.tracking_uri` is set (for example via the
+`MLFLOW_TRACKING_URI` environment variable). The run logs:
+
+- Hyperparameters (Hydra choices, backbone parameter counts, git info).
+- Validation metrics (patch-level accuracy).
+- Artifacts (`config_resolved.yaml`, `config_tree.txt`, `data/dataset.csv`, reconstruction outputs).
+- Models (sklearn classifier and exported backbone deployment models).
+
+Use `core.upload_artifacts: true` to enable artifact/model upload and `core.mlflow_zip_models: true` to zip exported
+models before upload when supported.
 
 An actual configuration file based on the above could be this one (suppose it's saved under `configs/experiment/custom_experiment/sklearn_classification_patch.yaml`):
 ```yaml
@@ -210,6 +230,11 @@ export:
   
 core:
   name: experiment-name
+
+logger:
+  mlflow:
+    experiment_name: sklearn_patch_classification
+    run_name: ${core.name}
 
 datamodule:
   data_path: path_to_patch_dataset
@@ -257,6 +282,8 @@ config_tree.txt                  main.log
 Inside the `classification_patch_experiment` folder you should find some report utilities computed over the validation dataset, like the confusion matrix. The `reconstruction_results.json` file contains the reconstruction metrics computed over the validation dataset in terms of covered defects, it will also contain the coordinates of the polygons extracted over predicted areas of the image with the same label.
 
 The `data` folder contains a joblib version of the datamodule containing parameters and splits for reproducibility. The `deployment_model` folder contains the backbone exported in torchscript format alongside the joblib version of trained classifier.
+
+When MLflow is configured and `core.upload_artifacts` is enabled, the same reports, reconstruction results and exported models are also uploaded to the MLflow artifact store.
 
 ## Evaluation
 The same datamodule specified before can be used for inference. 
