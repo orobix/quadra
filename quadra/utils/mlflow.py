@@ -441,6 +441,7 @@ class SklearnMLflowClient:
             return
 
         self._experiment_name = mlflow_config.get("experiment_name", self._config.core.get("name", "default"))
+        self._run_name = mlflow_config.get("run_name", None)
         self._tracking_uri = tracking_uri
         self._enabled = True
 
@@ -453,7 +454,7 @@ class SklearnMLflowClient:
             mlflow.set_tracking_uri(self._tracking_uri)
             mlflow.set_experiment(self._experiment_name)
 
-            run = mlflow.start_run()
+            run = mlflow.start_run(run_name=self._run_name)
             self._run_id = run.info.run_id
             self._experiment_id = run.info.experiment_id
             log.info(
