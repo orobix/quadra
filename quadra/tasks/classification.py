@@ -46,6 +46,7 @@ from quadra.utils.classification import (
 )
 from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model, import_deployment_model
+from quadra.utils.mlflow import SklearnClassificationMLflowMixin
 from quadra.utils.models import get_feature, is_vision_transformer
 from quadra.utils.vit_explainability import VitAttentionGradRollout
 
@@ -487,7 +488,9 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         log.info("Frozen %d parameters", count_frozen)
 
 
-class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[SklearnClassificationDataModuleT]):
+class SklearnClassification(
+    SklearnClassificationMLflowMixin, Generic[SklearnClassificationDataModuleT], Task[SklearnClassificationDataModuleT]
+):
     """Sklearn classification task.
 
     Args:
@@ -550,6 +553,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         self.datamodule.setup(stage="fit")
 
         self.trainer = self.config.trainer
+
+        self._init_mlflow()
 
     @property
     def model(self) -> ClassifierMixin:
@@ -688,6 +693,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             )
             self.metadata["cams"].append(cams)
 
+        self._log_train_metrics()
+
     def extract_model_summary(
         self, feature_extractor: torch.nn.Module | BaseEvaluationModel, dl: torch.utils.data.DataLoader
     ) -> None:
@@ -785,6 +792,8 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
             grayscale_cams=cams,
         )
 
+        self._upload_test_artifacts(output_folder_test)
+
     def export(self) -> None:
         """Generate deployment model for the task."""
         if self.config.export is None or len(self.config.export.types) == 0:
@@ -847,6 +856,13 @@ class SklearnClassification(Generic[SklearnClassificationDataModuleT], Task[Skle
         plt.title(f"Confusion Matrix (Accuracy: {(self.metadata['test_accuracy'][count] * 100):.2f}%)")
         plt.savefig(os.path.join(final_folder, "test_confusion_matrix.png"), bbox_inches="tight", pad_inches=0, dpi=300)
         plt.close()
+
+        self._upload_report_artifacts()
+
+    def finalize(self) -> None:
+        """Finalize the experiment, uploading MLflow artifacts and models."""
+        self._finalize_mlflow()
+        super().finalize()
 
     def execute(self) -> None:
         """Execute the experiment and all the steps."""

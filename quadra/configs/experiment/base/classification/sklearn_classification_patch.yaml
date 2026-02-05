@@ -16,6 +16,8 @@ backbone:
 core:
   tag: "run"
   name: "sklearn-classification-patch"
+  upload_artifacts: true
+  mlflow_zip_models: false
 
 trainer:
   iteration_over_training: 20 # Regulate how many patches are extracted
@@ -23,3 +25,8 @@ trainer:
 datamodule:
   num_workers: 8
   batch_size: 32
+
+logger:
+  mlflow:
+    experiment_name: sklearn_patch_classification
+    run_name: ${core.name}

@@ -106,16 +106,36 @@ backbone:
 core:
   tag: "run"
   name: "sklearn-classification"
+  upload_artifacts: true
+  mlflow_zip_models: false
 
 datamodule:
   num_workers: 8
   batch_size: 32
   phase: train
   n_splits: 1
+
+logger:
+  mlflow:
+    experiment_name: sklearn_classification
+    run_name: ${core.name}
 ```
 
 By default the experiment will use dino_vitb8 as backbone, resizing the images to 224x224 and training a logistic regression classifier. Setting the `n_splits` parameter to 1 will use a standard 70/30 train/validation split (given the parameters specified in the base datamodule) instead of cross validation.
 It will also export the model in two formats, "torchscript" and "pytorch".
+
+#### MLflow tracking
+
+Sklearn tasks support MLflow tracking without PyTorch Lightning. When `logger.mlflow.tracking_uri` is configured
+(for example via the `MLFLOW_TRACKING_URI` environment variable), the task will open a run and log:
+
+- Hyperparameters (Hydra choices, backbone parameter counts, git info, dataset split info).
+- Cross-validation metrics (per-fold accuracy, mean and standard deviation).
+- Artifacts (`config_resolved.yaml`, `config_tree.txt`, `data/dataset.csv`, reports).
+- Models (sklearn classifier and exported backbone deployment models).
+
+Use `core.upload_artifacts: true` to enable artifact/model upload and `core.mlflow_zip_models: true` to zip exported
+models before upload when supported.
 
 An actual configuration file based on the above could be this one (suppose it's saved under `configs/experiment/custom_experiment/sklearn_classification.yaml`):
 
@@ -129,6 +149,11 @@ defaults:
 
 core:
   name: experiment-name
+
+logger:
+  mlflow:
+    experiment_name: sklearn_classification
+    run_name: ${core.name}
 
 export:
   types: [pytorch, torchscript]
@@ -188,6 +213,8 @@ classification_experiment_2  config_tree.txt              test
 Each `classification_experiment_X` folder contains the metrics for the corresponding fold while the `classification_experiment` folder contains the metrics computed aggregating the results of all the folds.
 
 The `data` folder contains a joblib version of the datamodule containing parameters and splits for reproducibility. The `deployment_model` folder contains the backbone exported in torchscript and pytorch format alongside the joblib version of trained classifier. The `test` folder contains the metrics for the final test on all the data after the model has been trained on both train and validation.
+
+When MLflow is configured and `core.upload_artifacts` is enabled, the same reports and exported models are also uploaded to the MLflow artifact store.
 
 ## Evaluation
 The same datamodule specified before can be used for inference by setting the `phase` parameter to `test`. 

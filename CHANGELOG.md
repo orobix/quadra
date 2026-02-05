@@ -14,6 +14,16 @@ Starting from version 2.6.1, releases are automatically created when changes are
 
 **Note**: If a tag for the current version already exists, the workflow will skip tag and release creation to avoid duplicates.
 
+### [2.7.2]
+
+#### Added
+
+- MLflow tracking for sklearn classification and patch classification tasks (metrics, artifacts, and model uploads)
+
+#### Updated
+
+- Minor UI improvements to segmentation datamodule, reduce OOM risk in segmentation test when running with thousands of images.
+
 ### [2.7.1]
 
 #### Added

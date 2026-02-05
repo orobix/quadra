@@ -21,13 +21,14 @@ from quadra.utils import utils
 from quadra.utils.classification import automatic_batch_size_computation
 from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model, import_deployment_model
+from quadra.utils.mlflow import SklearnPatchMLflowMixin
 from quadra.utils.patch import RleEncoder, compute_patch_metrics, save_classification_result
 from quadra.utils.patch.dataset import PatchDatasetFileFormat
 
 log = utils.get_logger(__name__)
 
 
-class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
+class PatchSklearnClassification(SklearnPatchMLflowMixin, Task[PatchSklearnClassificationDataModule]):
     """Patch classification using torch backbone for feature extraction and sklearn to learn a linear classifier.
 
     Args:
@@ -113,6 +114,8 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
 
         self.trainer = self.config.trainer
 
+        self._init_mlflow()
+
     @property
     def trainer(self) -> SklearnClassificationTrainer:
         """Trainer: The trainer."""
@@ -155,6 +158,8 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
         self.metadata["test_labels"] = [
             train_dataset.idx_to_class[i] if i != -1 else "N/A" for i in res["real_label"].unique().tolist()
         ]
+
+        self._log_train_metrics()
 
     def generate_report(self) -> None:
         """Generate the report for the task."""
@@ -219,6 +224,8 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
             ignore_classes=ignore_classes,
         )
 
+        self._upload_report_artifacts()
+
     def export(self) -> None:
         """Generate deployment model for the task."""
         input_shapes = self.config.export.input_shapes
@@ -260,6 +267,11 @@ class PatchSklearnClassification(Task[PatchSklearnClassificationDataModule]):
                 json.dump(model_json, f, cls=utils.HydraEncoder)
 
         dump(self.model, os.path.join(self.export_folder, "classifier.joblib"))
+
+    def finalize(self) -> None:
+        """Finalize the experiment, uploading MLflow artifacts and models."""
+        self._finalize_mlflow()
+        super().finalize()
 
     def execute(self) -> None:
         """Execute the experiment and all the steps."""
