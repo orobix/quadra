@@ -14,6 +14,12 @@ Starting from version 2.6.1, releases are automatically created when changes are
 
 **Note**: If a tag for the current version already exists, the workflow will skip tag and release creation to avoid duplicates.
 
+### [2.7.3]
+
+#### Fixed
+
+Add checks to ensure mlflow client properties can't be called if mlflow is not enabled to avoid unbound variable errors.
+
 ### [2.7.2]
 
 #### Added
