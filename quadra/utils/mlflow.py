@@ -1,13 +1,14 @@
+import functools
 import glob
 import json
 import logging
 import os
 import shutil
 import subprocess
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any
+from typing import Any, ParamSpec, TypeVar
 
 import mlflow
 import numpy as np
@@ -375,15 +376,24 @@ def upload_lightning_artifacts(
             tensorboard_logger.experiment.flush()
 
 
-def is_mlflow_enabled(func):
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def is_mlflow_enabled(func: Callable[P, R]) -> Callable[P, R]:
     """Decorator to check if MLflow is enabled before executing a function."""
 
-    def wrapper(self: "SklearnMLflowClient", *args: Any, **kwargs: Any):
+    @functools.wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         """Wrapper function to check MLflow status and prevent execution if disabled."""
-        if self.enabled and self.run_id is not None:
-            return func(self, *args, **kwargs)
+        # Extract self from args to check MLflow status
+        if args and hasattr(args[0], "enabled") and hasattr(args[0], "run_id"):
+            self = args[0]
+            if self.enabled and self.run_id is not None:
+                return func(*args, **kwargs)
+            raise RuntimeError(f"You tried to call {func.__name__} but MLflow is not enabled.")
 
-        raise RuntimeError(f"You tried to call {func.__name__} but MLflow is not enabled.")
+        return func(*args, **kwargs)
 
     return wrapper
 
