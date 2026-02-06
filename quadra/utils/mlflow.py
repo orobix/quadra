@@ -406,12 +406,12 @@ class SklearnMLflowClient:
 
     @property
     def run_id(self) -> str | None:
-        """The active run ID."""
+        """The active run ID, or None if run hasn't started yet."""
         return self._run_id
 
     @property
     def experiment_id(self) -> str | None:
-        """The active experiment ID."""
+        """The active experiment ID, or None if run hasn't started yet."""
         return self._experiment_id
 
     @property
@@ -421,10 +421,7 @@ class SklearnMLflowClient:
 
     @property
     def tracking_uri(self) -> str:
-        """The MLflow tracking URI."""
-        if not self._enabled:
-            raise RuntimeError("MLflow is not enabled")
-
+        """The MLflow tracking URI configured for this client."""
         return self._tracking_uri
 
     def _setup(self) -> None:
