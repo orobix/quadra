@@ -392,7 +392,8 @@ class SklearnMLflowClient:
 
     def __init__(self, config: DictConfig):
         self._config = config
-        self._run_id: str
+        self._run_id: str | None
+        self._experiment_id: str | None
         self._experiment_name: str = "default"
         self._tracking_uri: str
         self._enabled: bool = False
@@ -404,23 +405,23 @@ class SklearnMLflowClient:
         return self._enabled
 
     @property
-    def run_id(self) -> str:
-        """The active run ID, or None."""
+    def run_id(self) -> str | None:
+        """The active run ID, or None if run hasn't started yet."""
         return self._run_id
 
     @property
-    def experiment_id(self) -> str:
-        """The active experiment ID, or None."""
+    def experiment_id(self) -> str | None:
+        """The active experiment ID, or None if run hasn't started yet."""
         return self._experiment_id
 
     @property
     def experiment_name(self) -> str:
-        """The active experiment name, or None."""
+        """The active experiment name."""
         return self._experiment_name
 
     @property
     def tracking_uri(self) -> str:
-        """The MLflow tracking URI."""
+        """The MLflow tracking URI configured for this client."""
         return self._tracking_uri
 
     def _setup(self) -> None:
@@ -443,6 +444,8 @@ class SklearnMLflowClient:
         self._experiment_name = mlflow_config.get("experiment_name", self._config.core.get("name", "default"))
         self._run_name = mlflow_config.get("run_name", None)
         self._tracking_uri = tracking_uri
+        self._experiment_id = None
+        self._run_id = None
         self._enabled = True
 
     def start_run(self) -> None:
