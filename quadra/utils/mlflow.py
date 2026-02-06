@@ -375,19 +375,6 @@ def upload_lightning_artifacts(
             tensorboard_logger.experiment.flush()
 
 
-def is_mlflow_enabled(func):
-    """Decorator to check if MLflow is enabled before executing a function."""
-
-    def wrapper(self: "SklearnMLflowClient", *args: Any, **kwargs: Any):
-        """Wrapper function to check MLflow status and prevent execution if disabled."""
-        if self.enabled and self.run_id is not None:
-            return func(self, *args, **kwargs)
-
-        raise RuntimeError(f"You tried to call {func.__name__} but MLflow is not enabled.")
-
-    return wrapper
-
-
 class SklearnMLflowClient:
     """MLflow client for non-Lightning tasks.
 
@@ -405,8 +392,8 @@ class SklearnMLflowClient:
 
     def __init__(self, config: DictConfig):
         self._config = config
-        self._run_id: str
-        self._experiment_id: str
+        self._run_id: str | None
+        self._experiment_id: str | None
         self._experiment_name: str = "default"
         self._tracking_uri: str
         self._enabled: bool = False
@@ -418,27 +405,18 @@ class SklearnMLflowClient:
         return self._enabled
 
     @property
-    def run_id(self) -> str:
+    def run_id(self) -> str | None:
         """The active run ID."""
-        if not self._enabled:
-            raise RuntimeError("MLflow is not enabled")
-
         return self._run_id
 
     @property
-    def experiment_id(self) -> str:
+    def experiment_id(self) -> str | None:
         """The active experiment ID."""
-        if not self._enabled:
-            raise RuntimeError("MLflow is not enabled")
-
         return self._experiment_id
 
     @property
     def experiment_name(self) -> str:
         """The active experiment name."""
-        if not self._enabled:
-            raise RuntimeError("MLflow is not enabled")
-
         return self._experiment_name
 
     @property
@@ -469,6 +447,8 @@ class SklearnMLflowClient:
         self._experiment_name = mlflow_config.get("experiment_name", self._config.core.get("name", "default"))
         self._run_name = mlflow_config.get("run_name", None)
         self._tracking_uri = tracking_uri
+        self._experiment_id = None
+        self._run_id = None
         self._enabled = True
 
     def start_run(self) -> None:
@@ -493,22 +473,26 @@ class SklearnMLflowClient:
             log.warning("Failed to start MLflow run: %s. MLflow integration will be disabled.", e)
             self._enabled = False
 
-    @is_mlflow_enabled
     def end_run(self) -> None:
         """End the active MLflow run."""
+        if not self._enabled or self._run_id is None:
+            return
+
         try:
             mlflow.end_run()
             log.info("MLflow run ended: run_id=%s", self._run_id)
         except Exception as e:
             log.warning("Failed to end MLflow run: %s", e)
 
-    @is_mlflow_enabled
     def log_params(self, params: dict[str, Any]) -> None:
         """Log parameters, truncating values that exceed MLflow's limit.
 
         Args:
             params: Dictionary of parameter name-value pairs.
         """
+        if not self._enabled or self._run_id is None:
+            return
+
         try:
             # Truncate long values and convert to strings
             safe_params: dict[str, str] = {}
@@ -526,7 +510,6 @@ class SklearnMLflowClient:
         except Exception as e:
             log.warning("Failed to log params to MLflow: %s", e)
 
-    @is_mlflow_enabled
     def log_metrics(self, metrics: dict[str, float], step: int | None = None) -> None:
         """Log metrics to the active run.
 
@@ -534,12 +517,14 @@ class SklearnMLflowClient:
             metrics: Dictionary of metric name-value pairs.
             step: Optional step number for the metrics.
         """
+        if not self._enabled or self._run_id is None:
+            return
+
         try:
             mlflow.log_metrics(metrics, step=step)
         except Exception as e:
             log.warning("Failed to log metrics to MLflow: %s", e)
 
-    @is_mlflow_enabled
     def log_artifact(self, local_path: str, artifact_path: str | None = None) -> None:
         """Log a single artifact file.
 
@@ -547,6 +532,9 @@ class SklearnMLflowClient:
             local_path: Path to the file to upload.
             artifact_path: Destination directory in the artifact store.
         """
+        if not self._enabled or self._run_id is None:
+            return
+
         if not os.path.isfile(local_path):
             return
 
@@ -555,7 +543,6 @@ class SklearnMLflowClient:
         except Exception as e:
             log.warning("Failed to log artifact %s to MLflow: %s", local_path, e)
 
-    @is_mlflow_enabled
     def log_sklearn_model(self, model: Any, artifact_path: str) -> None:
         """Log an sklearn model using ``mlflow.sklearn.log_model``.
 
@@ -563,13 +550,15 @@ class SklearnMLflowClient:
             model: A fitted sklearn classifier.
             artifact_path: Destination path in the artifact store.
         """
+        if not self._enabled or self._run_id is None:
+            return
+
         try:
             mlflow.sklearn.log_model(model, artifact_path=artifact_path)
             log.info("Sklearn model logged to MLflow at artifact_path=%s", artifact_path)
         except Exception as e:
             log.warning("Failed to log sklearn model to MLflow: %s", e)
 
-    @is_mlflow_enabled
     def log_backbone_models(self, export_folder: str, half_precision: bool = False, device: str = "cpu") -> None:
         """Log backbone deployment models.
 
@@ -580,6 +569,9 @@ class SklearnMLflowClient:
             half_precision: Whether models were exported with half precision.
             device: Device to use for model loading during signature inference.
         """
+        if not self._enabled or self._run_id is None:
+            return
+
         try:
             _log_torch_trained_models_to_mlflow(export_folder, self._config, device, half_precision)
         except Exception as e:
