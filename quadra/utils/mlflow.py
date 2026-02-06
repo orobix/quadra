@@ -387,13 +387,17 @@ def is_mlflow_enabled(func: Callable[P, R]) -> Callable[P, R]:
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         """Wrapper function to check MLflow status and prevent execution if disabled."""
         # Extract self from args to check MLflow status
-        if args and hasattr(args[0], "enabled") and hasattr(args[0], "run_id"):
-            self = args[0]
-            if self.enabled and self.run_id is not None:
-                return func(*args, **kwargs)
-            raise RuntimeError(f"You tried to call {func.__name__} but MLflow is not enabled.")
+        if not args or not hasattr(args[0], "enabled") or not hasattr(args[0], "run_id"):
+            raise TypeError(
+                "Decorator @is_mlflow_enabled can only be used on methods of classes "
+                "with 'enabled' and 'run_id' attributes"
+            )
 
-        return func(*args, **kwargs)
+        self = args[0]
+        if self.enabled and self.run_id is not None:
+            return func(*args, **kwargs)
+
+        raise RuntimeError(f"You tried to call {func.__name__} but MLflow is not enabled.")
 
     return wrapper
 
