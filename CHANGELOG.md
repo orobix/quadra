@@ -14,11 +14,27 @@ Starting from version 2.6.1, releases are automatically created when changes are
 
 **Note**: If a tag for the current version already exists, the workflow will skip tag and release creation to avoid duplicates.
 
+### [2.8.0]
+
+#### Added
+
+- 28 new backbone configurations: csatv2, dinov3_vitb16, dinov3_vits16, edgenext_s, efficientnet_em, efficientnetv2_b1, fasternet_t0, fasternet_t1, fasternet_t2, ghostnet_v3, hgnet_v2, mobilenet_edgetpu_v2, mobilenetv4_m, mobilenetv4_s, regnety_016, repvit, rexnet, shvit_s1, shvit_s2, shvit_s3, shvit_s4, starnet_s2, starnet_s3, starnet_s4, swiftformer_l1, swiftformer_l3, swiftformer_s, swiftformer_xs
+
+#### Updated
+
+- MLflow-skinny from ^2.3.1 to 3.8.1
+- Timm from 0.9.12 to 1.0.24
+- Onnxconverter-common from ^1.14.0 to 1.16.0
+
+#### Fixed
+
+- Avoid unbound variable errors on mlflow client properties if mlflow is not enabled.
+
 ### [2.7.3]
 
 #### Fixed
 
-Add checks to ensure mlflow client properties can't be called if mlflow is not enabled to avoid unbound variable errors.
+- Add checks to ensure mlflow client properties can't be called if mlflow is not enabled to avoid unbound variable errors.
 
 ### [2.7.2]
 

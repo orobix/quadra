@@ -393,6 +393,7 @@ class SklearnMLflowClient:
         self._experiment_id: str | None
         self._experiment_name: str = "default"
         self._tracking_uri: str
+        self._run_name: str | None
         self._enabled: bool = False
         self._setup()
 
@@ -423,6 +424,12 @@ class SklearnMLflowClient:
 
     def _setup(self) -> None:
         """Determine whether MLflow integration should be active."""
+        # Initialize all properties first
+        self._run_id = None
+        self._experiment_id = None
+        self._tracking_uri = ""
+        self._run_name = None
+
         logger_config = self._config.get("logger")
         if logger_config is None:
             log.info("No logger config found, sklearn MLflow integration disabled")
@@ -441,8 +448,6 @@ class SklearnMLflowClient:
         self._experiment_name = mlflow_config.get("experiment_name", self._config.core.get("name", "default"))
         self._run_name = mlflow_config.get("run_name", None)
         self._tracking_uri = tracking_uri
-        self._experiment_id = None
-        self._run_id = None
         self._enabled = True
 
     def start_run(self) -> None:
