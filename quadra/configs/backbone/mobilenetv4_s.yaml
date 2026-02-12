@@ -1,0 +1,10 @@
+model:
+  _target_: quadra.models.classification.TimmNetworkBuilder
+  model_name: mobilenetv4_conv_small.e2400_r224_in1k
+  # model_name: mobilenetv4_conv_small.e1200_r224_in1k
+  # model_name: mobilenetv4_conv_small_050.e3000_r224_in1k
+  pretrained: true
+  freeze: false
+metadata:
+  input_size: 224
+  output_dim: 1280

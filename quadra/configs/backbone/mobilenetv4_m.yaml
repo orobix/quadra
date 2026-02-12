@@ -1,8 +1,9 @@
 model:
   _target_: quadra.models.classification.TimmNetworkBuilder
-  model_name: tf_efficientnetv2_s.in21k_ft_in1k
+  model_name: mobilenetv4_hybrid_medium.ix_e550_r384_in1k
   pretrained: true
   freeze: false
 metadata:
   input_size: 384
   output_dim: 1280
+  nb_heads: 4

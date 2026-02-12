@@ -121,6 +121,7 @@ def _log_single_model(
     Returns:
         True if model was uploaded successfully, False otherwise.
     """
+    model_name = os.path.basename(model_path).replace(".", "_")
     if model_type == "pytorch" and not mlflow_zip_models:
         log.warning("Pytorch format still not supported for mlflow upload")
         return False
@@ -128,11 +129,13 @@ def _log_single_model(
     if mlflow_zip_models:
         with TemporaryDirectory() as temp_dir:
             _create_model_zip_archive(model_path, model_type, export_folder, temp_dir)
+            # Set step=-1 to avoid psycopg2.errors.UniqueViolation raised as a result of Query-invoked autoflush
             mlflow.pyfunc.log_model(
-                artifact_path=model_path,
+                name=model_name,
                 loader_module="not.used",
                 data_path=os.path.join(temp_dir, "assets.zip"),
                 pip_requirements=[""],
+                step=-1,
             )
         return True
 
@@ -145,11 +148,8 @@ def _log_single_model(
 
     if model_type in ["torchscript", "pytorch"]:
         signature = infer_signature_model(loaded_model.model, inputs)
-        mlflow.pytorch.log_model(
-            loaded_model.model,
-            artifact_path=model_path,
-            signature=signature,
-        )
+        # Set step=-1 to avoid psycopg2.errors.UniqueViolation raised as a result of Query-invoked autoflush
+        mlflow.pytorch.log_model(loaded_model.model, name=model_name, signature=signature, step=-1)
         return True
 
     if model_type in ["onnx", "simplified_onnx"] and ONNX_AVAILABLE:
@@ -159,11 +159,8 @@ def _log_single_model(
 
         signature = infer_signature_model(loaded_model, inputs)
         model_proto = onnx.load(loaded_model.model_path)
-        mlflow.onnx.log_model(
-            model_proto,
-            artifact_path=model_path,
-            signature=signature,
-        )
+        # Set step=-1 to avoid psycopg2.errors.UniqueViolation raised as a result of Query-invoked autoflush
+        mlflow.onnx.log_model(model_proto, name=model_name, signature=signature, step=-1)
         return True
 
     return False
@@ -551,7 +548,9 @@ class SklearnMLflowClient:
             return
 
         try:
-            mlflow.sklearn.log_model(model, artifact_path=artifact_path)
+            model_name = os.path.basename(artifact_path).replace(".", "_")
+            # Set step=-1 to avoid psycopg2.errors.UniqueViolation raised as a result of Query-invoked autoflush
+            mlflow.sklearn.log_model(model, name=model_name, step=-1)
             log.info("Sklearn model logged to MLflow at artifact_path=%s", artifact_path)
         except Exception as e:
             log.warning("Failed to log sklearn model to MLflow: %s", e)
