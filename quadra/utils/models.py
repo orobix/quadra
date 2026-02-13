@@ -13,7 +13,7 @@ import tqdm
 from pytorch_grad_cam import GradCAM
 from scipy import ndimage
 from sklearn.linear_model._base import ClassifierMixin
-from timm.models.layers import DropPath
+from timm.layers import DropPath
 from timm.models.vision_transformer import Mlp
 from torch import nn
 
@@ -127,16 +127,16 @@ def get_feature(
         if not hasattr(feature_extractor, "features_extractor"):
             gradcam = False
         elif isinstance(feature_extractor.features_extractor, timm.models.resnet.ResNet):
-            target_layers = [feature_extractor.features_extractor.layer4[-1]]
+            target_layers = [feature_extractor.features_extractor.layer4[-1]]  # type: ignore[index]
             cam = GradCAM(
                 model=feature_extractor,
                 target_layers=target_layers,
             )
-            for p in feature_extractor.features_extractor.layer4[-1].parameters():
+            for p in feature_extractor.features_extractor.layer4[-1].parameters():  # type: ignore[index,union-attr]
                 p.requires_grad = True
-        elif is_vision_transformer(feature_extractor.features_extractor):
+        elif is_vision_transformer(cast(torch.nn.Module, feature_extractor.features_extractor)):
             grad_rollout = VitAttentionGradRollout(
-                feature_extractor.features_extractor,
+                cast(torch.nn.Module, feature_extractor.features_extractor),
                 classifier=classifier,
                 example_input=None if input_shape is None else torch.randn(1, *input_shape),
             )
@@ -162,7 +162,7 @@ def get_feature(
             if gradcam:
                 y_hat = cast(list[torch.Tensor] | tuple[torch.Tensor] | torch.Tensor, feature_extractor(x1).detach())
                 # mypy can't detect that gradcam is true only if we have a features_extractor
-                if is_vision_transformer(feature_extractor.features_extractor):  # type: ignore[union-attr]
+                if is_vision_transformer(cast(torch.nn.Module, feature_extractor.features_extractor)):  # type: ignore[union-attr]
                     grayscale_cam_low_res = grad_rollout(
                         input_tensor=x1, targets_list=y1
                     )  # TODO: We are using labels (y1) but it would be better to use preds
