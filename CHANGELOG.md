@@ -29,6 +29,7 @@ Starting from version 2.6.1, releases are automatically created when changes are
 #### Fixed
 
 - Avoid unbound variable errors on mlflow client properties if mlflow is not enabled.
+- Fix wrong field checked in automatic batch size corner case that could cause an infinite loop.
 
 ### [2.7.3]
 

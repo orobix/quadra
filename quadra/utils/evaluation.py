@@ -467,10 +467,10 @@ def automatic_datamodule_batch_size(batch_size_attribute_name: str = "batch_size
                     log.warning(
                         "The function %s went out of memory, trying to reduce the batch size to %d",
                         func.__name__,
-                        self.datamodule.batch_size,
+                        getattr(self.datamodule, batch_size_attribute_name),
                     )
 
-                    if self.datamodule.batch_size == 0:
+                    if getattr(self.datamodule, batch_size_attribute_name) == 0:
                         raise RuntimeError(
                             f"Unable to run {func.__name__} with batch size 1, the program will exit"
                         ) from e
