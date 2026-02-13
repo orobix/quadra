@@ -29,6 +29,17 @@ jobs:
       - name: Cleanup
         run: |
           rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          rm -rf /usr/lib/jvm
+          rm -rf /usr/share/swift
+          rm -rf /usr/local/.ghcup
+          rm -rf /usr/local/julia*
+          rm -rf /usr/local/share/chromium
+          rm -rf /opt/microsoft /opt/google
+          rm -rf /opt/az
+          rm -rf /usr/local/share/powershell
+          rm -rf /opt/hostedtoolcache
+          # docker system prune -af || true
+          # docker builder prune -af || true
 
       - run: df -h
 
