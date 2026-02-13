@@ -556,7 +556,7 @@ class SklearnMLflowClient:
             model_name = os.path.basename(artifact_path).replace(".", "_")
             # Set step=-1 to avoid psycopg2.errors.UniqueViolation raised as a result of Query-invoked autoflush
             mlflow.sklearn.log_model(model, name=model_name, step=-1)
-            log.info("Sklearn model logged to MLflow at artifact_path=%s", artifact_path)
+            log.info("Sklearn model logged to MLflow with name=%s", model_name)
         except Exception as e:
             log.warning("Failed to log sklearn model to MLflow: %s", e)
 

@@ -1,6 +1,6 @@
 model:
   _target_: quadra.models.classification.TimmNetworkBuilder
-  model_name: fasternet_t1.in1k
+  model_name: fasternet_t2.in1k
   pretrained: true
   freeze: false
 metadata:
