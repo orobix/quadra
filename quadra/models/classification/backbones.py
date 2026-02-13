@@ -4,7 +4,7 @@ from typing import Any
 
 import timm
 import torch
-from timm.models.helpers import load_checkpoint
+from timm.models import load_checkpoint
 from torch import nn
 from torchvision import models
 

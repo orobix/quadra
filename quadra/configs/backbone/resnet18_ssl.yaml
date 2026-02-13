@@ -1,6 +1,6 @@
 model:
   _target_: quadra.models.classification.TimmNetworkBuilder
-  model_name: ssl_resnet18
+  model_name: resnet18.fb_ssl_yfcc100m_ft_in1k
   pretrained: true
   freeze: false
 metadata:

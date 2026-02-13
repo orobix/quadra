@@ -1,8 +1,10 @@
 model:
   _target_: quadra.models.classification.TimmNetworkBuilder
-  model_name: tf_efficientnetv2_s.in21k_ft_in1k
+  model_name: repvit_m1_1.dist_450e_in1k
   pretrained: true
   freeze: false
 metadata:
-  input_size: 384
-  output_dim: 1280
+  input_size: 224
+  output_dim: 512
+  patch_size: 4
+  nb_heads: 8
