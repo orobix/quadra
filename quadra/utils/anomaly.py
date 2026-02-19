@@ -20,6 +20,7 @@ import numpy as np  # pylint: disable=unused-import
 import pytorch_lightning as pl
 import torch  # pylint: disable=unused-import
 from anomalib.models.components import AnomalyModule
+from pydantic import BaseModel, model_validator
 from pytorch_lightning import Callback
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 
@@ -27,12 +28,119 @@ from pytorch_lightning.utilities.types import STEP_OUTPUT
 MapOrValue: TypeAlias = "float | torch.Tensor | np.ndarray"
 
 
-def normalize_anomaly_score(raw_score: MapOrValue, threshold: float) -> MapOrValue:
-    """Normalize anomaly score value or map based on threshold.
+class EvalThreshold(BaseModel):
+    """Pair of raw and normalized threshold values used for consistency enforcement.
+
+    Attributes:
+        raw: The threshold in the original (unnormalized) anomaly score space.
+        normalized: The corresponding threshold in the normalized score space
+            (i.e. `(raw / training_threshold) * 100`).
+    """
+
+    raw: float
+    normalized: float
+
+    @model_validator(mode="after")
+    def check_positive(self) -> EvalThreshold:
+        """Validate that both threshold values are positive."""
+        if self.raw <= 0:
+            raise ValueError("raw threshold must be positive")
+        if self.normalized <= 0:
+            raise ValueError("normalized threshold must be positive")
+        return self
+
+
+def ensure_scores_consistency(
+    normalized_score: MapOrValue,
+    raw_score: MapOrValue,
+    eval_threshold: EvalThreshold,
+) -> MapOrValue:
+    """Enforce that the classification based on normalized scores matches the raw classification.
+
+    For every sample, if `raw_score >= eval_threshold.raw` (anomaly), the normalized score is
+    clipped to be at least `eval_threshold.normalized`. If `raw_score < eval_threshold.raw`
+    (normal), the normalized score is clipped to be strictly below `eval_threshold.normalized`
+    using `np.nextafter` so that no hard-coded epsilon is required.
 
     Args:
-        raw_score: Raw anomaly score valure or map
-        threshold: Threshold for anomaly detection
+        normalized_score: Normalized anomaly score value or map to adjust.
+        raw_score: Original (unnormalized) anomaly score used to determine the ground-truth
+            classification for each sample.
+        eval_threshold: Threshold pair defining the decision boundary in both spaces.
+
+    Returns:
+        Normalized score with consistent predictions.
+    """
+    score = raw_score
+    if isinstance(score, torch.Tensor):
+        score = score.cpu().numpy()
+
+    boundary = eval_threshold.normalized
+    is_anomaly_mask = score >= eval_threshold.raw
+    is_not_anomaly_mask = np.bitwise_not(is_anomaly_mask)
+
+    below_boundary: torch.Tensor | np.ndarray
+    anomaly_boundary: torch.Tensor | np.ndarray
+    if isinstance(normalized_score, torch.Tensor):
+        # Work in scores dtype, cast boundaries to the same dype to ensure that casts take effect
+        _inf = torch.tensor(float("inf"), dtype=normalized_score.dtype)
+        anomaly_boundary = torch.tensor(boundary, dtype=normalized_score.dtype)
+        if float(anomaly_boundary) < boundary:
+            anomaly_boundary = torch.nextafter(anomaly_boundary, _inf)
+        below_boundary = torch.nextafter(torch.tensor(boundary, dtype=normalized_score.dtype), -_inf)
+
+        if normalized_score.dim() == 0:
+            normalized_score = (
+                normalized_score.clamp(min=anomaly_boundary)
+                if is_anomaly_mask
+                else normalized_score.clamp(max=below_boundary)
+            )
+        else:
+            normalized_score[is_anomaly_mask] = normalized_score[is_anomaly_mask].clamp(min=anomaly_boundary)
+            normalized_score[is_not_anomaly_mask] = normalized_score[is_not_anomaly_mask].clamp(max=below_boundary)
+    elif isinstance(normalized_score, np.ndarray) or np.isscalar(normalized_score):
+        # Work in scores dtype, cast boundaries to the same dype to ensure that casts take effect
+        dtype = normalized_score.dtype if isinstance(normalized_score, np.ndarray) else np.float64
+        anomaly_boundary = np.array(boundary, dtype=dtype)
+        if float(anomaly_boundary) < boundary:
+            anomaly_boundary = np.nextafter(anomaly_boundary, np.array(np.inf, dtype=dtype))
+        below_boundary = np.nextafter(np.array(boundary, dtype=dtype), np.array(-np.inf, dtype=dtype))
+
+        if np.isscalar(normalized_score) or normalized_score.ndim == 0:  # type: ignore[union-attr]
+            normalized_score = (
+                np.clip(normalized_score, a_min=anomaly_boundary, a_max=None)
+                if is_anomaly_mask
+                else np.clip(normalized_score, a_min=None, a_max=below_boundary)
+            )
+        else:
+            normalized_score = cast(np.ndarray, normalized_score)
+            normalized_score[is_anomaly_mask] = np.clip(
+                normalized_score[is_anomaly_mask], a_min=anomaly_boundary, a_max=None
+            )
+            normalized_score[is_not_anomaly_mask] = np.clip(
+                normalized_score[is_not_anomaly_mask], a_min=None, a_max=below_boundary
+            )
+
+    return normalized_score
+
+
+def normalize_anomaly_score(
+    raw_score: MapOrValue,
+    threshold: float,
+    eval_threshold: EvalThreshold | None = None,
+) -> MapOrValue:
+    """Normalize anomaly score value or map based on threshold.
+
+    The training threshold maps to 100.0 in normalized space. After the linear scaling,
+    `ensure_scores_consistency` is called to guarantee that every sample's normalized
+    classification matches its raw classification.
+
+    Args:
+        raw_score: Raw anomaly score value or map.
+        threshold: Threshold for anomaly detection, usually it is the training threshold.
+        eval_threshold: Threshold used during evaluation. It is used for ensure consistency of raw scores
+            and normalized scores. When `None`, an `EvalThreshold` with `raw=threshold` and `normalized=100.0` is used,
+            which reproduces the original behaviour for the training-threshold case.
 
     Returns:
         Normalized anomaly score value or map clipped between 0 and 1000
@@ -45,38 +153,8 @@ def normalize_anomaly_score(raw_score: MapOrValue, threshold: float) -> MapOrVal
     else:
         normalized_score = 200.0 - ((raw_score / threshold) * 100.0)
 
-    # Ensures that the normalized scores are consistent with the raw scores
-    # For all the items whose prediction changes after normalization, force the normalized score to be
-    # consistent with the prediction made on the raw score by clipping the score:
-    #   - to 100.0 if the prediction was "anomaly" on the raw score and "good" on the normalized score
-    #   - to 99.99 if the prediction was "good" on the raw score and "anomaly" on the normalized score
-    score = raw_score
-    if isinstance(score, torch.Tensor):
-        score = score.cpu().numpy()
-    # Anomalib classify as anomaly if anomaly_score gte threshold
-    is_anomaly_mask = score >= threshold
-    is_not_anomaly_mask = np.bitwise_not(is_anomaly_mask)
-    if isinstance(normalized_score, torch.Tensor):
-        if normalized_score.dim() == 0:
-            normalized_score = (
-                normalized_score.clamp(min=100.0) if is_anomaly_mask else normalized_score.clamp(max=99.99)
-            )
-        else:
-            normalized_score[is_anomaly_mask] = normalized_score[is_anomaly_mask].clamp(min=100.0)
-            normalized_score[is_not_anomaly_mask] = normalized_score[is_not_anomaly_mask].clamp(max=99.99)
-    elif isinstance(normalized_score, np.ndarray) or np.isscalar(normalized_score):
-        if np.isscalar(normalized_score) or normalized_score.ndim == 0:  # type: ignore[union-attr]
-            normalized_score = (
-                np.clip(normalized_score, a_min=100.0, a_max=None)
-                if is_anomaly_mask
-                else np.clip(normalized_score, a_min=None, a_max=99.99)
-            )
-        else:
-            normalized_score = cast(np.ndarray, normalized_score)
-            normalized_score[is_anomaly_mask] = np.clip(normalized_score[is_anomaly_mask], a_min=100.0, a_max=None)
-            normalized_score[is_not_anomaly_mask] = np.clip(
-                normalized_score[is_not_anomaly_mask], a_min=None, a_max=99.99
-            )
+    _eval_threshold = eval_threshold if eval_threshold is not None else EvalThreshold(raw=threshold, normalized=100.0)
+    normalized_score = ensure_scores_consistency(normalized_score, raw_score, _eval_threshold)
 
     if isinstance(normalized_score, torch.Tensor):
         return torch.clamp(normalized_score, 0.0, 1000.0)
