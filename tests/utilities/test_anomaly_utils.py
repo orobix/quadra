@@ -3,6 +3,7 @@ import pytest
 import torch
 
 from quadra.utils.anomaly import EvalThreshold, ensure_scores_consistency, normalize_anomaly_score
+from quadra.utils.tests.helpers import get_quadra_test_device
 
 
 class TestEvalThreshold:
@@ -10,16 +11,6 @@ class TestEvalThreshold:
         et = EvalThreshold(raw=10.0, normalized=100.0)
         assert et.raw == 10.0
         assert et.normalized == 100.0
-
-    @pytest.mark.parametrize("raw", [0.0, -1.0])
-    def test_invalid_raw(self, raw: float):
-        with pytest.raises(ValueError, match="raw threshold"):
-            EvalThreshold(raw=raw, normalized=100.0)
-
-    @pytest.mark.parametrize("normalized", [0.0, -1.0])
-    def test_invalid_normalized(self, normalized: float):
-        with pytest.raises(ValueError, match="normalized threshold"):
-            EvalThreshold(raw=10.0, normalized=normalized)
 
 
 class TestEnsureScoresConsistency:
@@ -95,21 +86,25 @@ class TestEnsureScoresConsistency:
     )
     @pytest.mark.parametrize("dtype", [torch.float32, torch.float16])
     def test_scalar_torch(self, raw_score, wrong_normalized, eval_raw, eval_norm, expected_pred, dtype):
+        device = get_quadra_test_device()
+
         et = EvalThreshold(raw=eval_raw, normalized=eval_norm)
         result = ensure_scores_consistency(
-            torch.tensor(wrong_normalized, dtype=dtype),
-            torch.tensor(raw_score, dtype=dtype),
+            torch.tensor(wrong_normalized, dtype=dtype, device=device),
+            torch.tensor(raw_score, dtype=dtype, device=device),
             et,
         )
         assert int(result >= eval_norm) == expected_pred
 
     @pytest.mark.parametrize("dtype", [torch.float32, torch.float16])
     def test_array_torch_wrong_side(self, dtype):
+        device = get_quadra_test_device()
+
         eval_raw, eval_norm = 8.0, 80.0
         et = EvalThreshold(raw=eval_raw, normalized=eval_norm)
 
-        raw_scores = torch.tensor([4.0, 7.0, 8.0, 9.0, 12.0], dtype=dtype)
-        wrong_normalized = torch.tensor([85.0, 85.0, 75.0, 75.0, 75.0], dtype=dtype)
+        raw_scores = torch.tensor([4.0, 7.0, 8.0, 9.0, 12.0], dtype=dtype, device=device)
+        wrong_normalized = torch.tensor([85.0, 85.0, 75.0, 75.0, 75.0], dtype=dtype, device=device)
 
         result = ensure_scores_consistency(wrong_normalized.clone(), raw_scores, et)
 
@@ -153,9 +148,12 @@ class TestEnsureScoresConsistency:
         [80.0, 80.03, 99.995],
     )
     def test_fp16_torch_anomaly_clipped_to_ceiling(self, boundary):
+        device = get_quadra_test_device()
+
         et = EvalThreshold(raw=2.0, normalized=boundary)
-        raw = torch.tensor(2.0, dtype=torch.float16)
+        raw = torch.tensor(2.0, dtype=torch.float16, device=device)
         wrong_norm = torch.tensor(float(torch.tensor(boundary, dtype=torch.float16)) - 10.0, dtype=torch.float16)
+        wrong_norm = wrong_norm.to(device)
         result = ensure_scores_consistency(wrong_norm, raw, et)
         assert result >= boundary
 
@@ -164,39 +162,49 @@ class TestEnsureScoresConsistency:
         [80.0, 80.03, 99.995],
     )
     def test_fp16_torch_non_anomaly_clipped_below_boundary(self, boundary):
+        device = get_quadra_test_device()
+
         et = EvalThreshold(raw=2.0, normalized=boundary)
-        raw = torch.tensor(0.5, dtype=torch.float16)
+        raw = torch.tensor(0.5, dtype=torch.float16, device=device)
         wrong_norm = torch.tensor(float(torch.tensor(boundary, dtype=torch.float16)) + 10.0, dtype=torch.float16)
+        wrong_norm = wrong_norm.to(device)
         result = ensure_scores_consistency(wrong_norm, raw, et)
         assert result < boundary
 
 
 @pytest.mark.parametrize("raw_score, threshold", [(1.345, 1.24), (1.24, 1.345)])
 def test_anomaly_score_normalization_torch(raw_score: float, threshold: float):
-    score = torch.tensor(raw_score, dtype=torch.float32)
+    device = get_quadra_test_device()
+
+    score = torch.tensor(raw_score, dtype=torch.float32, device=device)
     normalized_score = normalize_anomaly_score(score, threshold)
-    np.testing.assert_allclose(normalized_score.numpy(), raw_score / threshold * 100.0)
+    np.testing.assert_allclose(normalized_score.cpu().numpy(), raw_score / threshold * 100.0)
 
 
 @pytest.mark.parametrize("raw_score, threshold", [(1.345, 1.24), (1.24, 1.345)])
 def test_anomaly_score_normalization_torch_with_dim(raw_score: float, threshold: float):
-    score = torch.tensor([raw_score], dtype=torch.float32)
+    device = get_quadra_test_device()
+    score = torch.tensor([raw_score], dtype=torch.float32, device=device)
     normalized_score = normalize_anomaly_score(score, threshold)
-    np.testing.assert_allclose(normalized_score.numpy(), np.array([raw_score], dtype=np.float32) / threshold * 100.0)
+    np.testing.assert_allclose(
+        normalized_score.cpu().numpy(), np.array([raw_score], dtype=np.float32) / threshold * 100.0
+    )
 
 
 @pytest.mark.parametrize("raw_score, threshold", [(1.345, 1.24), (1.24, 1.345)])
 def test_anomaly_score_normalization_torch_fp16(raw_score: float, threshold: float):
-    score = torch.tensor(raw_score, dtype=torch.float16)
+    device = get_quadra_test_device()
+    score = torch.tensor(raw_score, dtype=torch.float16, device=device)
     normalized_score = normalize_anomaly_score(score, threshold)
-    np.testing.assert_allclose(normalized_score.numpy(), raw_score / threshold * 100.0, rtol=1e-3)
+    np.testing.assert_allclose(normalized_score.cpu().numpy(), raw_score / threshold * 100.0, rtol=1e-3)
 
 
 @pytest.mark.parametrize("raw_score, threshold", [(1.345, 1.24), (1.24, 1.345)])
 def test_anomaly_score_normalization_torch_fp16_with_dim(raw_score: float, threshold: float):
-    score = torch.tensor([raw_score], dtype=torch.float16)
+    device = get_quadra_test_device()
+    score = torch.tensor([raw_score], dtype=torch.float16, device=device)
     normalized_score = normalize_anomaly_score(score, threshold)
-    np.testing.assert_allclose(normalized_score.numpy(), raw_score / threshold * 100.0, rtol=1e-3)
+    np.testing.assert_allclose(normalized_score.cpu().numpy(), raw_score / threshold * 100.0, rtol=1e-3)
 
 
 @pytest.mark.parametrize("raw_score, threshold", [(1.345, 1.24), (1.24, 1.345)])
@@ -248,6 +256,12 @@ class TestNormalizeAnomalyScoreWithEvalThreshold:
             ([8.0, 9.0, 10.0, 11.0, 13.0], 10.0, 12.0, 120.0),
             # eval == training: default path, kept for non-regression
             ([8.0, 9.0, 10.0, 11.0, 12.0], 10.0, 10.0, 100.0),
+            # training threshold == 0, eval == training: normalized = (raw + 1) * 100
+            ([-2.0, -0.5, 0.0, 1.0, 3.0], 0.0, 0.0, 100.0),
+            # training threshold == 0, eval > training: normalized = (raw + 1) * 100
+            ([0.0, 0.2, 0.5, 1.0, 2.0], 0.0, 0.5, 150.0),
+            # training threshold == 0, eval < training: eval_raw is negative
+            ([-1.0, -0.5, 0.0, 0.5, 1.0], 0.0, -0.5, 50.0),
         ],
     )
     @pytest.mark.parametrize("dtype", [np.float32, np.float16])
@@ -266,16 +280,24 @@ class TestNormalizeAnomalyScoreWithEvalThreshold:
             ([4.0, 7.0, 8.0, 9.5, 12.0], 10.0, 8.0, 80.0),
             ([8.0, 9.0, 10.0, 11.0, 13.0], 10.0, 12.0, 120.0),
             ([8.0, 9.0, 10.0, 11.0, 12.0], 10.0, 10.0, 100.0),
+            # training threshold == 0, eval == training: normalized = (raw + 1) * 100
+            ([-2.0, -0.5, 0.0, 1.0, 3.0], 0.0, 0.0, 100.0),
+            # training threshold == 0, eval > training: normalized = (raw + 1) * 100
+            ([0.0, 0.2, 0.5, 1.0, 2.0], 0.0, 0.5, 150.0),
+            # training threshold == 0, eval < training: eval_raw is negative
+            ([-1.0, -0.5, 0.0, 0.5, 1.0], 0.0, -0.5, 50.0),
         ],
     )
     @pytest.mark.parametrize("dtype", [torch.float32, torch.float16])
     def test_consistency_torch(self, scores, training, eval_raw, eval_norm, dtype):
+        device = get_quadra_test_device()
+
         et = EvalThreshold(raw=eval_raw, normalized=eval_norm)
-        raw = torch.tensor(scores, dtype=dtype)
+        raw = torch.tensor(scores, dtype=dtype, device=device)
         result = normalize_anomaly_score(raw.clone(), training, eval_threshold=et)
 
-        raw_preds = (raw >= eval_raw).long()
-        norm_preds = (result >= eval_norm).long()
+        raw_preds = (raw >= eval_raw).int()
+        norm_preds = (result >= eval_norm).int()
         assert torch.equal(norm_preds, raw_preds), (
             f"dtype={dtype}: raw_preds={raw_preds.tolist()}, norm_preds={norm_preds.tolist()}"
         )

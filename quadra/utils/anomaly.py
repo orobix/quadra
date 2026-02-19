@@ -20,7 +20,7 @@ import numpy as np  # pylint: disable=unused-import
 import pytorch_lightning as pl
 import torch  # pylint: disable=unused-import
 from anomalib.models.components import AnomalyModule
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel
 from pytorch_lightning import Callback
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 
@@ -32,22 +32,12 @@ class EvalThreshold(BaseModel):
     """Pair of raw and normalized threshold values used for consistency enforcement.
 
     Attributes:
-        raw: The threshold in the original (unnormalized) anomaly score space.
-        normalized: The corresponding threshold in the normalized score space
-            (i.e. `(raw / training_threshold) * 100`).
+        raw: The unnormalized threshold.
+        normalized: The corresponding normalized threshold.
     """
 
     raw: float
     normalized: float
-
-    @model_validator(mode="after")
-    def check_positive(self) -> EvalThreshold:
-        """Validate that both threshold values are positive."""
-        if self.raw <= 0:
-            raise ValueError("raw threshold must be positive")
-        if self.normalized <= 0:
-            raise ValueError("normalized threshold must be positive")
-        return self
 
 
 def ensure_scores_consistency(
@@ -82,12 +72,13 @@ def ensure_scores_consistency(
     below_boundary: torch.Tensor | np.ndarray
     anomaly_boundary: torch.Tensor | np.ndarray
     if isinstance(normalized_score, torch.Tensor):
+        device = normalized_score.device
         # Work in scores dtype, cast boundaries to the same dype to ensure that casts take effect
-        _inf = torch.tensor(float("inf"), dtype=normalized_score.dtype)
-        anomaly_boundary = torch.tensor(boundary, dtype=normalized_score.dtype)
+        _inf = torch.tensor(float("inf"), dtype=normalized_score.dtype, device=device)
+        anomaly_boundary = torch.tensor(boundary, dtype=normalized_score.dtype, device=device)
         if float(anomaly_boundary) < boundary:
             anomaly_boundary = torch.nextafter(anomaly_boundary, _inf)
-        below_boundary = torch.nextafter(torch.tensor(boundary, dtype=normalized_score.dtype), -_inf)
+        below_boundary = torch.nextafter(torch.tensor(boundary, dtype=normalized_score.dtype, device=device), -_inf)
 
         if normalized_score.dim() == 0:
             normalized_score = (
