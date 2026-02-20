@@ -76,6 +76,8 @@ def ensure_scores_consistency(
         # Work in scores dtype, cast boundaries to the same dype to ensure that casts take effect
         _inf = torch.tensor(float("inf"), dtype=normalized_score.dtype, device=device)
         anomaly_boundary = torch.tensor(boundary, dtype=normalized_score.dtype, device=device)
+        # If dtype cast causes anomaly_boundary to be smaller than normalized boundary (float),
+        # increase it up to the next representable value
         if float(anomaly_boundary) < boundary:
             anomaly_boundary = torch.nextafter(anomaly_boundary, _inf)
         below_boundary = torch.nextafter(torch.tensor(boundary, dtype=normalized_score.dtype, device=device), -_inf)
@@ -93,6 +95,8 @@ def ensure_scores_consistency(
         # Work in scores dtype, cast boundaries to the same dype to ensure that casts take effect
         dtype = normalized_score.dtype if isinstance(normalized_score, np.ndarray) else np.float64
         anomaly_boundary = np.array(boundary, dtype=dtype)
+        # If dtype cast causes anomaly_boundary to be smaller than normalized boundary (float),
+        # increase it up to the next representable value
         if float(anomaly_boundary) < boundary:
             anomaly_boundary = np.nextafter(anomaly_boundary, np.array(np.inf, dtype=dtype))
         below_boundary = np.nextafter(np.array(boundary, dtype=dtype), np.array(-np.inf, dtype=dtype))
