@@ -26,7 +26,7 @@ from quadra.datamodules import AnomalyDataModule
 from quadra.modules.base import ModelSignatureWrapper
 from quadra.tasks.base import Evaluation, LightningTask
 from quadra.utils import utils
-from quadra.utils.anomaly import MapOrValue, ThresholdNormalizationCallback, normalize_anomaly_score
+from quadra.utils.anomaly import EvalThreshold, MapOrValue, ThresholdNormalizationCallback, normalize_anomaly_score
 from quadra.utils.classification import get_results
 from quadra.utils.evaluation import automatic_datamodule_batch_size
 from quadra.utils.export import export_model
@@ -504,7 +504,12 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
             ),
         ).item()
 
-        anomaly_scores = normalize_anomaly_score(anomaly_scores, training_threshold)
+        # Build an EvalThreshold so that consistency enforcement in normalize_anomaly_score uses the
+        # actual evaluation boundary for checking the consistencies after normalization. This prevents
+        # potential inconsistent classification when switching between raw and normalized scores.
+        eval_threshold = EvalThreshold(raw=float(optimal_threshold), normalized=normalized_optimal_threshold)
+
+        anomaly_scores = normalize_anomaly_score(anomaly_scores, training_threshold, eval_threshold=eval_threshold)
 
         if not isinstance(anomaly_scores, np.ndarray):
             raise ValueError("Anomaly scores must be a numpy array")
@@ -543,7 +548,9 @@ class AnomalibEvaluation(Evaluation[AnomalyDataModule]):
         if hasattr(self.datamodule, "crop_area") and self.datamodule.crop_area is not None:
             crop_area = self.datamodule.crop_area
 
-        anomaly_maps = normalize_anomaly_score(self.metadata["anomaly_maps"], training_threshold)
+        anomaly_maps = normalize_anomaly_score(
+            self.metadata["anomaly_maps"], training_threshold, eval_threshold=eval_threshold
+        )
 
         if not isinstance(anomaly_maps, torch.Tensor):
             raise ValueError("Anomaly maps must be a tensor")
