@@ -69,18 +69,22 @@ def ensure_scores_consistency(
     is_anomaly_mask = score >= eval_threshold.raw
     is_not_anomaly_mask = np.bitwise_not(is_anomaly_mask)
 
+    _inf: torch.Tensor | np.ndarray
     below_boundary: torch.Tensor | np.ndarray
     anomaly_boundary: torch.Tensor | np.ndarray
+    epsilon = 1e-3
     if isinstance(normalized_score, torch.Tensor):
         device = normalized_score.device
         # Work in scores dtype, cast boundaries to the same dype to ensure that casts take effect
         _inf = torch.tensor(float("inf"), dtype=normalized_score.dtype, device=device)
-        anomaly_boundary = torch.tensor(boundary, dtype=normalized_score.dtype, device=device)
+        boundary_tensor = torch.tensor(boundary, dtype=normalized_score.dtype, device=device)
+        anomaly_boundary = boundary_tensor.clone()
         # If dtype cast causes anomaly_boundary to be smaller than normalized boundary (float),
         # increase it up to the next representable value
         if float(anomaly_boundary) < boundary:
             anomaly_boundary = torch.nextafter(anomaly_boundary, _inf)
-        below_boundary = torch.nextafter(torch.tensor(boundary, dtype=normalized_score.dtype, device=device), -_inf)
+        # Ensure consistency after rouding to 3 decimal places
+        below_boundary = torch.min(torch.nextafter(boundary_tensor, -_inf), boundary_tensor - epsilon)
 
         if normalized_score.dim() == 0:
             normalized_score = (
@@ -94,12 +98,15 @@ def ensure_scores_consistency(
     elif isinstance(normalized_score, np.ndarray) or np.isscalar(normalized_score):
         # Work in scores dtype, cast boundaries to the same dype to ensure that casts take effect
         dtype = normalized_score.dtype if isinstance(normalized_score, np.ndarray) else np.float64
-        anomaly_boundary = np.array(boundary, dtype=dtype)
+        _inf = np.array(np.inf, dtype=dtype)
+        boundary_array = np.array(boundary, dtype=dtype)
+        anomaly_boundary = boundary_array.copy()
         # If dtype cast causes anomaly_boundary to be smaller than normalized boundary (float),
         # increase it up to the next representable value
         if float(anomaly_boundary) < boundary:
-            anomaly_boundary = np.nextafter(anomaly_boundary, np.array(np.inf, dtype=dtype))
-        below_boundary = np.nextafter(np.array(boundary, dtype=dtype), np.array(-np.inf, dtype=dtype))
+            anomaly_boundary = np.nextafter(anomaly_boundary, _inf)
+        # Ensure consistency after rouding to 3 decimal places
+        below_boundary = np.minimum(np.nextafter(boundary_array, -_inf), boundary_array - epsilon)
 
         if np.isscalar(normalized_score) or normalized_score.ndim == 0:  # type: ignore[union-attr]
             normalized_score = (

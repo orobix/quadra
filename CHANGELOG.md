@@ -16,10 +16,14 @@ Starting from version 2.6.1, releases are automatically created when changes are
 
 ### [2.8.1]
 
+#### Updated
+
+- Anomalib-orobix to v0.7.0.dev151 in order to make optimal threshold selection more robust with respect to floating point operations.
+
 #### Fixed
 
 - `normalize_anomaly_score` now accepts an optional `eval_threshold` (`EvalThreshold`) parameter. When provided, consistency enforcement uses the actual evaluation boundary instead of always using the training threshold at 100.0, preventing misclassification of samples whose raw score falls close to the evaluation thresholds.
-- Consistency enforcement in anomaly score normalization now uses `np.nextafter`/`torch.nextafter` (dtype-aware) instead of hardcoded epsilon values (e.g. `99.99`), eliminating ULP-gap misclassifications especially at low-precision (fp16) boundaries.
+- Consistency enforcement in anomaly score normalization now uses `np.nextafter`/`torch.nextafter` (dtype-aware) instead of hardcoded epsilon values, eliminating ULP-gap misclassifications especially at low-precision (fp16) boundaries.
 - `AnomalibEvaluation` now builds an `EvalThreshold` from the optimal evaluation threshold and passes it to `normalize_anomaly_score`, ensuring consistent predictions between raw and normalized anomaly scores and anomaly maps.
 
 ### [2.8.0]
