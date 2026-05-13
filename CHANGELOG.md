@@ -18,7 +18,7 @@ Starting from version 2.6.1, releases are automatically created when changes are
 
 #### Added
 
-- `checkpoint_mode` parameter in `task/segmentation` config (values: `best`, `last`; default: `best`). Controls which checkpoint is loaded for test evaluation and model export in classification and segmentation Lightning tasks.
+- `checkpoint_mode` parameter in `task/segmentation` config (values: `best`, `last`; default: `best`). Controls which checkpoint is loaded for test evaluation and model export in Segmentation task.
 
 #### Fixed
 

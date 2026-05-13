@@ -76,7 +76,6 @@ upload_artifacts: False
 log_level: info
 mlflow_zip_models: False
 ```
-
 For example we can set the seed, decide for a run name, or set the log level.
 
 ### Datamodule
