@@ -250,33 +250,26 @@ class LightningTask(Generic[DataModuleT], Task[DataModuleT]):
 
         self.trainer.fit(model=self.module, datamodule=self.datamodule)
 
-    def _get_checkpoint_path(self) -> str | None:
-        """Return the checkpoint path to use based on config.core.checkpoint_mode ("best" or "last")."""
-        checkpoint_type = self.config.core.get("checkpoint_mode", "best")
-
-        if self.trainer.checkpoint_callback is None:
-            return None
-
-        if checkpoint_type == "last":
-            path = getattr(self.trainer.checkpoint_callback, "last_model_path", None)
-        else:
-            path = getattr(self.trainer.checkpoint_callback, "best_model_path", None)
-
-        return path if path else None
-
     def test(self) -> Any:
         """Test the model."""
         log.info("Starting testing!")
 
-        checkpoint_path = self._get_checkpoint_path()
+        best_model = None
+        if (
+            self.trainer.checkpoint_callback is not None
+            and hasattr(self.trainer.checkpoint_callback, "best_model_path")
+            and self.trainer.checkpoint_callback.best_model_path is not None
+            and len(self.trainer.checkpoint_callback.best_model_path) > 0
+        ):
+            best_model = self.trainer.checkpoint_callback.best_model_path
 
-        if checkpoint_path is None:
+        if best_model is None:
             log.warning(
-                "No checkpoint found, using current model weights for test, this might lead to worse results, "
+                "No best checkpoint model found, using last weights for test, this might lead to worse results, "
                 "consider using a checkpoint callback."
             )
 
-        return self.trainer.test(model=self.module, datamodule=self.datamodule, ckpt_path=checkpoint_path)
+        return self.trainer.test(model=self.module, datamodule=self.datamodule, ckpt_path=best_model)
 
     def finalize(self) -> None:
         """Finalize the experiment."""

@@ -174,6 +174,7 @@ task:
   report: false # allows to generate reports
   evaluate: # custom evaluation toggles
     analysis: false # Perform in depth analysis
+  checkpoint_mode: best # Checkpoint to use for export and evaluation: "best" or "last"
     
 datamodule:
   data_path: /path/to/the/dataset # change the path to the dataset
@@ -198,6 +199,13 @@ core:
 
     When defining the `idx_to_class` dictionary, the keys should be the class index and the values should be the class name. The class index starts from 1.
 
+The `checkpoint_mode` parameter controls which saved checkpoint is loaded when the task runs its test phase and when it exports the deployment model. The supported values are:
+
+- `best` (default): loads the checkpoint with the best monitored metric, as tracked by the `ModelCheckpoint` callback.
+- `last`: loads the checkpoint saved at the end of the last training epoch (`last.ckpt`), regardless of the monitored metric.
+
+!!! warning
+    Changing `checkpoint_mode` is intended for expert users and should be done with care, as it directly affects both evaluation results and the model that ends up in production.
 
 In the final configuration experiment we have specified the path to the dataset, batch size, split files, GPU device, experiment name and toggled some evaluation options, moreover we have specified that we want to export the model to `onnx` and `torchscript` formats.
 

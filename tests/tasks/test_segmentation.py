@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from quadra.tasks.base import LightningTask
+from quadra.tasks.segmentation import Segmentation
 from quadra.utils.export import get_export_extension
 from quadra.utils.tests.fixtures import base_binary_segmentation_dataset, base_multiclass_segmentation_dataset
 from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, setup_trainer_for_lightning
@@ -76,7 +76,7 @@ def test_smp_binary_checkpoint_mode(
     checkpoint_mode: str,
 ):
     """Test that segmentation export uses the correct checkpoint based on checkpoint_mode."""
-    checkpoint_spy = mocker.spy(LightningTask, "_get_checkpoint_path")
+    checkpoint_spy = mocker.spy(Segmentation, "_get_checkpoint_path")
 
     data_path, _, _ = base_binary_segmentation_dataset
     train_path = tmp_path / "train"
@@ -86,7 +86,7 @@ def test_smp_binary_checkpoint_mode(
         "experiment=base/segmentation/smp",
         f"datamodule.data_path={data_path}",
         "task.evaluate.analysis=false",
-        f"core.checkpoint_mode={checkpoint_mode}",
+        f"task.checkpoint_mode={checkpoint_mode}",
         "export.types=[torchscript]",
     ]
     trainer_overrides = setup_trainer_for_lightning()

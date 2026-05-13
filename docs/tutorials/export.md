@@ -26,7 +26,7 @@ onnx:
 `types` is a list of the export types that you want to perform. The available types are `torchscript`, `onnx` and `pytorch`. By default the models will be saved under the `deployment_model` folder of the experiment with extension `.pt`, `.onnx` and `.pth` respectively. Pytorch models will be saved alongside the yaml configuration for the model itself so that you can easily load them back in python.
 
 !!! note
-    The checkpoint used for export is controlled by `core.checkpoint_mode`. The default value `best` exports the checkpoint with the best monitored metric; setting it to `last` exports the checkpoint from the final training epoch instead. See the [core configuration](configurations.md#core) section for details.
+    In segmentation task, the checkpoint used for export is controlled by `task.checkpoint_mode`. The default value `best` exports the checkpoint with the best monitored metric; setting it to `last` exports the checkpoint from the final training epoch instead. See the [core configuration](configurations.md#core) section for details.
 
 `input_shapes` is a parameter that will be `None` most of the time, quadra features a model wrapper that is capable of inferring the input shape of the trained model based on its forward function. It supports a large variety of custom forward functions where parameters are combinations of lists, tuples or dicts. However, if the model wrapper is not able to infer the input shape you can specify it here, the format is a list of tuples/lists/dicts where each element represents a single input shape without batch size. For example if your model has an input of shape (1, 3, 224, 224) you can specify it as:
 

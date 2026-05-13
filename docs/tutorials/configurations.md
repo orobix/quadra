@@ -75,16 +75,7 @@ experiment_path: null
 upload_artifacts: False
 log_level: info
 mlflow_zip_models: False
-checkpoint_mode: best # Checkpoint to use for export and evaluation: "best" or "last"
 ```
-
-The `checkpoint_mode` parameter controls which saved checkpoint is loaded when the task runs its test phase and when it exports the deployment model. The supported values are:
-
-- `best` (default): loads the checkpoint with the best monitored metric, as tracked by the `ModelCheckpoint` callback.
-- `last`: loads the checkpoint saved at the end of the last training epoch (`last.ckpt`), regardless of the monitored metric.
-
-!!! warning
-    Changing `checkpoint_mode` is intended for expert users and should be done with care, as it directly affects both evaluation results and the model that ends up in production.
 
 For example we can set the seed, decide for a run name, or set the log level.
 
