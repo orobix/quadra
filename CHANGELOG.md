@@ -14,6 +14,16 @@ Starting from version 2.6.1, releases are automatically created when changes are
 
 **Note**: If a tag for the current version already exists, the workflow will skip tag and release creation to avoid duplicates.
 
+### [2.9.0]
+
+#### Added
+
+- `checkpoint_mode` parameter in `core` config (values: `best`, `last`; default: `best`). Controls which checkpoint is loaded for test evaluation and model export in classification and segmentation Lightning tasks.
+
+#### Fixed
+
+- `cumulative_histogram.png` is now uploaded as an MLflow (and TensorBoard) artifact in anomaly tasks alongside `test_confusion_matrix.png` and `avg_score_by_label.csv`.
+
 ### [2.8.1]
 
 #### Updated

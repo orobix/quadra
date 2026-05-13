@@ -298,6 +298,7 @@ def test_csflow(tmp_path: Path, base_anomaly_dataset: base_anomaly_dataset, task
         f"datamodule.data_path={data_path}",
         f"model.dataset.task={task}",
         f"export.types=[{','.join(BASE_EXPORT_TYPES)}]",
+        "export.input_shapes=[[3,256,256]]",
     ]
     trainer_overrides = setup_trainer_for_lightning()
     overrides += BASE_EXPERIMENT_OVERRIDES

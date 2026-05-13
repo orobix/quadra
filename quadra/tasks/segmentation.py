@@ -126,25 +126,18 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         """Generate a deployment model for the task."""
         log.info("Exporting model ready for deployment")
 
-        # Get best model!
-        if (
-            self.trainer.checkpoint_callback is not None
-            and hasattr(self.trainer.checkpoint_callback, "best_model_path")
-            and self.trainer.checkpoint_callback.best_model_path is not None
-            and len(self.trainer.checkpoint_callback.best_model_path) > 0
-        ):
-            best_model_path = self.trainer.checkpoint_callback.best_model_path
-            log.info("Loaded best model from %s", best_model_path)
-
+        checkpoint_path = self._get_checkpoint_path()
+        if checkpoint_path is not None:
+            log.info("Loaded %s model from %s", self.config.core.get("checkpoint_mode", "best"), checkpoint_path)
             module = self.module.__class__.load_from_checkpoint(
-                best_model_path,
+                checkpoint_path,
                 model=self.module.model,
                 loss_fun=None,
                 optimizer=self.module.optimizer,
                 lr_scheduler=self.module.schedulers,
             )
         else:
-            log.warning("No checkpoint callback found in the trainer, exporting the last model weights")
+            log.warning("No checkpoint found, exporting the last model weights")
             module = self.module
 
         if "idx_to_class" not in self.config.datamodule:

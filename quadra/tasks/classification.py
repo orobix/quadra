@@ -106,7 +106,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         self.export_folder: str = "deployment_model"
         self.deploy_info_file: str = "model.json"
         self.report_confmat: pd.DataFrame
-        self.best_model_path: str | None = None
+        self.final_model_path: str | None = None
 
     @property
     def optimizer(self) -> torch.optim.Optimizer:
@@ -262,20 +262,19 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
     def train(self):
         """Train the model."""
         super().train()
-        if (
-            self.trainer.checkpoint_callback is not None
-            and hasattr(self.trainer.checkpoint_callback, "best_model_path")
-            and self.trainer.checkpoint_callback.best_model_path is not None
-            and len(self.trainer.checkpoint_callback.best_model_path) > 0
-        ):
-            self.best_model_path = self.trainer.checkpoint_callback.best_model_path
-            log.info("Loading best epoch weights...")
+        self.final_model_path = self._get_checkpoint_path()
+        if self.final_model_path is not None:
+            log.info(
+                "Loading %s epoch weights from %s",
+                self.config.core.get("checkpoint_mode", "best"),
+                self.final_model_path,
+            )
 
     def test(self) -> None:
         """Test the model."""
         if not self.config.trainer.get("fast_dev_run"):
             log.info("Starting testing!")
-            self.trainer.test(datamodule=self.datamodule, model=self.module, ckpt_path=self.best_model_path)
+            self.trainer.test(datamodule=self.datamodule, model=self.module, ckpt_path=self.final_model_path)
 
     def export(self) -> None:
         """Generate deployment models for the task."""
@@ -287,12 +286,10 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
         else:
             idx_to_class = {v: k for k, v in self.datamodule.class_to_idx.items()}
 
-        # Get best model!
-        if self.best_model_path is not None:
-            log.info("Saving deployment model for %s checkpoint", self.best_model_path)
-
+        if self.final_model_path is not None:
+            log.info("Saving deployment model from %s checkpoint", self.final_model_path)
             module = self.module.__class__.load_from_checkpoint(
-                self.best_model_path,
+                self.final_model_path,
                 model=self.module.model,
                 optimizer=self.optimizer,
                 lr_scheduler=self.scheduler,
@@ -300,7 +297,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
                 gradcam=False,
             )
         else:
-            log.warning("No checkpoint callback found in the trainer, exporting the last model weights")
+            log.warning("No checkpoint found, exporting the last model weights")
             module = self.module
 
         input_shapes = self.config.export.input_shapes
@@ -357,7 +354,7 @@ class Classification(Generic[ClassificationDataModuleT], LightningTask[Classific
             self.gradcam = False
 
         predictions_outputs = self.trainer.predict(
-            model=self.module, datamodule=self.datamodule, ckpt_path=self.best_model_path
+            model=self.module, datamodule=self.datamodule, ckpt_path=self.final_model_path
         )
         if not predictions_outputs:
             log.warning("There is no prediction to generate the report. Skipping report generation.")
@@ -1168,7 +1165,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
                 model=self.deployment_model.model,
                 target_layers=target_layers,
             )
-            for p in self.deployment_model.model.features_extractor.layer4[-1].parameters():
+            for p in self.deployment_model.model.features_extractor.layer4[-1].parameters():  # type: ignore[index,union-attr]
                 p.requires_grad = True
         elif is_vision_transformer(cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor):
             self.grad_rollout = VitAttentionGradRollout(cast(nn.Module, self.deployment_model.model))
