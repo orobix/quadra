@@ -68,14 +68,14 @@ def run_inference_experiments(
 
 
 @pytest.mark.usefixtures("mock_training")
-@pytest.mark.parametrize("checkpoint_mode", ["best", "last"])
-def test_smp_binary_checkpoint_mode(
+@pytest.mark.parametrize("checkpoint_selection", ["best", "last"])
+def test_smp_binary_checkpoint_selection(
     tmp_path: Path,
     base_binary_segmentation_dataset: base_binary_segmentation_dataset,
     mocker,
-    checkpoint_mode: str,
+    checkpoint_selection: str,
 ):
-    """Test that segmentation export uses the correct checkpoint based on checkpoint_mode."""
+    """Test that segmentation export uses the correct checkpoint based on checkpoint_selection."""
     checkpoint_spy = mocker.spy(Segmentation, "_get_checkpoint_path")
 
     data_path, _, _ = base_binary_segmentation_dataset
@@ -86,7 +86,7 @@ def test_smp_binary_checkpoint_mode(
         "experiment=base/segmentation/smp",
         f"datamodule.data_path={data_path}",
         "task.evaluate.analysis=false",
-        f"task.checkpoint_mode={checkpoint_mode}",
+        f"task.checkpoint_selection={checkpoint_selection}",
         "export.types=[torchscript]",
     ]
     trainer_overrides = setup_trainer_for_lightning()
@@ -100,7 +100,7 @@ def test_smp_binary_checkpoint_mode(
 
     checkpoint_path = checkpoint_spy.spy_return
     if checkpoint_path is not None:
-        if checkpoint_mode == "last":
+        if checkpoint_selection == "last":
             assert "last" in checkpoint_path
         else:
             assert "last" not in checkpoint_path

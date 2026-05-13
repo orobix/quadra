@@ -38,7 +38,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         run_test: If True, run test after training. Defaults to False.
         evaluate: Dict with evaluation parameters. Defaults to None.
         report: If True, create report after training. Defaults to False.
-        checkpoint_mode: Checkpoint to use for export and evaluation: "best" or "last". Defaults to "best".
+        checkpoint_selection: Which checkpoint to use for export and evaluation: "best" or "last". Defaults to "best".
     """
 
     def __init__(
@@ -49,7 +49,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         run_test: bool = False,
         evaluate: DictConfig | None = None,
         report: bool = False,
-        checkpoint_mode: Literal["best", "last"] = "best",
+        checkpoint_selection: Literal["best", "last"] = "best",
     ):
         super().__init__(
             config=config,
@@ -61,7 +61,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         self.num_viz_samples = num_viz_samples
         self.export_folder: str = "deployment_model"
         self.exported_model_path: str | None = None
-        self.checkpoint_mode = checkpoint_mode
+        self.checkpoint_selection = checkpoint_selection
         if self.evaluate and any(self.evaluate.values()):
             if (
                 self.config.export is None
@@ -126,8 +126,8 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         self.module = self.config.model
 
     def _get_checkpoint_path(self) -> str | None:
-        """Return the checkpoint path to use based on self.checkpoint_mode."""
-        checkpoint_type = self.checkpoint_mode
+        """Return the checkpoint path to use based on self.checkpoint_selection."""
+        checkpoint_type = self.checkpoint_selection
 
         if self.trainer.checkpoint_callback is None:
             return None
@@ -159,7 +159,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
 
         checkpoint_path = self._get_checkpoint_path()
         if checkpoint_path is not None:
-            log.info("Loaded %s model from %s", self.checkpoint_mode, checkpoint_path)
+            log.info("Loaded %s model from %s", self.checkpoint_selection, checkpoint_path)
             module = self.module.__class__.load_from_checkpoint(
                 checkpoint_path,
                 model=self.module.model,

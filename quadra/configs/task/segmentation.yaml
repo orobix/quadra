@@ -7,4 +7,4 @@ evaluate:
   analysis: false
   control: false
   corruption: false
-checkpoint_mode: best # Checkpoint to use for export and evaluation: "best" or "last"
+checkpoint_selection: best # Checkpoint to use for export and evaluation: "best" or "last"
