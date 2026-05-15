@@ -12,7 +12,12 @@ from quadra.tasks.base import LightningTask
 from quadra.tasks.segmentation import Segmentation
 from quadra.utils.export import get_export_extension
 from quadra.utils.tests.fixtures import base_binary_segmentation_dataset, base_multiclass_segmentation_dataset
-from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, setup_trainer_for_lightning
+from quadra.utils.tests.helpers import (
+    check_deployment_model,
+    execute_quadra_experiment,
+    get_quadra_test_device,
+    setup_trainer_for_lightning,
+)
 
 try:
     import onnx  # noqa
@@ -296,3 +301,58 @@ def test_smp_multiclass_with_binary_dataset(
     execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
 
     shutil.rmtree(tmp_path)
+
+
+@pytest.mark.usefixtures("mock_training")
+@pytest.mark.parametrize("precision", ["32", "16"])
+@pytest.mark.parametrize("export_type", ["onnx", "torchscript"])
+@pytest.mark.skipif(not ONNX_AVAILABLE, reason="ONNX not available")
+def test_smp_binary_mit_b0_precision(
+    tmp_path: Path,
+    base_binary_segmentation_dataset: base_binary_segmentation_dataset,
+    precision: str,
+    export_type: str,
+):
+    """Train with mit_b0 in full and half precision and verify TorchScript export succeeds.
+
+    This exercises the QuadraMixVisionTransformerEncoder patch: without it, the dummy
+    tensor device is recorded as a constant in the TorchScript graph, causing a device
+    mismatch at GPU inference time.
+    """
+    if precision == "16" and torch.device(get_quadra_test_device()).type != "cuda":
+        pytest.skip("fp16 training requires CUDA")
+
+    data_path, _, _ = base_binary_segmentation_dataset
+    train_path = tmp_path / "train"
+    test_path = tmp_path / "test"
+    train_path.mkdir()
+    test_path.mkdir()
+
+    overrides = [
+        "experiment=base/segmentation/smp",
+        f"datamodule.data_path={data_path}",
+        "task.evaluate.analysis=false",
+        f"export.types=[{export_type}]",
+        "backbone.model.encoder_name=mit_b0",
+        "backbone.model.encoder_weights=null",
+        "backbone.model.freeze_encoder=false",
+        f"+trainer.precision={precision}",
+    ]
+    overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += setup_trainer_for_lightning()
+
+    execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
+    check_deployment_model(export_type=export_type)
+
+    inference_overrides = [
+        "experiment=base/segmentation/smp_evaluation",
+        f"task.device={get_quadra_test_device()}",
+    ] + BASE_EXPERIMENT_OVERRIDES
+
+    _run_inference_experiment(
+        test_overrides=inference_overrides,
+        data_path=data_path,
+        train_path=str(train_path),
+        test_path=test_path,
+        export_type=export_type,
+    )

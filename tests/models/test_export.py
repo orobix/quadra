@@ -11,6 +11,8 @@ from omegaconf import DictConfig
 from torch import nn
 
 from quadra.utils.export import export_onnx_model, export_torchscript_model, import_deployment_model
+from quadra.modules.backbone import create_smp_backbone
+from quadra.utils.segmentation import patch_mix_transformer_encoder
 from quadra.utils.tests.fixtures.models import (  # noqa
     dino_vitb8,
     dino_vits8,
@@ -20,6 +22,7 @@ from quadra.utils.tests.fixtures.models import (  # noqa
     patchcore_resnet18,
     resnet18,
     resnet50,
+    smp_mit_b0_unet,
     smp_resnet18_unet,
     smp_resnet18_unetplusplus,
     vit_tiny_patch16_224,
@@ -192,4 +195,57 @@ def test_anomaly_detection_models_export(tmp_path: Path, model: nn.Module, half_
         export_types=export_types,
         input_shapes=input_shapes,
         half_precision=half_precision,
+    )
+
+
+def test_mit_b0_unpatched_torchscript_fails_on_gpu(tmp_path: Path, monkeypatch):
+    """Without the patch, the dummy tensor device is baked as CPU into the TorchScript graph.
+    This causes a RuntimeError when running inference on GPU with fp32.
+    fp16 is not tested here because the issue is specific to fp32 tracing on CPU.
+    """
+    import segmentation_models_pytorch as smp
+    from segmentation_models_pytorch.encoders.mix_transformer import (
+        MixVisionTransformerEncoder,
+        mix_transformer_encoders,
+    )
+
+    if get_quadra_test_device() == "cpu":
+        pytest.skip("Device mismatch only occurs at GPU inference time")
+
+    for name in mix_transformer_encoders:
+        monkeypatch.setitem(smp.encoders.encoders[name], "encoder", MixVisionTransformerEncoder)
+
+    model = create_smp_backbone(
+        arch="unet",
+        encoder_name="mit_b0",
+        encoder_weights=None,
+        freeze_encoder=False,
+        in_channels=3,
+        num_classes=1,
+        activation=None,
+    )
+
+    out = export_torchscript_model(model=model, input_shapes=[(3, 224, 224)], output_path=tmp_path)
+    torchscript_path, input_shapes = out
+
+    device = get_quadra_test_device()
+    loaded = import_deployment_model(
+        model_path=torchscript_path,
+        inference_config=DictConfig({"torchscript": {}}),
+        device=device,
+    )
+    inp = torch.rand(1, *input_shapes[0], device=device)
+
+    with pytest.raises(RuntimeError):
+        loaded(inp)
+
+
+def test_mit_b0_patched_torchscript(tmp_path: Path, smp_mit_b0_unet: nn.Module):
+    """With the patch applied, TorchScript export and inference succeed on any device."""
+    check_export_model_outputs(
+        tmp_path=tmp_path,
+        model=smp_mit_b0_unet,
+        export_types=["torchscript"],
+        input_shapes=[(3, 224, 224)],
+        half_precision=False,
     )
