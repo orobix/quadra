@@ -37,7 +37,7 @@ def main(config: DictConfig):
         utils.print_config(config, resolve=True)
 
     # Patch the MixVisionTransformerEncoder with QuadraMixVisionTransformerEncoder
-    # TODO: Remove when smp will fix the MixVisionTransformerEncoder forward
+    # TODO: Remove when SMP fixes the MixVisionTransformerEncoder forward
     patch_mix_transformer_encoder()
 
     # Set seed for random number generators in pytorch, numpy and python.random

@@ -12,7 +12,6 @@ from torch import nn
 
 from quadra.utils.export import export_onnx_model, export_torchscript_model, import_deployment_model
 from quadra.modules.backbone import create_smp_backbone
-from quadra.utils.segmentation import patch_mix_transformer_encoder
 from quadra.utils.tests.fixtures.models import (  # noqa
     dino_vitb8,
     dino_vits8,

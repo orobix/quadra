@@ -61,7 +61,6 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         self.num_viz_samples = num_viz_samples
         self.export_folder: str = "deployment_model"
         self.exported_model_path: str | None = None
-        self.checkpoint_selection = checkpoint_selection
         if self.evaluate and any(self.evaluate.values()):
             if (
                 self.config.export is None
@@ -80,6 +79,14 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
             if not self.report:
                 log.info("Evaluation is enabled, but reporting is disabled. Enabling reporting automatically.")
                 self.report = True
+
+        if checkpoint_selection not in {"best", "last"}:
+            log.warning(
+                "Invalid checkpoint_selection value '%s', defaulting to 'best'. Valid values are 'best' and 'last'.",
+                checkpoint_selection,
+            )
+            checkpoint_selection = "best"
+        self.checkpoint_selection = checkpoint_selection
 
     @property
     def module(self) -> SegmentationModel:

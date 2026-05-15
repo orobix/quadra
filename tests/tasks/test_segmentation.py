@@ -306,7 +306,6 @@ def test_smp_multiclass_with_binary_dataset(
 @pytest.mark.usefixtures("mock_training")
 @pytest.mark.parametrize("precision", ["32", "16"])
 @pytest.mark.parametrize("export_type", ["onnx", "torchscript"])
-@pytest.mark.skipif(not ONNX_AVAILABLE, reason="ONNX not available")
 def test_smp_binary_mit_b0_precision(
     tmp_path: Path,
     base_binary_segmentation_dataset: base_binary_segmentation_dataset,
@@ -319,6 +318,8 @@ def test_smp_binary_mit_b0_precision(
     tensor device is recorded as a constant in the TorchScript graph, causing a device
     mismatch at GPU inference time.
     """
+    if export_type == "onnx" and not ONNX_AVAILABLE:
+        pytest.skip("ONNX export not available")
     if precision == "16" and torch.device(get_quadra_test_device()).type != "cuda":
         pytest.skip("fp16 training requires CUDA")
 
@@ -336,10 +337,10 @@ def test_smp_binary_mit_b0_precision(
         "backbone.model.encoder_name=mit_b0",
         "backbone.model.encoder_weights=null",
         "backbone.model.freeze_encoder=false",
-        f"+trainer.precision={precision}",
     ]
     overrides += BASE_EXPERIMENT_OVERRIDES
     overrides += setup_trainer_for_lightning()
+    overrides += [f"++trainer.precision={precision}"]
 
     execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
     check_deployment_model(export_type=export_type)
