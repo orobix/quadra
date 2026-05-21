@@ -292,6 +292,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
         if mflow_logger is not None and self.config.core.get("upload_artifacts"):
             mflow_logger.experiment.log_artifact(run_id=mflow_logger.run_id, local_path="test_confusion_matrix.png")
             mflow_logger.experiment.log_artifact(run_id=mflow_logger.run_id, local_path="avg_score_by_label.csv")
+            mflow_logger.experiment.log_artifact(run_id=mflow_logger.run_id, local_path="cumulative_histogram.png")
 
             if "visualizer" in self.config.callbacks:
                 artifacts = glob.glob(os.path.join(self.config.callbacks.visualizer.output_path, "**", "*"))
@@ -304,6 +305,7 @@ class AnomalibDetection(Generic[AnomalyDataModuleT], LightningTask[AnomalyDataMo
             artifacts = []
             artifacts.append("test_confusion_matrix.png")
             artifacts.append("avg_score_by_label.csv")
+            artifacts.append("cumulative_histogram.png")
 
             if "visualizer" in self.config.callbacks:
                 artifacts.extend(

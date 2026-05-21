@@ -14,6 +14,17 @@ Starting from version 2.6.1, releases are automatically created when changes are
 
 **Note**: If a tag for the current version already exists, the workflow will skip tag and release creation to avoid duplicates.
 
+### [2.9.0]
+
+#### Added
+
+- `checkpoint_selection` parameter in `task/segmentation` config (values: `best`, `last`; default: `best`). Controls which checkpoint is loaded for test evaluation and model export in Segmentation task.
+
+#### Fixed
+
+- `MixVisionTransformerEncoder` TorchScript export on GPU: replaced hard-coded `torch.empty(...)` dummy tensor with `x.new_empty(...)` so the device and dtype are no longer baked as constants into the TorchScript graph. Without this patch, exporting and running MiT-based segmentation models (e.g. `mit_b0`) on GPU raised a `RuntimeError`. The fix is applied automatically at the start of `main()` via `patch_mix_transformer_encoder()` and will be removed once upstream `segmentation_models_pytorch` ships the correction.
+- `cumulative_histogram.png` is now uploaded as an MLflow (and TensorBoard) artifact in anomaly tasks alongside `test_confusion_matrix.png` and `avg_score_by_label.csv`.
+
 ### [2.8.1]
 
 #### Updated

@@ -7,6 +7,7 @@ from pytorch_lightning import seed_everything
 
 from quadra.tasks.base import Task
 from quadra.utils.resolver import register_resolvers
+from quadra.utils.segmentation import patch_mix_transformer_encoder
 from quadra.utils.utils import get_logger, load_envs, setup_opencv
 from quadra.utils.validator import validate_config
 
@@ -27,13 +28,17 @@ def main(config: DictConfig):
         stop = time.time()
         log.info("Config validation took %f seconds", stop - start)
 
-    from quadra.utils import utils  # pylint: disable=import-outside-toplevel
+    from quadra.utils import utils  # pylint: disable=import-outside-toplevel  # noqa: PLC0415
 
     utils.extras(config)
 
     # Prints the resolved configuration to the console
     if config.get("print_config"):
         utils.print_config(config, resolve=True)
+
+    # Patch the MixVisionTransformerEncoder with QuadraMixVisionTransformerEncoder
+    # TODO: Remove when SMP fixes the MixVisionTransformerEncoder forward
+    patch_mix_transformer_encoder()
 
     # Set seed for random number generators in pytorch, numpy and python.random
     seed_everything(config.core.seed, workers=True)

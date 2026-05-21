@@ -1168,7 +1168,7 @@ class ClassificationEvaluation(Evaluation[ClassificationDataModuleT]):
                 model=self.deployment_model.model,
                 target_layers=target_layers,
             )
-            for p in self.deployment_model.model.features_extractor.layer4[-1].parameters():
+            for p in self.deployment_model.model.features_extractor.layer4[-1].parameters():  # type: ignore[index,union-attr]
                 p.requires_grad = True
         elif is_vision_transformer(cast(BaseNetworkBuilder, self.deployment_model.model).features_extractor):
             self.grad_rollout = VitAttentionGradRollout(cast(nn.Module, self.deployment_model.model))

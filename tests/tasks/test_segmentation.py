@@ -6,10 +6,18 @@ import shutil
 from pathlib import Path
 
 import pytest
+import torch
 
+from quadra.tasks.base import LightningTask
+from quadra.tasks.segmentation import Segmentation
 from quadra.utils.export import get_export_extension
 from quadra.utils.tests.fixtures import base_binary_segmentation_dataset, base_multiclass_segmentation_dataset
-from quadra.utils.tests.helpers import check_deployment_model, execute_quadra_experiment, setup_trainer_for_lightning
+from quadra.utils.tests.helpers import (
+    check_deployment_model,
+    execute_quadra_experiment,
+    get_quadra_test_device,
+    setup_trainer_for_lightning,
+)
 
 try:
     import onnx  # noqa
@@ -64,6 +72,121 @@ def run_inference_experiments(
 
         # Change back to the original working directory
         os.chdir(cwd)
+
+
+@pytest.mark.usefixtures("mock_training")
+@pytest.mark.parametrize("checkpoint_selection", ["best", "last"])
+def test_smp_binary_checkpoint_selection(
+    tmp_path: Path,
+    base_binary_segmentation_dataset: base_binary_segmentation_dataset,
+    mocker,
+    checkpoint_selection: str,
+):
+    """Test that segmentation export uses the correct checkpoint based on checkpoint_selection."""
+    checkpoint_spy = mocker.spy(Segmentation, "_get_checkpoint_path")
+
+    data_path, _, _ = base_binary_segmentation_dataset
+    train_path = tmp_path / "train"
+    train_path.mkdir()
+
+    overrides = [
+        "experiment=base/segmentation/smp",
+        f"datamodule.data_path={data_path}",
+        "task.evaluate.analysis=false",
+        f"task.checkpoint_selection={checkpoint_selection}",
+        "export.types=[torchscript]",
+    ]
+    trainer_overrides = setup_trainer_for_lightning()
+    overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
+
+    execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
+
+    check_deployment_model(export_type="torchscript")
+    assert checkpoint_spy.call_count > 0
+
+    checkpoint_path = checkpoint_spy.spy_return
+    if checkpoint_path is not None:
+        if checkpoint_selection == "last":
+            assert "last" in checkpoint_path
+        else:
+            assert "last" not in checkpoint_path
+
+
+@pytest.mark.usefixtures("mock_training")
+@pytest.mark.parametrize("checkpoint_selection", ["best", "last"])
+def test_smp_binary_checkpoint_weights_match(
+    tmp_path: Path,
+    base_binary_segmentation_dataset: base_binary_segmentation_dataset,
+    mocker,
+    checkpoint_selection: str,
+):
+    """Test that export uses weights from the correct checkpoint based on checkpoint_selection."""
+    data_path, _, _ = base_binary_segmentation_dataset
+    train_path = tmp_path / "train"
+    train_path.mkdir()
+
+    best_value = 0.111
+    last_value = 0.999
+    expected_value = last_value if checkpoint_selection == "last" else best_value
+
+    fake_best_path = tmp_path / "fake_best.ckpt"
+    fake_last_path = tmp_path / "fake_last.ckpt"
+    checkpoint_patched = [False]
+
+    original_train = LightningTask.train
+
+    def patched_train(self):
+        original_train(self)
+
+        import pytorch_lightning as pl
+
+        def make_ckpt(fill_value: float) -> dict:
+            return {
+                "epoch": 0,
+                "global_step": 0,
+                "pytorch-lightning_version": pl.__version__,
+                "state_dict": {
+                    k: torch.full_like(v, fill_value) if v.is_floating_point() else v.clone()
+                    for k, v in self.module.state_dict().items()
+                },
+            }
+
+        torch.save(make_ckpt(best_value), str(fake_best_path))
+        torch.save(make_ckpt(last_value), str(fake_last_path))
+
+        if self.trainer.checkpoint_callback is not None:
+            self.trainer.checkpoint_callback.best_model_path = str(fake_best_path)
+            self.trainer.checkpoint_callback.last_model_path = str(fake_last_path)
+            checkpoint_patched[0] = True
+
+    mocker.patch.object(LightningTask, "train", patched_train)
+
+    overrides = [
+        "experiment=base/segmentation/smp",
+        f"datamodule.data_path={data_path}",
+        "task.evaluate.analysis=false",
+        f"task.checkpoint_selection={checkpoint_selection}",
+        "export.types=[torchscript]",
+    ]
+    trainer_overrides = setup_trainer_for_lightning()
+    overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += trainer_overrides
+
+    execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
+
+    if not checkpoint_patched[0]:
+        pytest.skip("Checkpoint callback not active; cannot verify weight selection")
+
+    exported_model = torch.jit.load(str(train_path / "deployment_model" / "model.pt"))
+    checked = False
+    for param in exported_model.parameters():
+        if param.is_floating_point() and param.numel() > 0:
+            assert param.unique().numel() == 1, f"Expected uniform weights, got: {param.unique()}"
+            assert param.unique().item() == pytest.approx(expected_value, abs=1e-3)
+            checked = True
+
+    assert checked, "No float parameters found in exported model to verify"
 
 
 @pytest.mark.usefixtures("mock_training")
@@ -178,3 +301,59 @@ def test_smp_multiclass_with_binary_dataset(
     execute_quadra_experiment(overrides=overrides, experiment_path=tmp_path)
 
     shutil.rmtree(tmp_path)
+
+
+@pytest.mark.usefixtures("mock_training")
+@pytest.mark.parametrize("precision", ["32", "16"])
+@pytest.mark.parametrize("export_type", ["onnx", "torchscript"])
+def test_smp_binary_mit_b0_precision(
+    tmp_path: Path,
+    base_binary_segmentation_dataset: base_binary_segmentation_dataset,
+    precision: str,
+    export_type: str,
+):
+    """Train with mit_b0 in full and half precision and verify TorchScript export succeeds.
+
+    This exercises the QuadraMixVisionTransformerEncoder patch: without it, the dummy
+    tensor device is recorded as a constant in the TorchScript graph, causing a device
+    mismatch at GPU inference time.
+    """
+    if export_type == "onnx" and not ONNX_AVAILABLE:
+        pytest.skip("ONNX export not available")
+    if precision == "16" and torch.device(get_quadra_test_device()).type != "cuda":
+        pytest.skip("fp16 training requires CUDA")
+
+    data_path, _, _ = base_binary_segmentation_dataset
+    train_path = tmp_path / "train"
+    test_path = tmp_path / "test"
+    train_path.mkdir()
+    test_path.mkdir()
+
+    overrides = [
+        "experiment=base/segmentation/smp",
+        f"datamodule.data_path={data_path}",
+        "task.evaluate.analysis=false",
+        f"export.types=[{export_type}]",
+        "backbone.model.encoder_name=mit_b0",
+        "backbone.model.encoder_weights=null",
+        "backbone.model.freeze_encoder=false",
+    ]
+    overrides += BASE_EXPERIMENT_OVERRIDES
+    overrides += setup_trainer_for_lightning()
+    overrides += [f"++trainer.precision={precision}"]
+
+    execute_quadra_experiment(overrides=overrides, experiment_path=train_path)
+    check_deployment_model(export_type=export_type)
+
+    inference_overrides = [
+        "experiment=base/segmentation/smp_evaluation",
+        f"task.device={get_quadra_test_device()}",
+    ] + BASE_EXPERIMENT_OVERRIDES
+
+    _run_inference_experiment(
+        test_overrides=inference_overrides,
+        data_path=data_path,
+        train_path=str(train_path),
+        test_path=test_path,
+        export_type=export_type,
+    )

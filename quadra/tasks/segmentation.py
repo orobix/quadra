@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 import typing
-from typing import Any, Generic
+from typing import Any, Generic, Literal
 
 import cv2
 import hydra
@@ -38,6 +38,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         run_test: If True, run test after training. Defaults to False.
         evaluate: Dict with evaluation parameters. Defaults to None.
         report: If True, create report after training. Defaults to False.
+        checkpoint_selection: Which checkpoint to use for export and evaluation: "best" or "last". Defaults to "best".
     """
 
     def __init__(
@@ -48,6 +49,7 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         run_test: bool = False,
         evaluate: DictConfig | None = None,
         report: bool = False,
+        checkpoint_selection: Literal["best", "last"] = "best",
     ):
         super().__init__(
             config=config,
@@ -77,6 +79,14 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
             if not self.report:
                 log.info("Evaluation is enabled, but reporting is disabled. Enabling reporting automatically.")
                 self.report = True
+
+        if checkpoint_selection not in {"best", "last"}:
+            log.warning(
+                "Invalid checkpoint_selection value '%s', defaulting to 'best'. Valid values are 'best' and 'last'.",
+                checkpoint_selection,
+            )
+            checkpoint_selection = "best"
+        self.checkpoint_selection = checkpoint_selection
 
     @property
     def module(self) -> SegmentationModel:
@@ -122,29 +132,50 @@ class Segmentation(Generic[SegmentationDataModuleT], LightningTask[SegmentationD
         super().prepare()
         self.module = self.config.model
 
+    def _get_checkpoint_path(self) -> str | None:
+        """Return the checkpoint path to use based on self.checkpoint_selection."""
+        checkpoint_type = self.checkpoint_selection
+
+        if self.trainer.checkpoint_callback is None:
+            return None
+
+        if checkpoint_type == "last":
+            path = getattr(self.trainer.checkpoint_callback, "last_model_path", None)
+        else:
+            path = getattr(self.trainer.checkpoint_callback, "best_model_path", None)
+
+        return path if path else None
+
+    def test(self) -> Any:
+        """Test the model."""
+        log.info("Starting testing!")
+
+        checkpoint_path = self._get_checkpoint_path()
+
+        if checkpoint_path is None:
+            log.warning(
+                "No checkpoint found, using current model weights for test, this might lead to worse results, "
+                "consider using a checkpoint callback."
+            )
+
+        return self.trainer.test(model=self.module, datamodule=self.datamodule, ckpt_path=checkpoint_path)
+
     def export(self) -> None:
         """Generate a deployment model for the task."""
         log.info("Exporting model ready for deployment")
 
-        # Get best model!
-        if (
-            self.trainer.checkpoint_callback is not None
-            and hasattr(self.trainer.checkpoint_callback, "best_model_path")
-            and self.trainer.checkpoint_callback.best_model_path is not None
-            and len(self.trainer.checkpoint_callback.best_model_path) > 0
-        ):
-            best_model_path = self.trainer.checkpoint_callback.best_model_path
-            log.info("Loaded best model from %s", best_model_path)
-
+        checkpoint_path = self._get_checkpoint_path()
+        if checkpoint_path is not None:
+            log.info("Loaded %s model from %s", self.checkpoint_selection, checkpoint_path)
             module = self.module.__class__.load_from_checkpoint(
-                best_model_path,
+                checkpoint_path,
                 model=self.module.model,
                 loss_fun=None,
                 optimizer=self.module.optimizer,
                 lr_scheduler=self.module.schedulers,
             )
         else:
-            log.warning("No checkpoint callback found in the trainer, exporting the last model weights")
+            log.warning("No checkpoint found, exporting the last model weights")
             module = self.module
 
         if "idx_to_class" not in self.config.datamodule:
