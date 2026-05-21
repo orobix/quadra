@@ -1,0 +1,13 @@
+:root {
+  --rolling-text-offset: 0.3em;
+  --quadra-blue: #0ecffe;
+  --quadra-blue-dark: #0699dd;
+  --quadra-green: #18e198;
+  --quadra-green-dark: #0d9548;
+
+  --quadra-purple: #8a7cfb;
+  --quadra-purple-dark: #633e9c;
+  --quadra-orange: #fa7671;
+  --quadra-orange-dark: #f45f7f;
+  --quadra-logo-single: #FFFFFF;
+}

@@ -1,0 +1,20 @@
+/* Indentation. */
+div.doc-contents:not(.first) {
+  padding-left: 25px;
+  border-left: 4px solid rgba(230, 230, 230);
+  margin-bottom: 80px;
+}
+
+/* Avoid breaking parameters name, etc. in table cells.
+td code {
+    word-break: normal !important;
+  } */
+
+.md-sidebar__inner {
+  border-right: .05rem solid rgba(0, 0, 0, .07);
+}
+
+.md-nav--secondary {
+  border-left: .15rem solid var(--md-accent-fg-color);
+  border-right: none;
+}
